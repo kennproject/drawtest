@@ -184,7 +184,7 @@
 
                 <!-- 全局提示 (跳轉 APP / 長按全用) -->
                 <div class="text-center text-xs sm:text-sm font-bold opacity-60 text-gray-600 dark:text-gray-400 mt-1 mb-2">
-                    <span class="material-symbols-outlined text-[14px] align-middle">touch_app</span> 點擊平台圖示跳轉 APP (測試中) / 長按標記全用
+                    <span class="material-symbols-outlined text-[14px] align-middle">touch_app</span> 點擊平台圖示跳轉 APP / 長按標記全用
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center justify-between p-3 sm:px-4 sm:py-3 rounded-[1.5rem] border shadow-sm mt-1 backdrop-blur-md bg-white/50 dark:bg-[#1c2128]/50 border-white/50 dark:border-gray-700/50">
@@ -362,7 +362,6 @@
             </div>
         </form>
         <div slot="actions">
-            <md-filled-button id="downloadGlobalStatsBtn">下載圖片</md-filled-button>
             <md-text-button id="closeGlobalStatsBtn">關閉</md-text-button>
         </div>
     </md-dialog>
@@ -414,39 +413,37 @@
         </div>
     </md-dialog>
     
-    <md-dialog id="calculatorDialog" role="dialog" aria-labelledby="calculatorDialogTitle">
+    <md-dialog id="calculatorDialog" role="dialog" aria-labelledby="calculatorDialogTitle" style="--md-dialog-container-max-width: 768px; width: 95vw;">
         <div slot="headline" id="calculatorDialogTitle" class="font-bold flex items-center gap-2">
             <span class="material-symbols-outlined text-[24px]">calculate</span> 用券計數機
         </div>
-        <form slot="content" id="calculatorDialogForm" class="space-y-4 mt-2">
+        <form slot="content" id="calculatorDialogForm" class="flex flex-col gap-3 mt-2">
             <div class="flex flex-row items-center gap-2">
-                <md-outlined-text-field id="spendingAmountInput" label="欲消費金額 (MOP)" type="number" inputmode="decimal" required class="flex-grow w-full tabular-nums min-w-0"></md-outlined-text-field>
-                <md-filled-button id="calculateBtn" class="flex-shrink-0 whitespace-nowrap">計算</md-filled-button>
+                <md-outlined-text-field id="spendingAmountInput" label="欲消費金額 (MOP)" type="number" inputmode="decimal" required class="flex-grow tabular-nums min-w-0"></md-outlined-text-field>
+                <md-filled-button id="calculateBtn" class="flex-shrink-0 whitespace-nowrap h-12">計算</md-filled-button>
             </div>
             
-            <div class="flex flex-col gap-3 p-3 rounded-xl border" style="border-color: var(--color-border); background-color: var(--md-sys-color-surface-variant);">
-                <div class="flex flex-col gap-1">
-                    <span class="text-[13px] font-bold opacity-80" style="color: var(--color-text-primary);">用券策略：</span>
-                    <div class="flex flex-wrap gap-3 sm:gap-5 mt-1">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2.5 px-3 rounded-xl border items-center" style="border-color: var(--color-border); background-color: var(--md-sys-color-surface-variant);">
+                <div class="flex items-center justify-between sm:justify-start gap-3">
+                    <span class="text-xs font-bold opacity-80 whitespace-nowrap" style="color: var(--color-text-primary);">策略：</span>
+                    <div class="flex gap-4">
                         <label class="flex items-center gap-1.5 cursor-pointer">
-                            <input type="radio" name="calcStrategy" value="large" checked class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
-                            <span class="text-sm font-medium">大額優先 (盡量用少啲券)</span>
+                            <input type="radio" name="calcStrategy" value="large" checked class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                            <span class="text-xs font-medium">大額優先</span>
                         </label>
                         <label class="flex items-center gap-1.5 cursor-pointer">
-                            <input type="radio" name="calcStrategy" value="clear" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
-                            <span class="text-sm font-medium">清空優先 (盡量清空平台)</span>
+                            <input type="radio" name="calcStrategy" value="clear" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                            <span class="text-xs font-medium">清空優先</span>
                         </label>
                     </div>
                 </div>
-                <div class="flex flex-col gap-1 border-t pt-3" style="border-color: var(--color-border);">
-                    <span class="text-[13px] font-bold opacity-80" style="color: var(--color-text-primary);">補足餘額平台 (如需)：</span>
-                    <md-outlined-select id="makeupPlatformSelect" class="w-full mt-1">
-                        <!-- 動態生成 -->
-                    </md-outlined-select>
+                <div class="flex items-center gap-2 sm:border-l sm:pl-3 border-gray-300 dark:border-gray-600">
+                    <span class="text-xs font-bold opacity-80 whitespace-nowrap" style="color: var(--color-text-primary);">補底平台：</span>
+                    <md-outlined-select id="makeupPlatformSelect" class="flex-1 w-full min-w-0"></md-outlined-select>
                 </div>
             </div>
 
-            <div id="calculatorResult" class="p-4 rounded-xl text-sm min-h-[120px] border leading-relaxed shadow-inner overflow-y-auto" aria-live="polite" style="background-color: var(--color-bg); border-color: var(--color-border); color: var(--color-text-primary); max-height: 400px;">
+            <div id="calculatorResult" class="flex-1 p-3 sm:p-4 rounded-xl text-sm min-h-[160px] max-h-[50vh] sm:max-h-[60vh] border leading-relaxed shadow-inner overflow-y-auto" aria-live="polite" style="background-color: var(--color-bg); border-color: var(--color-border); color: var(--color-text-primary);">
                 請輸入上方欲消費金額後點擊「計算」。
             </div>
         </form>
