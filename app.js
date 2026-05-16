@@ -76,7 +76,7 @@ const PLATFORMS = { 'Alipay': 'Alipay支付寶', 'BOC': 'BOC中銀', 'GFB': 'GFB
 const PLATFORM_COLORS = { 'Alipay': '#003c8b', 'BOC': '#a71930', 'GFB': '#e3041f', 'ICBC': '#C7000B', 'Luso': '#0c4890', 'MPay': '#ff8201', 'TFB': '#ffd801', 'UePay': '#58c0df' };
 const PLATFORM_ICONS = { 'Alipay': './alipay_icon.webp', 'BOC': './boc_icon.webp', 'GFB': './guangfa_icon.webp', 'ICBC': './icbc_icon.webp', 'Luso': './luso_icon.webp', 'MPay': './mpay_icon.webp', 'TFB': './taifung_icon.webp', 'UePay': './uepay_icon.webp' };
 
-// 修正：補上 UePay 的 Android Intent 連結
+// UePay / GFB 等 App 跳轉 Scheme
 const APP_SCHEMES = { 
     'Alipay': 'alipays://', 
     'BOC': 'bocmmobilebankeid://', 
@@ -87,6 +87,43 @@ const APP_SCHEMES = {
     'TFB': 'tfbmobilebank://taifungbank.com',
     'UePay': 'intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.foorich.uepay;end'
 };
+
+// 統一管理跳轉 APP 邏輯
+function jumpToApp(platform) {
+    if (!platform) return;
+    var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    var isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+    var isAndroid = /android/i.test(userAgent);
+
+    if (platform === 'UePay') {
+        var iosScheme = 'uepay://'; 
+        var androidScheme = APP_SCHEMES['UePay'];
+        var appStoreUrl = 'https://apps.apple.com/hk/app/uepay/id1262244387';
+        var googlePlayUrl = 'https://play.google.com/store/apps/details?id=com.foorich.uepay';
+
+        if (isIOS) {
+            window.location.href = iosScheme;
+            setTimeout(function() { if (!document.hidden) window.location.href = appStoreUrl; }, 2000);
+        } else if (isAndroid) {
+            const a = document.createElement('a');
+            a.href = androidScheme;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function() { if (!document.hidden) window.location.href = googlePlayUrl; }, 2000);
+        } else {
+            window.location.href = appStoreUrl;
+        }
+    } else if (platform === 'GFB') {
+        if (isIOS) {
+            window.location.href = 'cgbaom://';
+        } else {
+            window.location.href = APP_SCHEMES['GFB'];
+        }
+    } else if (APP_SCHEMES[platform]) {
+        window.location.href = APP_SCHEMES[platform];
+    }
+}
 
 const THEMES = {
     orange: { primary: '#BF7B49', title: '#F4A261', summaryBg: '#FEF5ED', summaryBorder: '#F4A261', summaryText: '#9A6234' },
@@ -156,7 +193,6 @@ const allDOMElements = {
     disclaimerLink: document.getElementById('disclaimerLink'), 
     statsBtn: document.getElementById('statsBtn'), statsDialog: document.getElementById('statsDialog'), closeStatsDialogBtn: document.getElementById('closeStatsDialog'), statsWeekFilter: document.getElementById('statsWeekFilter'), downloadStatsBtn: document.getElementById('downloadStatsBtn'),
     globalStatsBtn: document.getElementById('globalStatsBtn'), globalStatsDialog: document.getElementById('globalStatsDialog'), closeGlobalStatsBtn: document.getElementById('closeGlobalStatsBtn'), globalStatsWeekFilter: document.getElementById('globalStatsWeekFilter'), globalStatsTbody: document.getElementById('globalStatsTbody'), globalStatsCutoff: document.getElementById('globalStatsCutoff'), globalStatsOverview: document.getElementById('globalStatsOverview'),
-    globalStatsDialogForm: document.getElementById('globalStatsDialogForm'), downloadGlobalStatsBtn: document.getElementById('downloadGlobalStatsBtn'),
     themeBtn: document.getElementById('themeBtn'), themeDialog: document.getElementById('themeDialog'), themeOptions: document.getElementById('theme-options'), darkModeSwitch: document.getElementById('darkModeSwitch'),
     alertDialog: document.getElementById('alertDialog'), alertTitle: document.getElementById('alertTitle'), alertMessage: document.getElementById('alertMessage'),
     confirmDialog: document.getElementById('confirmDialog'), confirmTitle: document.getElementById('confirmTitle'), confirmMessage: document.getElementById('confirmMessage'),
@@ -1131,9 +1167,10 @@ allDOMElements.calculateBtn.addEventListener('click', (event) => {
         resultHTML += `
         <div class="p-2.5 rounded-lg border flex flex-col gap-1.5 bg-white dark:bg-[#1c2128]" style="border-color: ${pColor}; border-left-width: 4px;">
             <div class="flex justify-between items-center w-full">
-                <div class="font-bold text-[15px] truncate flex items-center gap-2" style="color: ${pColor};">
-                    <img src="${PLATFORM_ICONS[platform]}" alt="${PLATFORMS[platform] || platform}" class="w-6 h-6 rounded-md object-contain border border-gray-100 dark:border-gray-700 bg-white flex-shrink-0" onerror="this.style.display='none'">
-                    <span class="truncate">${PLATFORMS[platform] || platform}</span>
+                <div class="calc-platform-jump font-bold text-[15px] truncate flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity" data-platform="${platform}" style="color: ${pColor};" title="點擊跳轉APP">
+                    <img src="${PLATFORM_ICONS[platform]}" alt="${PLATFORMS[platform] || platform}" class="w-6 h-6 rounded-md object-contain border border-gray-100 dark:border-gray-700 bg-white flex-shrink-0 pointer-events-none" onerror="this.style.display='none'">
+                    <span class="truncate pointer-events-none">${PLATFORMS[platform] || platform}</span>
+                    <span class="material-symbols-outlined text-[14px] pointer-events-none">open_in_new</span>
                 </div>
                 <div class="text-sm flex-shrink-0" style="color: var(--color-text-primary);">需消費: <span class="font-bold text-base tabular-nums">MOP ${platformSpend}</span>${makeupBadge}</div>
             </div>
@@ -1168,6 +1205,16 @@ allDOMElements.calculateBtn.addEventListener('click', (event) => {
         const options = { body: notificationTextLines.join('\n'), icon: "./icon.png", badge: "./icon.png", vibrate: [200, 100, 200] };
         const sendNativeNotification = () => { if ("serviceWorker" in navigator) { navigator.serviceWorker.ready.then(r => r.showNotification("用券方案已計算完成", options)).catch(()=>new Notification("用券方案已計算完成", options)); } else { new Notification("用券方案已計算完成", options); } };
         if (Notification.permission === "granted") { sendNativeNotification(); } else if (Notification.permission !== "denied") { Notification.requestPermission().then(p => { if (p === "granted") sendNativeNotification(); }); }
+    }
+});
+
+// 新增：處理用券計算機結果面板中的點擊事件（跳轉 APP）
+allDOMElements.calculatorResult.addEventListener('click', (e) => {
+    const jumpBtn = e.target.closest('.calc-platform-jump');
+    if (jumpBtn) {
+        const platform = jumpBtn.dataset.platform;
+        if (navigator.vibrate) navigator.vibrate(10);
+        jumpToApp(platform);
     }
 });
 
@@ -1295,38 +1342,7 @@ allDOMElements.recordsList.addEventListener('click', async (e) => {
         const docId = card.dataset.id;
         const record = records.find(r => r.id === docId);
         if (record) {
-            var userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            var isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
-            var isAndroid = /android/i.test(userAgent);
-
-            if (record.platform === 'UePay') {
-                var iosScheme = 'uepay://'; 
-                var androidScheme = APP_SCHEMES['UePay'];
-                var appStoreUrl = 'https://apps.apple.com/hk/app/uepay/id1262244387';
-                var googlePlayUrl = 'https://play.google.com/store/apps/details?id=com.foorich.uepay';
-
-                if (isIOS) {
-                    window.location.href = iosScheme;
-                    setTimeout(function() { if (!document.hidden) window.location.href = appStoreUrl; }, 2000);
-                } else if (isAndroid) {
-                    const a = document.createElement('a');
-                    a.href = androidScheme;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    setTimeout(function() { if (!document.hidden) window.location.href = googlePlayUrl; }, 2000);
-                } else {
-                    window.location.href = appStoreUrl;
-                }
-            } else if (record.platform === 'GFB') {
-                if (isIOS) {
-                    window.location.href = 'cgbaom://';
-                } else {
-                    window.location.href = APP_SCHEMES['GFB'];
-                }
-            } else if (APP_SCHEMES[record.platform]) {
-                window.location.href = APP_SCHEMES[record.platform];
-            }
+            jumpToApp(record.platform);
         }
         return;
     }
