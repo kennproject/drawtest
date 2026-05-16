@@ -1310,7 +1310,11 @@ allDOMElements.recordsList.addEventListener('click', async (e) => {
                     window.location.href = iosScheme;
                     setTimeout(function() { if (!document.hidden) window.location.href = appStoreUrl; }, 2000);
                 } else if (isAndroid) {
-                    window.location.href = androidScheme;
+                    const a = document.createElement('a');
+                    a.href = androidScheme;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
                     setTimeout(function() { if (!document.hidden) window.location.href = googlePlayUrl; }, 2000);
                 } else {
                     window.location.href = appStoreUrl;
