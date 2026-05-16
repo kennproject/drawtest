@@ -137,7 +137,7 @@ let FB = {};
 let currentUserId = null, records = [], hiddenPlatforms = [];
 let unsubscribeFromRecords = null, isInitialLoad = true; 
 let couponCountChart = null, platformTotalChart = null, weeklyTotalChart = null, platformWeeklyTotalChart = null;
-let globalCouponChart = null, globalShareChart = null, exportChart = null; 
+let globalCouponChart = null, globalShareChart = null; 
 let bestCouponCombination = []; let writeTimeout = null; let pendingWrites = {};
 let currentInputPlatform = ''; let currentInputValues = ['-', '-', '-']; let currentInputIndex = 0;
 
@@ -160,7 +160,7 @@ const allDOMElements = {
     themeBtn: document.getElementById('themeBtn'), themeDialog: document.getElementById('themeDialog'), themeOptions: document.getElementById('theme-options'), darkModeSwitch: document.getElementById('darkModeSwitch'),
     alertDialog: document.getElementById('alertDialog'), alertTitle: document.getElementById('alertTitle'), alertMessage: document.getElementById('alertMessage'),
     confirmDialog: document.getElementById('confirmDialog'), confirmTitle: document.getElementById('confirmTitle'), confirmMessage: document.getElementById('confirmMessage'),
-    addFavoriteBtn: document.getElementById('addFavoriteBtn'), addToHomeScreenBtn: document.getElementById('addToHomeScreenBtn'), exportCsvBtn: document.getElementById('exportCsvBtn'), downloadImageBtn: document.getElementById('downloadImageBtn'),
+    addFavoriteBtn: document.getElementById('addFavoriteBtn'), addToHomeScreenBtn: document.getElementById('addToHomeScreenBtn'), exportCsvBtn: document.getElementById('exportCsvBtn'), 
     calculatorBtn: document.getElementById('calculatorBtn'), calculatorDialog: document.getElementById('calculatorDialog'), spendingAmountInput: document.getElementById('spendingAmountInput'), calculatorResult: document.getElementById('calculatorResult'), calculateBtn: document.getElementById('calculateBtn'), markAsUsedBtn: document.getElementById('markAsUsedBtn'), cancelCalculatorBtn: document.getElementById('cancelCalculator'), statusAnnouncer: document.getElementById('status-announcer'),
 };
 
@@ -334,11 +334,16 @@ function renderRecords() {
         const couponKeys = ['draw1', 'draw2', 'draw3'];
         const monetaryCoupons = couponKeys.filter(key => !isNaN(parseInt(record[key])));
         const allUsed = monetaryCoupons.length === 0 ? true : monetaryCoupons.every(key => usedCoupons[key]);
-        return { ...record, allUsed };
+        
+        // 計算該次抽獎的總金額
+        const totalAmount = (parseInt(record.draw1) || 0) + (parseInt(record.draw2) || 0) + (parseInt(record.draw3) || 0);
+        
+        return { ...record, allUsed, totalAmount };
     });
 
     processedRecords.sort((a, b) => {
         if (a.allUsed !== b.allUsed) return a.allUsed ? 1 : -1;
+        if (b.totalAmount !== a.totalAmount) return b.totalAmount - a.totalAmount; // 卡片按總抽到金額由大到小排序
         if (a.week !== b.week) return a.week - b.week;
         return a.platform.localeCompare(b.platform);
     });
@@ -384,7 +389,10 @@ function renderRecords() {
         couponsData.sort((a, b) => {
             if (a.isInvalid !== b.isInvalid) return a.isInvalid ? 1 : -1;
             if (a.isUsed !== b.isUsed) return a.isUsed ? 1 : -1;
-            return a.originalIndex - b.originalIndex;
+            
+            const valA = parseInt(a.val) || 0;
+            const valB = parseInt(b.val) || 0;
+            return valB - valA; // 卡片內的個別券也按面額由大到小排序
         });
 
         // 調整按鈕高度：h-12 sm:h-14
@@ -727,15 +735,6 @@ allDOMElements.globalStatsBtn.addEventListener('click', async () => {
 
 allDOMElements.closeGlobalStatsBtn.addEventListener('click', () => allDOMElements.globalStatsDialog.close());
 allDOMElements.globalStatsWeekFilter.addEventListener('change', (e) => renderGlobalStats(e.target.value));
-
-allDOMElements.downloadGlobalStatsBtn.addEventListener('click', async () => {
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-    const formToExport = allDOMElements.globalStatsDialogForm;
-    const weekValue = allDOMElements.globalStatsWeekFilter.value;
-    html2canvas(formToExport, { useCORS: true, backgroundColor: document.documentElement.classList.contains('dark') ? '#0d1117' : '#ffffff', scale: 2 }).then(canvas => {
-        const link = document.createElement('a'); link.download = `全網大數據_第${weekValue}周.png`; link.href = canvas.toDataURL("image/png"); link.click();
-    });
-});
 
 function renderGlobalStats(week) {
     const weekData = GLOBAL_STATS_DATA[week]; if (!weekData) return;
@@ -1398,110 +1397,6 @@ allDOMElements.exportCsvBtn.addEventListener('click', () => {
     });
     const now = new Date(); const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
     exportToCsv(`社區消費獎賞2026_${timestamp}_${currentUserId}.csv`, rows);
-});
-
-allDOMElements.downloadImageBtn.addEventListener('click', async () => {
-    const currentWeek = getWeekNumber(new Date());
-    const weeklyRecords = records.filter(record => record.week === currentWeek);
-    if (weeklyRecords.length === 0) { showAlertDialog('本周沒有記錄可供分享。'); return; }
-    
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-    await loadScript('https://cdn.jsdelivr.net/npm/chart.js');
-    await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js');
-
-    const exportContainer = document.getElementById('image-export-container');
-    exportContainer.style.background = 'transparent';
-    
-    let count200 = 0; const counts = { '0': 0, '10': 0, '20': 0, '50': 0, '100': 0, '200': 0 };
-    const platformTotals = {}; let totalCouponsAmount = 0;
-    
-    weeklyRecords.forEach(record => {
-        let pTotal = 0;
-        [record.draw1, record.draw2, record.draw3].forEach(v => {
-            if (v === '-' || v === 'ND') { counts['0']++; } 
-            else { const num = parseInt(v); if (!isNaN(num)) { pTotal += num; totalCouponsAmount += num; if (v === '200') count200++; if (counts[v] !== undefined) counts[v]++; } }
-        });
-        platformTotals[record.platform] = pTotal;
-    });
-    
-    let congratsHTML = '';
-    if (count200 > 0) {
-        congratsHTML = `
-            <div style="background: linear-gradient(135deg, #F59E0B 0%, #F97316 100%); border-radius: 16px; padding: 16px; margin-bottom: 24px; text-align: center; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);">
-                <span style="display: inline-block; vertical-align: middle;">
-                    <span class="material-symbols-outlined" style="color: white; font-size: 24px; vertical-align: middle; margin-right: 6px;">celebration</span>
-                    <span style="color: white; font-weight: 900; font-size: 18px; vertical-align: middle;">嘩！恭喜晒！今個星期抽中 ${count200} 張 200蚊券！🎉</span>
-                </span>
-            </div>`;
-    }
-    
-    let platformCardsHTML = '';
-    weeklyRecords.sort((a, b) => a.platform.localeCompare(b.platform)).forEach((record) => {
-        const drawnCoupons = [record.draw1, record.draw2, record.draw3].filter(v => v !== '-' && v !== 'ND');
-        const couponsText = drawnCoupons.length > 0 
-            ? drawnCoupons.map(c => `<span style="display: inline-block; background-color: #f3f4f6; color: #374151; border-radius: 6px; font-weight: 800; font-family: monospace; font-size: 15px; padding: 6px 12px; border: 1px solid #e5e7eb; margin-right: 8px; margin-top: 10px; vertical-align: middle; line-height: normal;">${c}</span>`).join('') 
-            : `<span style="display: inline-block; color: #9ca3af; font-size: 14px; font-weight: bold; padding: 6px 0; margin-top: 10px; vertical-align: middle; line-height: normal;">0 元</span>`;
-        const platformColor = PLATFORM_COLORS[record.platform] || '#e5e7eb';
-        platformCardsHTML += `
-            <div style="background-color: #ffffff; border-radius: 16px; padding: 16px; border: 2px solid ${platformColor}; text-align: center; box-sizing: border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
-                <div style="font-weight: 900; font-size: 18px; color: #1f2937; line-height: normal;">${PLATFORMS[record.platform] || record.platform}</div>
-                <div>${couponsText}</div>
-            </div>`;
-    });
-
-    exportContainer.innerHTML = `
-        <div style="background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%); padding: 0; display: block; box-sizing: border-box; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
-            <div style="height: 12px; background: linear-gradient(90deg, var(--theme-color-primary), #60A5FA); width: 100%;"></div>
-            <div style="padding: 32px 32px 40px 32px;">
-                <div style="text-align: center; margin-bottom: 32px;">
-                    <div style="display: inline-block; width: 64px; height: 64px; background-color: var(--theme-color-primary); border-radius: 16px; margin-bottom: 16px; vertical-align: top; box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);">
-                        <span class="material-symbols-outlined" style="color: white; font-size: 36px; line-height: 64px;">loyalty</span>
-                    </div>
-                    <h2 style="font-size: 36px; font-weight: 900; color: #1f2937; margin: 0 0 12px 0; line-height: normal;">第 ${currentWeek} 周 抽獎記錄</h2>
-                    <p style="font-size: 16px; font-weight: 800; color: #8b949e; margin: 0; letter-spacing: 0.1em; line-height: normal;">社區消費大獎賞 2026</p>
-                </div>
-                <div style="display: table; width: 100%; table-layout: fixed; margin-bottom: 24px; border-spacing: 16px 0;">
-                    <div style="display: table-cell; background-color: #ffffff; border: 2px solid #e5e7eb; border-radius: 20px; padding: 24px 16px; text-align: center; vertical-align: middle; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
-                        <div style="font-size: 15px; font-weight: 800; color: #6b7280; margin-bottom: 12px; line-height: normal;">本周總消費券</div>
-                        <div style="font-size: 42px; font-weight: 900; color: var(--theme-color-primary); font-family: monospace; line-height: normal;">MOP ${formatNumber(totalCouponsAmount)}</div>
-                    </div>
-                    <div style="display: table-cell; background-color: #ffffff; border: 2px solid #e5e7eb; border-radius: 20px; padding: 24px 16px; text-align: center; vertical-align: middle; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
-                        <div style="font-size: 15px; font-weight: 800; color: #6b7280; margin-bottom: 12px; line-height: normal;">使用平台數目</div>
-                        <div style="font-size: 42px; font-weight: 900; color: #374151; font-family: monospace; line-height: normal;">${weeklyRecords.length}</div>
-                    </div>
-                </div>
-                ${congratsHTML}
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px;">${platformCardsHTML}</div>
-                <div style="background-color: #ffffff; border-radius: 20px; padding: 20px; border: 2px solid #e5e7eb; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
-                    <div style="font-size: 15px; font-weight: 800; color: #6b7280; margin-bottom: 16px; line-height: normal;">各面額抽中張數統計</div>
-                    <div style="position: relative; height: 110px; width: 100%;"><canvas id="export-chart"></canvas></div>
-                </div>
-                <div style="text-align: center; margin-top: 32px; padding-top: 24px; border-top: 2px dashed #cbd5e1;">
-                    <div style="font-size: 13px; font-weight: 800; color: #9ca3af; letter-spacing: 0.1em; margin-bottom: 8px; line-height: normal;">GENERATED BY 記錄平台</div>
-                    <div style="font-size: 18px; font-weight: 900; color: var(--theme-color-primary); font-family: monospace; line-height: normal;">https://2026macaudraw.netlify.app/</div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    if (exportChart) exportChart.destroy();
-    const chartCtx = document.getElementById('export-chart').getContext('2d');
-    const labels = ['0元', '10元', '20元', '50元', '100元', '200元'];
-    const dataValues = [counts['0'], counts['10'], counts['20'], counts['50'], counts['100'], counts['200']];
-    const bgColors = ['#F6F6F6', '#BA4040', '#6F4E9F', '#825211', '#3C72A1', '#E18C1F'];
-    
-    exportChart = new Chart(chartCtx, { 
-        type: 'bar', 
-        data: { labels: labels, datasets: [{ data: dataValues, backgroundColor: bgColors, borderRadius: 4, borderWidth: [1, 0, 0, 0, 0, 0], borderColor: ['#e5e7eb', 'transparent', 'transparent', 'transparent', 'transparent', 'transparent'] }] }, 
-        options: { animation: false, responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: false }, datalabels: { color: '#4b5563', anchor: 'end', align: 'end', font: { weight: 'bold', size: 11, family: "'Noto Sans TC', sans-serif" }, formatter: v => v > 0 ? v + '張' : '' } }, scales: { y: { display: false, max: Math.max(...dataValues, 1) * 1.3 }, x: { ticks: { color: '#6b7280', font: { family: "'Noto Sans TC', sans-serif", size: 10 }, maxRotation: 0, minRotation: 0 }, grid: { display: false, drawBorder: false } } }, layout: { padding: { top: 15 } } } 
-    });
-
-    setTimeout(() => {
-        html2canvas(document.getElementById('image-export-container'), { useCORS: true, backgroundColor: null, scale: 2 }).then(canvas => {
-            const now = new Date(); const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
-            const link = document.createElement('a'); link.download = `第${currentWeek}周_消費大獎賞2026_${timestamp}.png`; link.href = canvas.toDataURL("image/png"); link.click();
-        });
-    }, 300);
 });
 
 allDOMElements.downloadStatsBtn.addEventListener('click', async () => {
