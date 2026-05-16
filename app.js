@@ -75,7 +75,8 @@ const loadScript = (src) => {
 const PLATFORMS = { 'Alipay': 'Alipay支付寶', 'BOC': 'BOC中銀', 'GFB': 'GFB廣發', 'ICBC': 'ICBC工銀', 'Luso': 'Luso國際', 'MPay': 'MPay', 'TFB': 'TFB大豐', 'UePay': 'UePay極易付' };
 const PLATFORM_COLORS = { 'Alipay': '#003c8b', 'BOC': '#a71930', 'GFB': '#e3041f', 'ICBC': '#C7000B', 'Luso': '#0c4890', 'MPay': '#ff8201', 'TFB': '#ffd801', 'UePay': '#58c0df' };
 const PLATFORM_ICONS = { 'Alipay': './alipay_icon.webp', 'BOC': './boc_icon.webp', 'GFB': './guangfa_icon.webp', 'ICBC': './icbc_icon.webp', 'Luso': './luso_icon.webp', 'MPay': './mpay_icon.webp', 'TFB': './taifung_icon.webp', 'UePay': './uepay_icon.webp' };
-const APP_SCHEMES = { 'Alipay': 'alipays://', 'BOC': 'bocmmobilebankeid://', 'GFB': 'cgbchina://aomenbank/openpage', 'ICBC': 'lib://mobile.lusobank.com.mo', 'Luso': 'lib://mobile.lusobank.com.mo', 'MPay': 'mpay://', 'TFB': 'lib://mobile.lusobank.com.mo', 'UePay': 'intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.foorich.uepay;end' };
+const APP_SCHEMES = { 'Alipay': 'alipays://', 'BOC': 'bocmmobilebankeid://', 'GFB': 'cgbchina://aomenbank/openpage', 'ICBC': 'icbcabroadbank://com.icbc.abroadbank.launch', 'Luso': 'lib://mobile.lusobank.com.mo', 'MPay': 'mpay://', 'TFB': 'tfbmobilebank://taifungbank.com' };
+
 const THEMES = {
     orange: { primary: '#BF7B49', title: '#F4A261', summaryBg: '#FEF5ED', summaryBorder: '#F4A261', summaryText: '#9A6234' },
     red: { primary: '#D32F2F', title: '#F44336', summaryBg: '#FFEBEE', summaryBorder: '#F44336', summaryText: '#C62828' },
@@ -361,7 +362,7 @@ function renderRecords() {
         const platformColor = PLATFORM_COLORS[record.platform] || 'var(--color-border)';
 
         const cardContainer = document.createElement('div');
-        cardContainer.className = `swipe-container stagger-card mb-4`;
+        cardContainer.className = `swipe-container stagger-card`;
         cardContainer.style.animationDelay = `${index * 0.05}s`;
         
         const couponsData = [1, 2, 3].map(i => {
@@ -385,13 +386,12 @@ function renderRecords() {
             return `<button class="${classes}" style="${styles}" data-coupon="${item.key}" aria-label="標記券為${item.isUsed ? '未使用' : '已使用'}" ${item.isInvalid ? 'disabled' : ''}>${item.isInvalid ? '0' : item.val}</button>`;
         }).join('');
 
-        // 加大 Padding：p-3 sm:p-4，圖示：w-14 sm:w-16
         cardContainer.innerHTML = `
             <div class="swipe-action-bg delete-record-swipe" data-id="${record.id}">
                 <span class="material-symbols-outlined text-3xl">delete</span>
             </div>
             <div class="record-card p-3 sm:p-4 rounded-[1.5rem] flex flex-row items-center gap-3 sm:gap-4 border" data-id="${record.id}" style="border-color: ${platformColor}60; box-shadow: 0 8px 24px -4px ${platformColor}33;">
-                <div class="flex flex-row items-center w-[140px] sm:w-[170px] flex-shrink-0 platform-title cursor-pointer group gap-2 overflow-hidden" title="點擊切換此平台所有券狀態">
+                <div class="flex flex-row items-center w-[140px] sm:w-[170px] flex-shrink-0 platform-title cursor-pointer group gap-2 overflow-hidden" title="點擊跳轉APP / 長按全用">
                     <img src="${PLATFORM_ICONS[record.platform]}" alt="${PLATFORMS[record.platform] || record.platform}" class="w-14 h-14 sm:w-16 sm:h-16 rounded-[1rem] shadow-sm transition-opacity group-hover:opacity-70 bg-white object-contain border border-gray-100/50 dark:border-gray-700/50 flex-shrink-0" onerror="this.outerHTML='<div class=\\'font-extrabold text-sm sm:text-base truncate transition-colors group-hover:opacity-70 leading-none\\' style=\\'color: ${platformColor};\\'>${PLATFORMS[record.platform] || record.platform}</div>'">
                     <div class="flex flex-col items-start gap-1 font-bold tracking-tight transition-colors min-w-0 mt-0.5">
                         <span class="text-[10px] px-1.5 py-0.5 rounded-full text-white leading-none flex-shrink-0 tabular-nums shadow-sm" style="background-color: ${platformColor};">第${record.week}周</span>
@@ -400,7 +400,6 @@ function renderRecords() {
                             <span class="text-xl sm:text-2xl leading-none font-black truncate tabular-nums">${formatNumber(consumption)}</span>
                         </div>
                     </div>
-                    <div class="text-[9px] text-gray-500 dark:text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity absolute -bottom-3 left-0 whitespace-nowrap bg-white/95 dark:bg-[#1c2128]/95 backdrop-blur-sm px-1.5 py-0.5 rounded-md shadow-sm border border-gray-100 dark:border-gray-700 z-10">點擊跳轉APP(測試中) / 長按全用</div>
                 </div>
                 <div class="flex-1 flex justify-between items-center gap-2 pl-2">
                     ${drawButtons}
@@ -1285,8 +1284,17 @@ allDOMElements.recordsList.addEventListener('click', async (e) => {
         const card = titleEl.closest('.record-card');
         const docId = card.dataset.id;
         const record = records.find(r => r.id === docId);
-        if (record && APP_SCHEMES[record.platform]) {
-            window.location.href = APP_SCHEMES[record.platform];
+        if (record) {
+            if (record.platform === 'UePay') {
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                if (isIOS) {
+                    window.location.href = 'https://apps.apple.com/hk/app/uepay/id1262244387';
+                } else {
+                    window.location.href = APP_SCHEMES['UePay'];
+                }
+            } else if (APP_SCHEMES[record.platform]) {
+                window.location.href = APP_SCHEMES[record.platform];
+            }
         }
         return;
     }
