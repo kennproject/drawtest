@@ -75,7 +75,18 @@ const loadScript = (src) => {
 const PLATFORMS = { 'Alipay': 'Alipay支付寶', 'BOC': 'BOC中銀', 'GFB': 'GFB廣發', 'ICBC': 'ICBC工銀', 'Luso': 'Luso國際', 'MPay': 'MPay', 'TFB': 'TFB大豐', 'UePay': 'UePay極易付' };
 const PLATFORM_COLORS = { 'Alipay': '#003c8b', 'BOC': '#a71930', 'GFB': '#e3041f', 'ICBC': '#C7000B', 'Luso': '#0c4890', 'MPay': '#ff8201', 'TFB': '#ffd801', 'UePay': '#58c0df' };
 const PLATFORM_ICONS = { 'Alipay': './alipay_icon.webp', 'BOC': './boc_icon.webp', 'GFB': './guangfa_icon.webp', 'ICBC': './icbc_icon.webp', 'Luso': './luso_icon.webp', 'MPay': './mpay_icon.webp', 'TFB': './taifung_icon.webp', 'UePay': './uepay_icon.webp' };
-const APP_SCHEMES = { 'Alipay': 'alipays://', 'BOC': 'bocmmobilebankeid://', 'GFB': 'cgbchina://aomenbank/openpage', 'ICBC': 'icbcabroadbank://com.icbc.abroadbank.launch', 'Luso': 'lib://mobile.lusobank.com.mo', 'MPay': 'mpay://', 'TFB': 'tfbmobilebank://taifungbank.com' };
+
+// 修正：補上 UePay 的 Android Intent 連結
+const APP_SCHEMES = { 
+    'Alipay': 'alipays://', 
+    'BOC': 'bocmmobilebankeid://', 
+    'GFB': 'cgbchina://aomenbank/openpage', 
+    'ICBC': 'icbcabroadbank://com.icbc.abroadbank.launch', 
+    'Luso': 'lib://mobile.lusobank.com.mo', 
+    'MPay': 'mpay://', 
+    'TFB': 'tfbmobilebank://taifungbank.com',
+    'UePay': 'intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.foorich.uepay;end'
+};
 
 const THEMES = {
     orange: { primary: '#BF7B49', title: '#F4A261', summaryBg: '#FEF5ED', summaryBorder: '#F4A261', summaryText: '#9A6234' },
@@ -110,9 +121,9 @@ function parseRawCSV(csvText) {
 }
 
 const GLOBAL_STATS_DATA = {
-    "1": { cutoff: "2026年4月13日00:00", overview: { totalUsers: "1,575", usersWith200: "89", maxUserAmount: "950", avgUserAmount: "195", medianUserAmount: "160", avgPlatformsPerUser: "4" }, stats: parseRawCSV(RAW_DATA_WEEK_1) },
-    "2": { cutoff: "2026年4月20日00:00", overview: { totalUsers: "1,512", usersWith200: "98", maxUserAmount: "1,010", avgUserAmount: "201", medianUserAmount: "170", avgPlatformsPerUser: "4.75" }, stats: parseRawCSV(RAW_DATA_WEEK_2) },
-    "3": { cutoff: "2026年4月27日00:00", overview: { totalUsers: "1,452", usersWith200: "75", maxUserAmount: "690", avgUserAmount: "186", medianUserAmount: "160", avgPlatformsPerUser: "4.7" }, stats: parseRawCSV(RAW_DATA_WEEK_3) },
+    "1": { cutoff: "2026年4月13日0時", overview: { totalUsers: "1,575", usersWith200: "89", maxUserAmount: "950", avgUserAmount: "195", medianUserAmount: "160", avgPlatformsPerUser: "4" }, stats: parseRawCSV(RAW_DATA_WEEK_1) },
+    "2": { cutoff: "2026年4月20日0時", overview: { totalUsers: "1,512", usersWith200: "98", maxUserAmount: "1,010", avgUserAmount: "201", medianUserAmount: "170", avgPlatformsPerUser: "4.75" }, stats: parseRawCSV(RAW_DATA_WEEK_2) },
+    "3": { cutoff: "2026年4月27日0時", overview: { totalUsers: "1,452", usersWith200: "75", maxUserAmount: "690", avgUserAmount: "186", medianUserAmount: "160", avgPlatformsPerUser: "4.7" }, stats: parseRawCSV(RAW_DATA_WEEK_3) },
     "4": { cutoff: "2026年5月7日23:00", overview: { totalUsers: "1,436", usersWith200: "108", maxUserAmount: "840", avgUserAmount: "192", medianUserAmount: "160", avgPlatformsPerUser: "5.12" }, stats: parseRawCSV(RAW_DATA_WEEK_4) },
     "5": { cutoff: "2026年5月11日00:30", overview: { totalUsers: "1,359", usersWith200: "108", maxUserAmount: "760", avgUserAmount: "202", medianUserAmount: "180", avgPlatformsPerUser: "5.24" }, stats: parseRawCSV(RAW_DATA_WEEK_5) }
 };
@@ -1285,21 +1296,30 @@ allDOMElements.recordsList.addEventListener('click', async (e) => {
         const docId = card.dataset.id;
         const record = records.find(r => r.id === docId);
         if (record) {
+            var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            var isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+            var isAndroid = /android/i.test(userAgent);
+
             if (record.platform === 'UePay') {
-                var userAgent = navigator.userAgent || navigator.vendor || window.opera;
                 var iosScheme = 'uepay://'; 
                 var androidScheme = APP_SCHEMES['UePay'];
                 var appStoreUrl = 'https://apps.apple.com/hk/app/uepay/id1262244387';
                 var googlePlayUrl = 'https://play.google.com/store/apps/details?id=com.foorich.uepay';
 
-                if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                if (isIOS) {
                     window.location.href = iosScheme;
                     setTimeout(function() { if (!document.hidden) window.location.href = appStoreUrl; }, 2000);
-                } else if (/android/i.test(userAgent)) {
+                } else if (isAndroid) {
                     window.location.href = androidScheme;
                     setTimeout(function() { if (!document.hidden) window.location.href = googlePlayUrl; }, 2000);
                 } else {
                     window.location.href = appStoreUrl;
+                }
+            } else if (record.platform === 'GFB') {
+                if (isIOS) {
+                    window.location.href = 'cgbaom://';
+                } else {
+                    window.location.href = APP_SCHEMES['GFB'];
                 }
             } else if (APP_SCHEMES[record.platform]) {
                 window.location.href = APP_SCHEMES[record.platform];
