@@ -86,7 +86,7 @@ const THEMES = {
     green: { primary: '#388E3C', title: '#4CAF50', summaryBg: '#E8F5E9', summaryBorder: '#4CAF50', summaryText: '#2E7D32' },
 };
 
-const RAW_DATA_WEEK_1 = `Alipay,0.4579,0.2173,0.2255,0.0805,0.0139,0.0049,39.23,816,0.5181,0.1043\nBOC,0.1158,0.3688,0.3318,0.1590,0.0163,0.0083,64.69,1287,0.8171,0.2713\nGFB,0.3386,0.3047,0.2240,0.1008,0.0287,0.0032,48.22,314,0.1994,0.0493\nICBC,0.2627,0.4018,0.2422,0.0732,0.0173,0.0029,44.48,925,0.5873,0.1341\nLuso,0.3954,0.3175,0.2085,0.0665,0.0089,0.0032,36.58,526,0.334,0.0627\nMPay,0.2319,0.3793,0.2734,0.0914,0.0178,0.0062,50.56,1291,0.8197,0.2127\nTFB,0.3716,0.2474,0.2568,0.0996,0.0173,0.0073,47.36,636,0.4038,0.0982\nUePay,0.3597,0.3592,0.2369,0.0281,0.0109,0.0052,35.58,581,0.3689,0.0674`;
+const RAW_DATA_WEEK_1 = `Alipay,0.458,0.217,0.226,0.081,0.014,0.005,39.23,816,0.518,0.104\nBOC,0.116,0.369,0.332,0.159,0.016,0.008,64.69,1287,0.817,0.271\nGFB,0.339,0.305,0.224,0.101,0.029,0.003,48.22,314,0.199,0.049\nICBC,0.263,0.402,0.242,0.073,0.017,0.003,44.48,925,0.587,0.134\nLuso,0.395,0.318,0.209,0.067,0.009,0.003,36.58,526,0.334,0.063\nMPay,0.232,0.379,0.273,0.091,0.018,0.006,50.56,1291,0.820,0.213\nTFB,0.372,0.247,0.257,0.100,0.017,0.007,47.36,636,0.404,0.098\nUePay,0.360,0.359,0.237,0.028,0.011,0.005,35.58,581,0.369,0.067`;
 const RAW_DATA_WEEK_2 = `Alipay,0.410,0.281,0.200,0.098,0.010,0.001,38.90,935,0.618,0.119\nBOC,0.224,0.399,0.299,0.066,0.008,0.003,43.90,1325,0.876,0.191\nGFB,0.338,0.281,0.244,0.108,0.022,0.007,50.20,409,0.271,0.067\nICBC,0.301,0.376,0.242,0.061,0.016,0.003,41.60,1075,0.711,0.147\nLuso,0.500,0.258,0.190,0.044,0.006,0.001,28.49,669,0.442,0.063\nMPay,0.373,0.208,0.293,0.105,0.014,0.008,48.59,1317,0.871,0.210\nTFB,0.367,0.264,0.246,0.096,0.017,0.011,48.55,771,0.510,0.123\nUePay,0.404,0.353,0.193,0.028,0.016,0.007,35.17,688,0.455,0.079`;
 const RAW_DATA_WEEK_3 = `Alipay,0.404,0.370,0.172,0.045,0.007,0.002,31.47,994,0.685,0.116\nBOC,0.148,0.568,0.223,0.052,0.006,0.003,41.49,1327,0.914,0.203\nGFB,0.333,0.393,0.160,0.092,0.015,0.008,44.28,437,0.301,0.072\nICBC,0.307,0.497,0.149,0.041,0.003,0.003,32.61,1117,0.769,0.135\nLuso,0.472,0.350,0.129,0.044,0.005,0.000,26.58,734,0.506,0.072\nMPay,0.208,0.535,0.198,0.051,0.006,0.003,39.03,1360,0.937,0.196\nTFB,0.337,0.398,0.182,0.067,0.010,0.007,40.17,805,0.554,0.119\nUePay,0.426,0.364,0.161,0.031,0.012,0.005,32.13,733,0.505,0.087`;
 const RAW_DATA_WEEK_4 = `Alipay,0.437,0.358,0.153,0.045,0.006,0.001,29.15,971,0.676,0.103\nBOC,0.119,0.599,0.213,0.059,0.006,0.004,43.80,1312,0.914,0.209\nGFB,0.339,0.374,0.183,0.086,0.011,0.005,41.77,440,0.306,0.067\nICBC,0.294,0.544,0.130,0.026,0.004,0.002,30.33,1107,0.771,0.122\nLuso,0.496,0.334,0.130,0.035,0.002,0.003,25.61,711,0.495,0.066\nMPay,0.210,0.508,0.186,0.074,0.011,0.011,47.41,1334,0.929,0.230\nTFB,0.294,0.409,0.193,0.087,0.008,0.009,44.39,782,0.545,0.126\nUePay,0.455,0.354,0.148,0.028,0.010,0.006,30.19,700,0.487,0.077`;
@@ -110,9 +110,9 @@ function parseRawCSV(csvText) {
 }
 
 const GLOBAL_STATS_DATA = {
-    "1": { cutoff: "2026年4月13日0時", overview: { totalUsers: "1,575", usersWith200: "89", maxUserAmount: "950", avgUserAmount: "195", medianUserAmount: "160", avgPlatformsPerUser: "4" }, stats: parseRawCSV(RAW_DATA_WEEK_1) },
-    "2": { cutoff: "2026年4月20日0時", overview: { totalUsers: "1,512", usersWith200: "98", maxUserAmount: "1,010", avgUserAmount: "201", medianUserAmount: "170", avgPlatformsPerUser: "4.75" }, stats: parseRawCSV(RAW_DATA_WEEK_2) },
-    "3": { cutoff: "2026年4月27日0時", overview: { totalUsers: "1,452", usersWith200: "75", maxUserAmount: "690", avgUserAmount: "186", medianUserAmount: "160", avgPlatformsPerUser: "4.7" }, stats: parseRawCSV(RAW_DATA_WEEK_3) },
+    "1": { cutoff: "2026年4月13日00:00", overview: { totalUsers: "1,575", usersWith200: "89", maxUserAmount: "950", avgUserAmount: "195", medianUserAmount: "160", avgPlatformsPerUser: "4" }, stats: parseRawCSV(RAW_DATA_WEEK_1) },
+    "2": { cutoff: "2026年4月20日00:00", overview: { totalUsers: "1,512", usersWith200: "98", maxUserAmount: "1,010", avgUserAmount: "201", medianUserAmount: "170", avgPlatformsPerUser: "4.75" }, stats: parseRawCSV(RAW_DATA_WEEK_2) },
+    "3": { cutoff: "2026年4月27日00:00", overview: { totalUsers: "1,452", usersWith200: "75", maxUserAmount: "690", avgUserAmount: "186", medianUserAmount: "160", avgPlatformsPerUser: "4.7" }, stats: parseRawCSV(RAW_DATA_WEEK_3) },
     "4": { cutoff: "2026年5月7日23:00", overview: { totalUsers: "1,436", usersWith200: "108", maxUserAmount: "840", avgUserAmount: "192", medianUserAmount: "160", avgPlatformsPerUser: "5.12" }, stats: parseRawCSV(RAW_DATA_WEEK_4) },
     "5": { cutoff: "2026年5月11日00:30", overview: { totalUsers: "1,359", usersWith200: "108", maxUserAmount: "760", avgUserAmount: "202", medianUserAmount: "180", avgPlatformsPerUser: "5.24" }, stats: parseRawCSV(RAW_DATA_WEEK_5) }
 };
@@ -1286,11 +1286,20 @@ allDOMElements.recordsList.addEventListener('click', async (e) => {
         const record = records.find(r => r.id === docId);
         if (record) {
             if (record.platform === 'UePay') {
-                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-                if (isIOS) {
-                    window.location.href = 'https://apps.apple.com/hk/app/uepay/id1262244387';
+                var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+                var iosScheme = 'uepay://'; 
+                var androidScheme = APP_SCHEMES['UePay'];
+                var appStoreUrl = 'https://apps.apple.com/hk/app/uepay/id1262244387';
+                var googlePlayUrl = 'https://play.google.com/store/apps/details?id=com.foorich.uepay';
+
+                if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                    window.location.href = iosScheme;
+                    setTimeout(function() { if (!document.hidden) window.location.href = appStoreUrl; }, 2000);
+                } else if (/android/i.test(userAgent)) {
+                    window.location.href = androidScheme;
+                    setTimeout(function() { if (!document.hidden) window.location.href = googlePlayUrl; }, 2000);
                 } else {
-                    window.location.href = APP_SCHEMES['UePay'];
+                    window.location.href = appStoreUrl;
                 }
             } else if (APP_SCHEMES[record.platform]) {
                 window.location.href = APP_SCHEMES[record.platform];
