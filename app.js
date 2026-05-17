@@ -1,3 +1,6 @@
+// 引入外部數據檔
+import { GLOBAL_STATS_DATA } from './data.js';
+
 // --- 網頁內建 Toast 通知系統 ---
 function showToast(title, messageLines) {
     const container = document.getElementById('toast-container');
@@ -134,37 +137,6 @@ const THEMES = {
     green: { primary: '#388E3C', title: '#4CAF50', summaryBg: '#E8F5E9', summaryBorder: '#4CAF50', summaryText: '#2E7D32' },
 };
 
-const RAW_DATA_WEEK_1 = `Alipay,0.458,0.217,0.226,0.081,0.014,0.005,39.23,816,0.518,0.104\nBOC,0.116,0.369,0.332,0.159,0.016,0.008,64.69,1287,0.817,0.271\nGFB,0.339,0.305,0.224,0.101,0.029,0.003,48.22,314,0.199,0.049\nICBC,0.263,0.402,0.242,0.073,0.017,0.003,44.48,925,0.587,0.134\nLuso,0.395,0.318,0.209,0.067,0.009,0.003,36.58,526,0.334,0.063\nMPay,0.232,0.379,0.273,0.091,0.018,0.006,50.56,1291,0.820,0.213\nTFB,0.372,0.247,0.257,0.100,0.017,0.007,47.36,636,0.404,0.098\nUePay,0.360,0.359,0.237,0.028,0.011,0.005,35.58,581,0.369,0.067`;
-const RAW_DATA_WEEK_2 = `Alipay,0.410,0.281,0.200,0.098,0.010,0.001,38.90,935,0.618,0.119\nBOC,0.224,0.399,0.299,0.066,0.008,0.003,43.90,1325,0.876,0.191\nGFB,0.338,0.281,0.244,0.108,0.022,0.007,50.20,409,0.271,0.067\nICBC,0.301,0.376,0.242,0.061,0.016,0.003,41.60,1075,0.711,0.147\nLuso,0.500,0.258,0.190,0.044,0.006,0.001,28.49,669,0.442,0.063\nMPay,0.373,0.208,0.293,0.105,0.014,0.008,48.59,1317,0.871,0.210\nTFB,0.367,0.264,0.246,0.096,0.017,0.011,48.55,771,0.510,0.123\nUePay,0.404,0.353,0.193,0.028,0.016,0.007,35.17,688,0.455,0.079`;
-const RAW_DATA_WEEK_3 = `Alipay,0.404,0.370,0.172,0.045,0.007,0.002,31.47,994,0.685,0.116\nBOC,0.148,0.568,0.223,0.052,0.006,0.003,41.49,1327,0.914,0.203\nGFB,0.333,0.393,0.160,0.092,0.015,0.008,44.28,437,0.301,0.072\nICBC,0.307,0.497,0.149,0.041,0.003,0.003,32.61,1117,0.769,0.135\nLuso,0.472,0.350,0.129,0.044,0.005,0.000,26.58,734,0.506,0.072\nMPay,0.208,0.535,0.198,0.051,0.006,0.003,39.03,1360,0.937,0.196\nTFB,0.337,0.398,0.182,0.067,0.010,0.007,40.17,805,0.554,0.119\nUePay,0.426,0.364,0.161,0.031,0.012,0.005,32.13,733,0.505,0.087`;
-const RAW_DATA_WEEK_4 = `Alipay,0.437,0.358,0.153,0.045,0.006,0.001,29.15,971,0.676,0.103\nBOC,0.119,0.599,0.213,0.059,0.006,0.004,43.80,1312,0.914,0.209\nGFB,0.339,0.374,0.183,0.086,0.011,0.005,41.77,440,0.306,0.067\nICBC,0.294,0.544,0.130,0.026,0.004,0.002,30.33,1107,0.771,0.122\nLuso,0.496,0.334,0.130,0.035,0.002,0.003,25.61,711,0.495,0.066\nMPay,0.210,0.508,0.186,0.074,0.011,0.011,47.41,1334,0.929,0.230\nTFB,0.294,0.409,0.193,0.087,0.008,0.009,44.39,782,0.545,0.126\nUePay,0.455,0.354,0.148,0.028,0.010,0.006,30.19,700,0.487,0.077`;
-const RAW_DATA_WEEK_5 = `Alipay,0.418,0.376,0.149,0.050,0.006,0.002,30.60,946,0.696,0.105\nBOC,0.151,0.556,0.213,0.067,0.009,0.004,44.67,1247,0.918,0.202\nGFB,0.357,0.381,0.154,0.079,0.021,0.009,43.92,421,0.310,0.067\nICBC,0.310,0.461,0.149,0.075,0.004,0.001,35.94,1061,0.781,0.139\nLuso,0.456,0.374,0.130,0.034,0.004,0.002,26.34,713,0.525,0.068\nMPay,0.154,0.503,0.241,0.091,0.006,0.004,47.55,1253,0.922,0.216\nTFB,0.309,0.409,0.189,0.071,0.014,0.009,43.44,784,0.577,0.124\nUePay,0.466,0.338,0.148,0.030,0.011,0.007,30.91,696,0.512,0.078`;
-
-function parseRawCSV(csvText) {
-    const lines = csvText.trim().split('\n');
-    const stats = {};
-    lines.forEach(line => {
-        const cols = line.split(/,|\t/).map(c => c.trim().replace(/"/g, ''));
-        const platform = cols[0];
-        if (PLATFORMS[platform]) {
-            stats[platform] = {
-                p0: parseFloat(cols[1]) || 0, p10: parseFloat(cols[2]) || 0, p20: parseFloat(cols[3]) || 0,
-                p50: parseFloat(cols[4]) || 0, p100: parseFloat(cols[5]) || 0, p200: parseFloat(cols[6]) || 0,
-                exp: parseFloat(cols[7]) || 0, draws: parseInt(cols[8]) || 0, userShare: parseFloat(cols[9]) || 0, amtShare: parseFloat(cols[10]) || 0
-            };
-        }
-    });
-    return stats;
-}
-
-const GLOBAL_STATS_DATA = {
-    "1": { cutoff: "2026年4月13日0時", overview: { totalUsers: "1,575", usersWith200: "89", maxUserAmount: "950", avgUserAmount: "195", medianUserAmount: "160", avgPlatformsPerUser: "4" }, stats: parseRawCSV(RAW_DATA_WEEK_1) },
-    "2": { cutoff: "2026年4月20日0時", overview: { totalUsers: "1,512", usersWith200: "98", maxUserAmount: "1,010", avgUserAmount: "201", medianUserAmount: "170", avgPlatformsPerUser: "4.75" }, stats: parseRawCSV(RAW_DATA_WEEK_2) },
-    "3": { cutoff: "2026年4月27日0時", overview: { totalUsers: "1,452", usersWith200: "75", maxUserAmount: "690", avgUserAmount: "186", medianUserAmount: "160", avgPlatformsPerUser: "4.7" }, stats: parseRawCSV(RAW_DATA_WEEK_3) },
-    "4": { cutoff: "2026年5月7日23:00", overview: { totalUsers: "1,436", usersWith200: "108", maxUserAmount: "840", avgUserAmount: "192", medianUserAmount: "160", avgPlatformsPerUser: "5.12" }, stats: parseRawCSV(RAW_DATA_WEEK_4) },
-    "5": { cutoff: "2026年5月11日00:30", overview: { totalUsers: "1,359", usersWith200: "108", maxUserAmount: "760", avgUserAmount: "202", medianUserAmount: "180", avgPlatformsPerUser: "5.24" }, stats: parseRawCSV(RAW_DATA_WEEK_5) }
-};
-
 let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
 
 // --- Firebase Lazy Loading 初始化 ---
@@ -196,7 +168,7 @@ const allDOMElements = {
     themeBtn: document.getElementById('themeBtn'), themeDialog: document.getElementById('themeDialog'), themeOptions: document.getElementById('theme-options'), darkModeSwitch: document.getElementById('darkModeSwitch'),
     alertDialog: document.getElementById('alertDialog'), alertTitle: document.getElementById('alertTitle'), alertMessage: document.getElementById('alertMessage'),
     confirmDialog: document.getElementById('confirmDialog'), confirmTitle: document.getElementById('confirmTitle'), confirmMessage: document.getElementById('confirmMessage'),
-    addFavoriteBtn: document.getElementById('addFavoriteBtn'), addToHomeScreenBtn: document.getElementById('addToHomeScreenBtn'), exportCsvBtn: document.getElementById('exportCsvBtn'), 
+    addFavoriteBtn: document.getElementById('addFavoriteBtn'), addToHomeScreenBtn: document.getElementById('addToHomeScreenBtn'), exportCsvBtn: document.getElementById('exportCsvBtn'),
     calculatorBtn: document.getElementById('calculatorBtn'), calculatorDialog: document.getElementById('calculatorDialog'), spendingAmountInput: document.getElementById('spendingAmountInput'), calculatorResult: document.getElementById('calculatorResult'), calculateBtn: document.getElementById('calculateBtn'), markAsUsedBtn: document.getElementById('markAsUsedBtn'), cancelCalculatorBtn: document.getElementById('cancelCalculator'), statusAnnouncer: document.getElementById('status-announcer'),
 };
 
@@ -207,7 +179,6 @@ function showLoadingSkeleton() {
     recordsList.innerHTML = ''; recordsList.setAttribute('aria-busy', 'true');
     for (let i = 0; i < 6; i++) {
         const card = document.createElement('div');
-        // 加入更緊湊高度的 Skeleton
         card.className = 'p-3 sm:p-4 rounded-[1.5rem] border shadow-sm bg-white/60 dark:bg-[#1c2128]/60 backdrop-blur-md flex flex-row items-center gap-3 sm:gap-4 border-white/40 dark:border-gray-700/40';
         card.innerHTML = `
             <div class="flex flex-row items-center w-[140px] sm:w-[170px] flex-shrink-0 gap-2 overflow-hidden">
@@ -1415,37 +1386,9 @@ allDOMElements.exportCsvBtn.addEventListener('click', () => {
     exportToCsv(`社區消費獎賞2026_${timestamp}_${currentUserId}.csv`, rows);
 });
 
-allDOMElements.downloadStatsBtn.addEventListener('click', async () => {
-    const charts = [ { chart: platformTotalChart, title: '各平台累計金額' }, { chart: couponCountChart, title: '各面額券數統計' }, { chart: platformWeeklyTotalChart, title: '各平台每周趨勢' }, { chart: weeklyTotalChart, title: '每周總額趨勢' } ].filter(item => item.chart);
-    if (charts.length === 0) { showAlertDialog('沒有圖表可以下載。'); return; }
-
-    const PADDING = 50, TITLE_HEIGHT = 60, SPACING = 40, canvasWidth = 1200; let totalHeight = PADDING;
-    const chartItems = charts.map(item => {
-        const originalCanvas = item.chart.canvas; const aspectRatio = originalCanvas.height / originalCanvas.width; const height = canvasWidth * aspectRatio; const image = originalCanvas.toDataURL('image/png'); return { ...item, image, height };
-    });
-    totalHeight += chartItems.reduce((acc, item) => acc + item.height + TITLE_HEIGHT + SPACING, 0) - SPACING + PADDING;
-
-    const mergedCanvas = document.createElement('canvas'); mergedCanvas.width = canvasWidth + PADDING * 2; mergedCanvas.height = totalHeight;
-    const ctx = mergedCanvas.getContext('2d'); ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#0d1117' : '#ffffff'; ctx.fillRect(0, 0, mergedCanvas.width, mergedCanvas.height);
-
-    let currentY = PADDING;
-    const drawPromises = chartItems.map(item => new Promise(resolve => { const img = new Image(); img.onload = () => resolve({ img, item }); img.src = item.image; }));
-
-    Promise.all(drawPromises).then(loadedItems => {
-        const orderedItems = charts.map(chartInfo => loadedItems.find(loaded => loaded.item.title === chartInfo.title));
-        orderedItems.forEach(({ img, item }) => {
-            ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#c9d1d9' : '#1f2937'; ctx.font = 'bold 28px "Noto Sans TC", sans-serif'; ctx.textAlign = 'center';
-            ctx.fillText(item.title, mergedCanvas.width / 2, currentY + TITLE_HEIGHT / 2); currentY += TITLE_HEIGHT;
-            ctx.drawImage(img, PADDING, currentY, canvasWidth, item.height); currentY += item.height + SPACING;
-        });
-        const link = document.createElement('a'); const now = new Date(); const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
-        link.download = `統計圖表_${timestamp}.png`; link.href = mergedCanvas.toDataURL('image/png'); link.click();
-    });
-});
-
 allDOMElements.disclaimerLink.addEventListener('click', (e) => {
     e.preventDefault();
-    const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存或處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀或洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即表示您已閱讀、理解並同意以上所有條款。";
+    const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存或處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀或洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即 নিকট表示您已閱讀、理解並同意以上所有條款。";
     showAlertDialog(disclaimerText, "免責聲明");
 });
 
