@@ -110,18 +110,6 @@ html.dark .record-card {
 .tabular-nums { font-variant-numeric: tabular-nums; }
 .summary-divider::after { content: ''; position: absolute; right: 0; top: 25%; height: 50%; width: 1px; background-color: var(--theme-color-summary-border); opacity: 0.2; }
 
-/* --- 滑動刪除與飛入動畫樣式 --- */
-.slide-in-left {
-    opacity: 0;
-    transform: translateX(-40px);
-    will-change: opacity, transform;
-}
-.slide-in-left.is-visible {
-    opacity: 1;
-    transform: translateX(0);
-    transition: opacity 0.5s ease-out, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
 .swipe-container { position: relative; overflow: hidden; border-radius: 1.5rem; transform: translateZ(0); }
 .swipe-action-bg { position: absolute; right: 0; top: 0; bottom: 0; width: 100px; background-color: #ef4444; color: white; display: flex; align-items: center; justify-content: flex-end; padding-right: 1.25rem; font-weight: bold; border-radius: 1.5rem; z-index: 1; cursor: pointer; opacity: 0; transition: opacity 0.2s ease; }
 
