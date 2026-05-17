@@ -1,4 +1,3 @@
-// 引入外部數據檔
 import { GLOBAL_STATS_DATA } from './data.js';
 
 // --- 網頁內建 Toast 通知系統 ---
@@ -168,7 +167,7 @@ const allDOMElements = {
     themeBtn: document.getElementById('themeBtn'), themeDialog: document.getElementById('themeDialog'), themeOptions: document.getElementById('theme-options'), darkModeSwitch: document.getElementById('darkModeSwitch'),
     alertDialog: document.getElementById('alertDialog'), alertTitle: document.getElementById('alertTitle'), alertMessage: document.getElementById('alertMessage'),
     confirmDialog: document.getElementById('confirmDialog'), confirmTitle: document.getElementById('confirmTitle'), confirmMessage: document.getElementById('confirmMessage'),
-    addFavoriteBtn: document.getElementById('addFavoriteBtn'), addToHomeScreenBtn: document.getElementById('addToHomeScreenBtn'), exportCsvBtn: document.getElementById('exportCsvBtn'),
+    addFavoriteBtn: document.getElementById('addFavoriteBtn'), addToHomeScreenBtn: document.getElementById('addToHomeScreenBtn'), exportCsvBtn: document.getElementById('exportCsvBtn'), 
     calculatorBtn: document.getElementById('calculatorBtn'), calculatorDialog: document.getElementById('calculatorDialog'), spendingAmountInput: document.getElementById('spendingAmountInput'), calculatorResult: document.getElementById('calculatorResult'), calculateBtn: document.getElementById('calculateBtn'), markAsUsedBtn: document.getElementById('markAsUsedBtn'), cancelCalculatorBtn: document.getElementById('cancelCalculator'), statusAnnouncer: document.getElementById('status-announcer'),
 };
 
@@ -179,6 +178,7 @@ function showLoadingSkeleton() {
     recordsList.innerHTML = ''; recordsList.setAttribute('aria-busy', 'true');
     for (let i = 0; i < 6; i++) {
         const card = document.createElement('div');
+        // 加入更緊湊高度的 Skeleton
         card.className = 'p-3 sm:p-4 rounded-[1.5rem] border shadow-sm bg-white/60 dark:bg-[#1c2128]/60 backdrop-blur-md flex flex-row items-center gap-3 sm:gap-4 border-white/40 dark:border-gray-700/40';
         card.innerHTML = `
             <div class="flex flex-row items-center w-[140px] sm:w-[170px] flex-shrink-0 gap-2 overflow-hidden">
@@ -360,7 +360,7 @@ function renderRecords() {
     // 空狀態引導按鈕
     if (processedRecords.length === 0) { 
         recordsList.innerHTML = `
-            <div class="col-span-full flex flex-col items-center justify-center py-12 gap-3 stagger-card">
+            <div class="col-span-full flex flex-col items-center justify-center py-12 gap-3 slide-in-left is-visible">
                 <div class="w-16 h-16 rounded-full bg-white dark:bg-[#1c2128] border dark:border-gray-700 shadow-sm flex items-center justify-center text-gray-400">
                     <span class="material-symbols-outlined text-3xl">inbox</span>
                 </div>
@@ -385,8 +385,7 @@ function renderRecords() {
         const platformColor = PLATFORM_COLORS[record.platform] || 'var(--color-border)';
 
         const cardContainer = document.createElement('div');
-        cardContainer.className = `swipe-container stagger-card`;
-        cardContainer.style.animationDelay = `${index * 0.05}s`;
+        cardContainer.className = `swipe-container slide-in-left`; // 更改為 IntersectionObserver 使用的 class
         
         const couponsData = [1, 2, 3].map(i => {
             const key = `draw${i}`;
@@ -465,6 +464,28 @@ function renderRecords() {
 
         recordsList.appendChild(cardContainer);
     });
+
+    // 飛入動畫 (IntersectionObserver)
+    const cards = recordsList.querySelectorAll('.slide-in-left');
+    let delayCounter = 0;
+    let delayResetTimer;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // 利用 JS 給予連續進入畫面的卡片一個微小的階梯延遲
+                entry.target.style.transitionDelay = `${delayCounter * 0.05}s`;
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+                
+                delayCounter++;
+                clearTimeout(delayResetTimer);
+                delayResetTimer = setTimeout(() => { delayCounter = 0; }, 100);
+            }
+        });
+    }, { threshold: 0.05, rootMargin: '0px 0px 50px 0px' });
+
+    cards.forEach(card => observer.observe(card));
 }
 
 function updateWeeklySummary() {
@@ -922,14 +943,44 @@ function renderCharts(week) {
         options: { ...chartTheme, responsive: true, maintainAspectRatio: false, cutout: '40%', layout: { padding: 10 }, scales: { x: { display: false }, y: { display: false } }, plugins: { ...chartTheme.plugins, legend: { display: false }, datalabels: { ...chartTheme.plugins.datalabels, formatter: (v, ctx) => { const total = ctx.chart.getDatasetMeta(0).total; if (total === 0) return ''; const percent = v / total; if (percent < 0.04) return ''; const fullLabel = ctx.chart.data.labels[ctx.dataIndex]; const shortLabel = fullLabel.replace(/^[a-zA-Z]+/g, '').trim() || fullLabel; return shortLabel + '\n' + (percent * 100).toFixed(0) + '%'; }, color: '#fff', font: { weight: 'bold', size: 12, family: "'Noto Sans TC', sans-serif" }, textAlign: 'center' } } }
     });
 
+    // 改為堆疊面積圖
     if (platformWeeklyTotalChart) platformWeeklyTotalChart.destroy();
     const allWeeks = [...new Set(records.map(r => r.week))].sort((a,b) => a-b);
     const platformsWithData = [...new Set(records.map(r => r.platform))];
     const platformWeeklyDatasets = platformsWithData.map(platform => {
         const data = allWeeks.map(week => records.filter(r => r.week === week && r.platform === platform).reduce((sum, r) => sum + (parseInt(r.draw1) || 0) + (parseInt(r.draw2) || 0) + (parseInt(r.draw3) || 0), 0));
-        return { label: PLATFORMS[platform] || platform, data: data, borderColor: PLATFORM_COLORS[platform] || '#cccccc', backgroundColor: 'transparent', fill: false, tension: 0.2, pointBackgroundColor: PLATFORM_COLORS[platform] || '#cccccc', pointHoverRadius: 6, pointRadius: 4, borderWidth: 2 };
+        return { 
+            label: PLATFORMS[platform] || platform, 
+            data: data, 
+            borderColor: PLATFORM_COLORS[platform] || '#cccccc', 
+            backgroundColor: hexToRgbA(PLATFORM_COLORS[platform] || '#cccccc', 0.6), 
+            fill: true, 
+            tension: 0.3, 
+            pointBackgroundColor: PLATFORM_COLORS[platform] || '#cccccc', 
+            pointHoverRadius: 6, 
+            pointRadius: 0, 
+            borderWidth: 2 
+        };
     });
-    platformWeeklyTotalChart = new Chart(document.getElementById('platformWeeklyTotalChart'), { type: 'line', data: { labels: allWeeks.map(w => `第 ${w} 周`), datasets: platformWeeklyDatasets }, options: { ...chartTheme, responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true }, x: {} }, plugins: { ...chartTheme.plugins, legend: { position: 'top', labels: { boxWidth: 12, padding: 15 } }, datalabels: { display: false } } } });
+    
+    platformWeeklyTotalChart = new Chart(document.getElementById('platformWeeklyTotalChart'), { 
+        type: 'line', 
+        data: { labels: allWeeks.map(w => `第 ${w} 周`), datasets: platformWeeklyDatasets }, 
+        options: { 
+            ...chartTheme, 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            scales: { 
+                y: { beginAtZero: true, stacked: true }, 
+                x: {} 
+            }, 
+            plugins: { 
+                ...chartTheme.plugins, 
+                legend: { position: 'top', labels: { boxWidth: 12, padding: 15 } }, 
+                datalabels: { display: false } 
+            } 
+        } 
+    });
 
     if (weeklyTotalChart) weeklyTotalChart.destroy();
     const weeklyTotals = {};
@@ -1068,14 +1119,14 @@ allDOMElements.calculatorBtn.addEventListener('click', () => {
     });
 
     const makeupSelect = document.getElementById('makeupPlatformSelect');
-    makeupSelect.innerHTML = '';
+    // 加入自動選項
+    makeupSelect.innerHTML = '<md-select-option value="auto" selected>自動 (消費最多的平台)</md-select-option>';
     if (availablePlatforms.size === 0) {
-        makeupSelect.innerHTML = '<md-select-option value="" disabled selected>本周已無可用平台</md-select-option>';
         makeupSelect.disabled = true;
     } else {
         makeupSelect.disabled = false;
-        Array.from(availablePlatforms).sort().forEach((p, index) => {
-            makeupSelect.innerHTML += `<md-select-option value="${p}" ${index === 0 ? 'selected' : ''}>${PLATFORMS[p] || p}</md-select-option>`;
+        Array.from(availablePlatforms).sort().forEach((p) => {
+            makeupSelect.innerHTML += `<md-select-option value="${p}">${PLATFORMS[p] || p}</md-select-option>`;
         });
     }
     allDOMElements.calculatorDialog.show();
@@ -1094,11 +1145,15 @@ allDOMElements.calculateBtn.addEventListener('click', (event) => {
     const strategy = strategyNode ? strategyNode.value : 'large';
 
     const availableCoupons = [];
+    const availablePlatformsSet = new Set();
     weeklyRecords.forEach(record => {
         const usedCoupons = record.usedCoupons || {};
         ['draw1', 'draw2', 'draw3'].forEach(drawKey => {
             const value = parseInt(record[drawKey]);
-            if (value > 0 && !usedCoupons[drawKey]) availableCoupons.push({ recordId: record.id, platform: record.platform, value: value, couponKey: drawKey });
+            if (value > 0 && !usedCoupons[drawKey]) {
+                availableCoupons.push({ recordId: record.id, platform: record.platform, value: value, couponKey: drawKey });
+                availablePlatformsSet.add(record.platform);
+            }
         });
     });
 
@@ -1118,7 +1173,23 @@ allDOMElements.calculateBtn.addEventListener('click', (event) => {
     let totalRequiredSpend = 0;
     for (const platform in groupedByPlatform) { totalRequiredSpend += groupedByPlatform[platform].reduce((sum, val) => sum + val * 3, 0); }
     const remainingAmount = targetAmount - totalRequiredSpend;
-    const makeupPlatform = document.getElementById('makeupPlatformSelect').value;
+    
+    let makeupPlatform = document.getElementById('makeupPlatformSelect').value;
+
+    // 智能補底邏輯：如果選擇「自動」，找出方案中消費最多的平台
+    if (remainingAmount > 0 && makeupPlatform === 'auto') {
+        let maxSpend = -1;
+        let targetPlatform = null;
+        for (const p in groupedByPlatform) {
+            const spend = groupedByPlatform[p].reduce((sum, val) => sum + val * 3, 0);
+            if (spend > maxSpend) {
+                maxSpend = spend;
+                targetPlatform = p;
+            }
+        }
+        // 如果方案剛好為空(理論上不會發生，因為前面已擋掉)，退而求其次選任何一個可用平台
+        makeupPlatform = targetPlatform || Array.from(availablePlatformsSet)[0];
+    }
 
     if (remainingAmount > 0 && makeupPlatform) { if (!groupedByPlatform[makeupPlatform]) { groupedByPlatform[makeupPlatform] = []; } }
     let notificationTextLines = [];
@@ -1179,7 +1250,6 @@ allDOMElements.calculateBtn.addEventListener('click', (event) => {
     }
 });
 
-// 新增：處理用券計算機結果面板中的點擊事件（跳轉 APP）
 allDOMElements.calculatorResult.addEventListener('click', (e) => {
     const jumpBtn = e.target.closest('.calc-platform-jump');
     if (jumpBtn) {
@@ -1388,7 +1458,7 @@ allDOMElements.exportCsvBtn.addEventListener('click', () => {
 
 allDOMElements.disclaimerLink.addEventListener('click', (e) => {
     e.preventDefault();
-    const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存或處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀或洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即 নিকট表示您已閱讀、理解並同意以上所有條款。";
+    const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存或處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀或洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即表示您已閱讀、理解並同意以上所有條款。";
     showAlertDialog(disclaimerText, "免責聲明");
 });
 
@@ -1402,7 +1472,6 @@ async function initializeAppFlow() {
     updateTimeInfo(); initializeEntryWeekSelect(); initializeAdvancedToggle(); initializeAuthToggle();
     initRecordPanelUI(); 
     
-    // 將原本會阻塞的 Firebase 初始化，放入 requestIdleCallback 延遲執行，讓 UI 先秒開
     if (window.requestIdleCallback) {
         requestIdleCallback(lazyLoadFirebase);
     } else {
