@@ -360,7 +360,7 @@ function renderRecords() {
     // 空狀態引導按鈕
     if (processedRecords.length === 0) { 
         recordsList.innerHTML = `
-            <div class="col-span-full flex flex-col items-center justify-center py-12 gap-3 slide-in-left is-visible">
+            <div class="col-span-full flex flex-col items-center justify-center py-12 gap-3">
                 <div class="w-16 h-16 rounded-full bg-white dark:bg-[#1c2128] border dark:border-gray-700 shadow-sm flex items-center justify-center text-gray-400">
                     <span class="material-symbols-outlined text-3xl">inbox</span>
                 </div>
@@ -385,7 +385,7 @@ function renderRecords() {
         const platformColor = PLATFORM_COLORS[record.platform] || 'var(--color-border)';
 
         const cardContainer = document.createElement('div');
-        cardContainer.className = `swipe-container slide-in-left`; // 更改為 IntersectionObserver 使用的 class
+        cardContainer.className = `swipe-container`;
         
         const couponsData = [1, 2, 3].map(i => {
             const key = `draw${i}`;
@@ -464,28 +464,6 @@ function renderRecords() {
 
         recordsList.appendChild(cardContainer);
     });
-
-    // 飛入動畫 (IntersectionObserver)
-    const cards = recordsList.querySelectorAll('.slide-in-left');
-    let delayCounter = 0;
-    let delayResetTimer;
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                // 利用 JS 給予連續進入畫面的卡片一個微小的階梯延遲
-                entry.target.style.transitionDelay = `${delayCounter * 0.05}s`;
-                entry.target.classList.add('is-visible');
-                observer.unobserve(entry.target);
-                
-                delayCounter++;
-                clearTimeout(delayResetTimer);
-                delayResetTimer = setTimeout(() => { delayCounter = 0; }, 100);
-            }
-        });
-    }, { threshold: 0.05, rootMargin: '0px 0px 50px 0px' });
-
-    cards.forEach(card => observer.observe(card));
 }
 
 function updateWeeklySummary() {
@@ -1119,16 +1097,19 @@ allDOMElements.calculatorBtn.addEventListener('click', () => {
     });
 
     const makeupSelect = document.getElementById('makeupPlatformSelect');
-    // 加入自動選項
     makeupSelect.innerHTML = '<md-select-option value="auto" selected>自動 (消費最多的平台)</md-select-option>';
     if (availablePlatforms.size === 0) {
         makeupSelect.disabled = true;
     } else {
         makeupSelect.disabled = false;
-        Array.from(availablePlatforms).sort().forEach((p) => {
+        Array.from(availablePlatforms).sort().forEach((p, index) => {
             makeupSelect.innerHTML += `<md-select-option value="${p}">${PLATFORMS[p] || p}</md-select-option>`;
         });
     }
+    
+    // 強制設定選項，解決 md-select 的非同步取值問題
+    setTimeout(() => { makeupSelect.value = 'auto'; }, 10);
+    
     allDOMElements.calculatorDialog.show();
 });
 
@@ -1174,7 +1155,8 @@ allDOMElements.calculateBtn.addEventListener('click', (event) => {
     for (const platform in groupedByPlatform) { totalRequiredSpend += groupedByPlatform[platform].reduce((sum, val) => sum + val * 3, 0); }
     const remainingAmount = targetAmount - totalRequiredSpend;
     
-    let makeupPlatform = document.getElementById('makeupPlatformSelect').value;
+    // 取不到值時強制回退為自動
+    let makeupPlatform = document.getElementById('makeupPlatformSelect').value || 'auto';
 
     // 智能補底邏輯：如果選擇「自動」，找出方案中消費最多的平台
     if (remainingAmount > 0 && makeupPlatform === 'auto') {
@@ -1187,7 +1169,7 @@ allDOMElements.calculateBtn.addEventListener('click', (event) => {
                 targetPlatform = p;
             }
         }
-        // 如果方案剛好為空(理論上不會發生，因為前面已擋掉)，退而求其次選任何一個可用平台
+        // 如果方案剛好為空，退而求其次選任何一個可用平台
         makeupPlatform = targetPlatform || Array.from(availablePlatformsSet)[0];
     }
 
