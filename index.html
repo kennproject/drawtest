@@ -283,7 +283,6 @@
         </div>
     </div>
 
-    <!-- Dialogs -->
     <md-dialog id="alertDialog" role="alertdialog" aria-labelledby="alertTitle" aria-describedby="alertMessage"><div slot="headline" id="alertTitle" class="font-bold"></div><form slot="content" id="alertDialogForm" method="dialog"><p id="alertMessage" class="text-sm sm:text-base leading-relaxed"></p></form><div slot="actions"><md-text-button form="alertDialogForm">確定</md-text-button></div></md-dialog>
     <md-dialog id="confirmDialog" role="dialog" aria-labelledby="confirmTitle" aria-describedby="confirmMessage"><div slot="headline" id="confirmTitle" class="font-bold"></div><form slot="content" id="confirmDialogForm" method="dialog"><p id="confirmMessage" class="text-sm sm:text-base leading-relaxed"></p></form><div slot="actions"><md-text-button form="confirmDialogForm" value="cancel">取消</md-text-button><md-filled-button form="confirmDialogForm" value="confirm">確定</md-filled-button></div></md-dialog>
     <md-dialog id="settingsDialog" role="dialog" aria-labelledby="settingsDialogTitle"><div slot="headline" id="settingsDialogTitle" class="font-bold">平台顯示設定</div><form slot="content" id="settingsDialogForm"><div id="platformSettings" class="grid grid-cols-2 gap-4 mt-2"></div></form><div slot="actions"><md-text-button id="cancelSettings">取消</md-text-button><md-filled-button id="saveSettings">儲存</md-filled-button></div></md-dialog>
@@ -301,7 +300,6 @@
         </form>
     </md-dialog>
     
-    <!-- 全網大數據 Dialog -->
     <md-dialog id="globalStatsDialog" class="w-full max-w-[95vw] lg:max-w-7xl" role="dialog" aria-labelledby="globalStatsDialogTitle">
         <div slot="headline" class="flex flex-col sm:flex-row sm:justify-between sm:items-start sm:items-center gap-4 w-full" id="globalStatsDialogTitle">
             <div class="flex flex-col gap-1">
@@ -438,7 +436,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2 sm:border-l sm:pl-3 border-gray-300 dark:border-gray-600">
-                    <span class="text-xs font-bold opacity-80 whitespace-nowrap" style="color: var(--color-text-primary);">補底平台：</span>
+                    <span class="text-xs font-bold opacity-80 whitespace-nowrap" style="color: var(--color-text-primary);">補底：</span>
                     <md-outlined-select id="makeupPlatformSelect" class="flex-1 w-full min-w-0"></md-outlined-select>
                 </div>
             </div>
