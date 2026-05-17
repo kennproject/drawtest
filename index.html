@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>社區消費大獎賞2026記錄平台</title>
+    <title>社區消費大獎賞2026記錄平台V12</title>
     
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -283,6 +283,7 @@
         </div>
     </div>
 
+    <!-- Dialogs -->
     <md-dialog id="alertDialog" role="alertdialog" aria-labelledby="alertTitle" aria-describedby="alertMessage"><div slot="headline" id="alertTitle" class="font-bold"></div><form slot="content" id="alertDialogForm" method="dialog"><p id="alertMessage" class="text-sm sm:text-base leading-relaxed"></p></form><div slot="actions"><md-text-button form="alertDialogForm">確定</md-text-button></div></md-dialog>
     <md-dialog id="confirmDialog" role="dialog" aria-labelledby="confirmTitle" aria-describedby="confirmMessage"><div slot="headline" id="confirmTitle" class="font-bold"></div><form slot="content" id="confirmDialogForm" method="dialog"><p id="confirmMessage" class="text-sm sm:text-base leading-relaxed"></p></form><div slot="actions"><md-text-button form="confirmDialogForm" value="cancel">取消</md-text-button><md-filled-button form="confirmDialogForm" value="confirm">確定</md-filled-button></div></md-dialog>
     <md-dialog id="settingsDialog" role="dialog" aria-labelledby="settingsDialogTitle"><div slot="headline" id="settingsDialogTitle" class="font-bold">平台顯示設定</div><form slot="content" id="settingsDialogForm"><div id="platformSettings" class="grid grid-cols-2 gap-4 mt-2"></div></form><div slot="actions"><md-text-button id="cancelSettings">取消</md-text-button><md-filled-button id="saveSettings">儲存</md-filled-button></div></md-dialog>
@@ -300,6 +301,7 @@
         </form>
     </md-dialog>
     
+    <!-- 全網大數據 Dialog -->
     <md-dialog id="globalStatsDialog" class="w-full max-w-[95vw] lg:max-w-7xl" role="dialog" aria-labelledby="globalStatsDialogTitle">
         <div slot="headline" class="flex flex-col sm:flex-row sm:justify-between sm:items-start sm:items-center gap-4 w-full" id="globalStatsDialogTitle">
             <div class="flex flex-col gap-1">
@@ -411,37 +413,38 @@
         </div>
     </md-dialog>
     
-    <md-dialog id="calculatorDialog" role="dialog" aria-labelledby="calculatorDialogTitle" style="--md-dialog-container-max-width: 768px; width: 95vw;">
+    <!-- 優化：彈窗放大、移除結果區塊的內嵌捲軸 -->
+    <md-dialog id="calculatorDialog" role="dialog" aria-labelledby="calculatorDialogTitle" style="--md-dialog-container-max-width: 800px; width: 95vw;">
         <div slot="headline" id="calculatorDialogTitle" class="font-bold flex items-center gap-2">
             <span class="material-symbols-outlined text-[24px]">calculate</span> 用券計數機
         </div>
-        <form slot="content" id="calculatorDialogForm" class="flex flex-col gap-3 mt-2">
-            <div class="flex flex-row items-center gap-2">
+        <form slot="content" id="calculatorDialogForm" class="flex flex-col gap-4 mt-2">
+            <div class="flex flex-row items-center gap-3">
                 <md-outlined-text-field id="spendingAmountInput" label="欲消費金額 (MOP)" type="number" inputmode="decimal" required class="flex-grow tabular-nums min-w-0"></md-outlined-text-field>
-                <md-filled-button id="calculateBtn" class="flex-shrink-0 whitespace-nowrap h-12">計算</md-filled-button>
+                <md-filled-button id="calculateBtn" class="flex-shrink-0 whitespace-nowrap h-12 px-2">計算</md-filled-button>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2.5 px-3 rounded-xl border items-center" style="border-color: var(--color-border); background-color: var(--md-sys-color-surface-variant);">
-                <div class="flex items-center justify-between sm:justify-start gap-3">
-                    <span class="text-xs font-bold opacity-80 whitespace-nowrap" style="color: var(--color-text-primary);">策略：</span>
-                    <div class="flex gap-4">
-                        <label class="flex items-center gap-1.5 cursor-pointer">
-                            <input type="radio" name="calcStrategy" value="large" checked class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-                            <span class="text-xs font-medium">大額優先</span>
-                        </label>
-                        <label class="flex items-center gap-1.5 cursor-pointer">
-                            <input type="radio" name="calcStrategy" value="clear" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-                            <span class="text-xs font-medium">清空優先</span>
-                        </label>
-                    </div>
+            <!-- 精簡的策略區塊 -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm font-bold opacity-80 text-[var(--color-text-primary)]">策略</span>
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                        <input type="radio" name="calcStrategy" value="large" checked class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm font-medium text-[var(--color-text-primary)]">大額優先</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                        <input type="radio" name="calcStrategy" value="clear" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm font-medium text-[var(--color-text-primary)]">清空優先</span>
+                    </label>
                 </div>
-                <div class="flex items-center gap-2 sm:border-l sm:pl-3 border-gray-300 dark:border-gray-600">
-                    <span class="text-xs font-bold opacity-80 whitespace-nowrap" style="color: var(--color-text-primary);">補底：</span>
-                    <md-outlined-select id="makeupPlatformSelect" class="flex-1 w-full min-w-0"></md-outlined-select>
+                <div class="flex items-center gap-2 sm:w-1/2">
+                    <span class="text-sm font-bold opacity-80 whitespace-nowrap text-[var(--color-text-primary)]">補底</span>
+                    <md-outlined-select id="makeupPlatformSelect" class="flex-1 min-w-0 w-full"></md-outlined-select>
                 </div>
             </div>
 
-            <div id="calculatorResult" class="flex-1 p-3 sm:p-4 rounded-xl text-sm min-h-[160px] max-h-[50vh] sm:max-h-[60vh] border leading-relaxed shadow-inner overflow-y-auto" aria-live="polite" style="background-color: var(--color-bg); border-color: var(--color-border); color: var(--color-text-primary);">
+            <!-- 取消內嵌滾動，讓結果自然延伸 -->
+            <div id="calculatorResult" class="flex-1 mt-2 text-sm leading-relaxed transition-all" aria-live="polite" style="color: var(--color-text-primary);">
                 請輸入上方欲消費金額後點擊「計算」。
             </div>
         </form>
