@@ -74,7 +74,7 @@ body::after {
     background: radial-gradient(circle, rgba(236, 72, 153, 0.28) 0%, rgba(236, 72, 153, 0) 70%);
     border-radius: 50%; z-index: -1; pointer-events: none;
 }
-/* 霓虹光暈氣泡 3：中左側（青綠）- 加大飽和度及不透明度 */
+/* 霓虹光暈氣泡 3：中left側（青綠）- 加大飽和度及不透明度 */
 html::before {
     content: ''; position: fixed; top: 30%; left: -15%; width: 60vw; height: 60vw;
     background: radial-gradient(circle, rgba(20, 184, 166, 0.25) 0%, rgba(20, 184, 166, 0) 70%);
@@ -122,7 +122,37 @@ html.dark .summary-box {
     border: 1px solid rgba(255, 255, 255, 0.15); 
 }
 
-/* 卡片玻璃設定（降至 0.22 讓彩光極限折射，加大模糊到 40px，並加粗 Specular border） */
+/* 通用毛玻璃卡片組件 */
+.glass-card {
+    background-color: rgba(255, 255, 255, 0.22) !important;
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1.5px solid rgba(255, 255, 255, 0.65) !important;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.4) !important;
+    transition: all 0.3s ease;
+}
+html.dark .glass-card {
+    background-color: rgba(15, 23, 42, 0.35) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
+}
+
+/* 專屬：對話框 (Dialog) 全域玻璃化 */
+md-dialog::part(container) {
+    background-color: rgba(255, 255, 255, 0.18) !important;
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 1.5px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 24px 64px 0 rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.6);
+    border-radius: 2rem;
+}
+html.dark md-dialog::part(container) {
+    background-color: rgba(15, 23, 42, 0.35) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 24px 64px 0 rgba(0, 0, 0, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.05);
+}
+
+/* 記錄卡片磨砂玻璃設定 */
 .record-card { 
     touch-action: pan-y; 
     background-color: rgba(255, 255, 255, 0.22); 
@@ -164,9 +194,39 @@ html.dark .record-card {
 
 .platform-title { cursor: pointer; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
 
-.global-stats-table thead { background-color: var(--color-table-header-bg); color: var(--color-text-secondary); border-bottom: 1px solid var(--color-border); }
-.global-stats-table tbody tr { border-bottom: 1px solid var(--color-border); transition: background-color 0.2s; }
-.global-stats-table tbody tr:hover { background-color: var(--color-table-header-bg); }
+/* 專屬：大數據表格毛玻璃滾動效果 */
+.global-stats-table {
+    background-color: transparent !important;
+}
+.global-stats-table tbody tr {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+}
+html.dark .global-stats-table tbody tr {
+    background-color: rgba(15, 23, 42, 0.15) !important;
+}
+
+/* 凍結首欄 (平台名稱) 改用磨砂毛玻璃 */
+.global-stats-table th.sticky-col { 
+    position: sticky; left: 0; 
+    background-color: rgba(248, 250, 252, 0.55) !important; 
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: 20; box-shadow: 1px 0 0 var(--color-border); 
+}
+.global-stats-table td.sticky-col { 
+    position: sticky; left: 0; 
+    background-color: rgba(255, 255, 255, 0.55) !important; 
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: 10; box-shadow: 1px 0 0 var(--color-border); font-weight: 700; 
+}
+html.dark .global-stats-table th.sticky-col { 
+    background-color: rgba(28, 33, 40, 0.55) !important; 
+}
+html.dark .global-stats-table td.sticky-col { 
+    background-color: rgba(22, 27, 34, 0.55) !important; 
+}
 
 .used { opacity: 0.8; }
 .coupon-value { cursor: pointer; transition: all 0.2s; }
@@ -190,15 +250,5 @@ md-filled-tonal-button .material-symbols-outlined, md-filled-button .material-sy
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-.global-stats-table tbody tr { background-color: rgba(255, 255, 255, 0.5); backdrop-filter: blur(8px); }
-.global-stats-table th.sticky-col { position: sticky; left: 0; background-color: var(--color-table-header-bg); z-index: 20; box-shadow: 1px 0 0 var(--color-border); }
-.global-stats-table td.sticky-col { position: sticky; left: 0; background-color: var(--color-surface); z-index: 10; box-shadow: 1px 0 0 var(--color-border); font-weight: 700; }
-html.dark .global-stats-table td.sticky-col { background-color: var(--color-table-header-bg); }
-
-.app-toast { pointer-events: auto; animation: toastSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-.app-toast.fade-out { animation: toastFadeOut 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-@keyframes toastSlideIn { from { transform: translateY(-150%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-@keyframes toastFadeOut { to { transform: translateY(-150%); opacity: 0; } }
 
 .platform-chip { touch-action: manipulation; user-select: none; -webkit-user-select: none; }
