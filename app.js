@@ -178,7 +178,6 @@ function showLoadingSkeleton() {
     recordsList.innerHTML = ''; recordsList.setAttribute('aria-busy', 'true');
     for (let i = 0; i < 6; i++) {
         const card = document.createElement('div');
-        // 加入更緊湊高度的 Skeleton
         card.className = 'p-3 sm:p-4 rounded-[1.5rem] border shadow-sm bg-white/60 dark:bg-[#1c2128]/60 backdrop-blur-md flex flex-row items-center gap-3 sm:gap-4 border-white/40 dark:border-gray-700/40';
         card.innerHTML = `
             <div class="flex flex-row items-center w-[140px] sm:w-[170px] flex-shrink-0 gap-2 overflow-hidden">
@@ -708,7 +707,18 @@ function getChartJsThemeOptions() {
         plugins: {
             legend: { labels: { color: textColor, font: { family: "'Noto Sans TC', sans-serif" } } },
             title: { color: titleColor, font: { family: "'Noto Sans TC', sans-serif", size: 16, weight: 'bold' } },
-            tooltip: { backgroundColor: isDarkMode ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)', titleColor: isDarkMode ? '#f8fafc' : '#0f172a', bodyColor: isDarkMode ? '#cbd5e1' : '#334155', borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', borderWidth: 1, padding: 10, cornerRadius: 8, titleFont: { family: "'Noto Sans TC', sans-serif", size: 14, weight: 'bold' }, bodyFont: { family: "'Noto Sans TC', sans-serif", size: 13 } },
+            // 優化：將動態繪製圖表的提示框改為高質感半透明玻璃
+            tooltip: { 
+                backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.65)' : 'rgba(255, 255, 255, 0.65)', 
+                titleColor: isDarkMode ? '#f8fafc' : '#0f172a', 
+                bodyColor: isDarkMode ? '#cbd5e1' : '#334155', 
+                borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0,0,0,0.12)', 
+                borderWidth: 1, 
+                padding: 10, 
+                cornerRadius: 8, 
+                titleFont: { family: "'Noto Sans TC', sans-serif", size: 14, weight: 'bold' }, 
+                bodyFont: { family: "'Noto Sans TC', sans-serif", size: 13 } 
+            },
             datalabels: { color: textColor, font: { weight: 'bold', family: "'Noto Sans TC', sans-serif" } }
         },
         scales: { x: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: "'Noto Sans TC', sans-serif" } } }, y: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: "'Noto Sans TC', sans-serif" } } } }
@@ -750,28 +760,29 @@ function renderGlobalStats(week) {
     const overviewEl = allDOMElements.globalStatsOverview;
     if (overview) {
         overviewEl.style.display = 'grid';
+        // 套用更顯眼嘅玻璃卡片外觀
         overviewEl.innerHTML = `
-            <div class="flex flex-col justify-center items-center py-2 sm:py-3 rounded-xl border shadow-sm" style="border-color: var(--color-border); background-color: var(--color-surface);">
+            <div class="glass-card flex flex-col justify-center items-center py-2 sm:py-3 rounded-xl shadow-sm">
                 <span class="text-[11px] sm:text-xs font-bold opacity-70 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">groups</span> 總用戶數</span>
                 <span class="text-lg sm:text-xl font-black text-blue-600 dark:text-blue-400 tabular-nums">${overview.totalUsers}</span>
             </div>
-            <div class="flex flex-col justify-center items-center py-2 sm:py-3 rounded-xl border shadow-sm" style="border-color: var(--color-border); background-color: var(--color-surface);">
+            <div class="glass-card flex flex-col justify-center items-center py-2 sm:py-3 rounded-xl shadow-sm">
                 <span class="text-[11px] sm:text-xs font-bold opacity-70 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">celebration</span> 中≥200元人數</span>
                 <span class="text-lg sm:text-xl font-black text-yellow-600 dark:text-yellow-400 tabular-nums">${overview.usersWith200}</span>
             </div>
-            <div class="flex flex-col justify-center items-center py-2 sm:py-3 rounded-xl border shadow-sm" style="border-color: var(--color-border); background-color: var(--color-surface);">
+            <div class="glass-card flex flex-col justify-center items-center py-2 sm:py-3 rounded-xl shadow-sm">
                 <span class="text-[11px] sm:text-xs font-bold opacity-70 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">stars</span> 單人最高金額</span>
                 <span class="text-lg sm:text-xl font-black text-green-600 dark:text-green-400 tabular-nums">${overview.maxUserAmount}</span>
             </div>
-            <div class="flex flex-col justify-center items-center py-2 sm:py-3 rounded-xl border shadow-sm" style="border-color: var(--color-border); background-color: var(--color-surface);">
+            <div class="glass-card flex flex-col justify-center items-center py-2 sm:py-3 rounded-xl shadow-sm">
                 <span class="text-[11px] sm:text-xs font-bold opacity-70 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">functions</span> 抽到金額平均</span>
                 <span class="text-lg sm:text-xl font-black tabular-nums" style="color: var(--theme-color-primary);">${overview.avgUserAmount}</span>
             </div>
-            <div class="flex flex-col justify-center items-center py-2 sm:py-3 rounded-xl border shadow-sm" style="border-color: var(--color-border); background-color: var(--color-surface);">
+            <div class="glass-card flex flex-col justify-center items-center py-2 sm:py-3 rounded-xl shadow-sm">
                 <span class="text-[11px] sm:text-xs font-bold opacity-70 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">vertical_align_center</span> 金額中位數</span>
                 <span class="text-lg sm:text-xl font-black tabular-nums" style="color: var(--theme-color-primary);">${overview.medianUserAmount}</span>
             </div>
-            <div class="flex flex-col justify-center items-center py-2 sm:py-3 rounded-xl border shadow-sm" style="border-color: var(--color-border); background-color: var(--color-surface);">
+            <div class="glass-card flex flex-col justify-center items-center py-2 sm:py-3 rounded-xl shadow-sm">
                 <span class="text-[11px] sm:text-xs font-bold opacity-70 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">apps</span> 人均使用平台</span>
                 <span class="text-lg sm:text-xl font-black text-purple-600 dark:text-purple-400 tabular-nums">${overview.avgPlatformsPerUser}</span>
             </div>
@@ -824,24 +835,25 @@ function renderGlobalStats(week) {
     const top3HTML = top3Platforms.map((p, i) => `<div class="flex justify-between items-center"><span class="opacity-80">${i+1}. ${p}</span><span class="font-bold text-base tabular-nums">${formatNumber(data[p].draws)}</span></div>`).join('');
 
     const funFactEl = document.getElementById('globalStatsFunFact');
+    // 套用高質感玻璃卡片
     funFactEl.innerHTML = `
         <h4 class="font-bold text-base sm:text-lg mb-4 flex items-center gap-2" style="color: var(--theme-color-summary-text);">
             <span class="material-symbols-outlined">lightbulb</span> 第 ${week} 周全網抽獎大數據
         </h4>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm" style="color: var(--theme-color-summary-text);">
-            <div class="flex flex-col gap-1 p-4 rounded-xl bg-white dark:bg-[#1c2128] shadow-sm border" style="border-color: var(--color-border);">
+            <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
                 <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-green-500">trending_up</span> 最高期望值(MOP)</span>
                 <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${maxEvPlatform}</strong><span class="text-3xl font-black text-green-600 dark:text-green-400 leading-none tabular-nums">${data[maxEvPlatform].exp.toFixed(1)}</span></div>
             </div>
-            <div class="flex flex-col gap-1 p-4 rounded-xl bg-white dark:bg-[#1c2128] shadow-sm border" style="border-color: var(--color-border);">
+            <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
                 <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-gray-500">sentiment_dissatisfied</span> 最容易中0元</span>
                 <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${max0Platform}</strong><span class="text-3xl font-black text-gray-600 dark:text-gray-400 leading-none tabular-nums">${(data[max0Platform].p0 * 100).toFixed(1)}%</span></div>
             </div>
-            <div class="flex flex-col gap-1 p-4 rounded-xl bg-white dark:bg-[#1c2128] shadow-sm border" style="border-color: var(--color-border);">
+            <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
                 <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-yellow-500">workspace_premium</span> 最容易中200元</span>
                 <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${max200Platform}</strong><span class="text-3xl font-black text-yellow-600 dark:text-yellow-400 leading-none tabular-nums">${(data[max200Platform].p200 * 100).toFixed(2)}%</span></div>
             </div>
-            <div class="flex flex-col gap-1 p-4 rounded-xl bg-white dark:bg-[#1c2128] shadow-sm border" style="border-color: var(--color-border);">
+            <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
                 <span class="flex items-center gap-1 font-bold opacity-80 text-[13px] mb-2"><span class="material-symbols-outlined text-[18px] text-blue-500">format_list_numbered</span> 第 ${week} 周抽獎次數排名</span>
                 <div class="flex flex-col gap-1.5 mt-auto">${top3HTML}</div>
             </div>
@@ -917,7 +929,7 @@ function renderCharts(week) {
     if (platformTotalChart) platformTotalChart.destroy();
     platformTotalChart = new Chart(document.getElementById('platformTotalChart'), {
         type: 'doughnut',
-        data: { labels: sortedPlatforms.map(p => PLATFORMS[p[0]]), datasets: [{ data: sortedPlatforms.map(p => p[1]), backgroundColor: sortedPlatforms.map(p => PLATFORM_COLORS[p[0]]), borderColor: document.documentElement.style.getPropertyValue('--color-surface'), borderWidth: 2, hoverOffset: 4 }] },
+        data: { labels: sortedPlatforms.map(p => PLATFORMS[p[0]]), datasets: [{ data: sortedPlatforms.map(p => p[1]), backgroundColor: sortedPlatforms.map(p => PLATFORM_COLORS[p[0]]), borderColor: 'transparent', borderWidth: 2, hoverOffset: 4 }] },
         options: { ...chartTheme, responsive: true, maintainAspectRatio: false, cutout: '40%', layout: { padding: 10 }, scales: { x: { display: false }, y: { display: false } }, plugins: { ...chartTheme.plugins, legend: { display: false }, datalabels: { ...chartTheme.plugins.datalabels, formatter: (v, ctx) => { const total = ctx.chart.getDatasetMeta(0).total; if (total === 0) return ''; const percent = v / total; if (percent < 0.04) return ''; const fullLabel = ctx.chart.data.labels[ctx.dataIndex]; const shortLabel = fullLabel.replace(/^[a-zA-Z]+/g, '').trim() || fullLabel; return shortLabel + '\n' + (percent * 100).toFixed(0) + '%'; }, color: '#fff', font: { weight: 'bold', size: 12, family: "'Noto Sans TC', sans-serif" }, textAlign: 'center' } } }
     });
 
@@ -1440,7 +1452,7 @@ allDOMElements.exportCsvBtn.addEventListener('click', () => {
 
 allDOMElements.disclaimerLink.addEventListener('click', (e) => {
     e.preventDefault();
-    const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存或處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀或洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即表示您已閱讀、理解並同意以上所有條款。";
+    const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存 or 處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀或洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即 নিকট表示您已閱讀、理解並同意以上所有條款。";
     showAlertDialog(disclaimerText, "免責聲明");
 });
 
