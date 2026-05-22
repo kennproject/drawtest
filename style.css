@@ -145,9 +145,16 @@ html.dark .glass-card {
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
 }
 
+/* 核心修復：使用 CSS 自定義屬性來為 Material Web Dialog 元件注入玻璃透明色 */
+md-dialog {
+    --md-dialog-container-color: rgba(255, 255, 255, 0.18) !important;
+}
+html.dark md-dialog {
+    --md-dialog-container-color: rgba(15, 23, 42, 0.35) !important;
+}
+
 /* 專屬：對話框 (Dialog) 全域玻璃化 */
 md-dialog::part(container) {
-    background-color: rgba(255, 255, 255, 0.18) !important;
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
     border: 1.5px solid rgba(255, 255, 255, 0.7);
@@ -155,7 +162,6 @@ md-dialog::part(container) {
     border-radius: 2rem;
 }
 html.dark md-dialog::part(container) {
-    background-color: rgba(15, 23, 42, 0.35) !important;
     border: 1.5px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 24px 64px 0 rgba(0, 0, 0, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.05);
 }
@@ -247,7 +253,6 @@ html.dark .global-stats-table td.sticky-col {
 md-outlined-select, md-outlined-text-field { width: 100%; min-width: 0; }
 md-select-option { --md-menu-item-one-line-container-height: 32px; white-space: nowrap; }
 md-select-option::part(label-text) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-md-dialog { --md-dialog-container-color: var(--color-surface); }
 .platform-color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
 .theme-dot { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: border-color 0.2s; }
 .theme-dot.selected { border-color: var(--theme-color-primary); transform: scale(1.1); }
