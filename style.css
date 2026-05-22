@@ -29,7 +29,7 @@
 }
 
 html.dark {
-    --color-bg: #090c15;
+    --color-bg: #0d1117;
     --color-surface: #161b22;
     --color-text-primary: #e2e8f0; 
     --color-text-secondary: #b0b8c4; 
@@ -51,140 +51,67 @@ html.dark {
     --md-list-container-color: #1c2128;
 }
 
-/* 網頁底層：高對比度立體彩光背景 */
 body { 
     font-family: 'Roboto', 'Noto Sans TC', sans-serif; 
     color: var(--color-text-primary); 
     min-height: 100vh; 
-    /* 飽和度稍高嘅冷暖對比漸層底色 */
-    background: linear-gradient(135deg, #dae7fc 0%, #f1f4f9 50%, #e3e6f5 100%);
+    background: linear-gradient(135deg, #e3f2fd 0%, #f4f7fa 40%, #e8eaf6 100%);
     background-attachment: fixed;
     transition: background 0.3s, color 0.3s;
 }
 
-/* 禁用長按圖片彈出原生系統選單，並防止圖片被選取 */
+body::before {
+    content: ''; position: fixed; top: -10%; left: -10%; width: 50vw; height: 50vw;
+    background: radial-gradient(circle, rgba(33, 150, 243, 0.15) 0%, rgba(33, 150, 243, 0) 70%);
+    border-radius: 50%; z-index: -1; pointer-events: none;
+}
+body::after {
+    content: ''; position: fixed; bottom: -10%; right: -10%; width: 60vw; height: 60vw;
+    background: radial-gradient(circle, rgba(106, 27, 154, 0.1) 0%, rgba(106, 27, 154, 0) 70%);
+    border-radius: 50%; z-index: -1; pointer-events: none;
+}
+
+html.dark body { 
+    background: linear-gradient(135deg, #0f172a 0%, #0d1117 50%, #1e1b4b 100%); 
+}
+html.dark body::before { background: radial-gradient(circle, rgba(33, 150, 243, 0.12) 0%, rgba(33, 150, 243, 0) 70%); }
+html.dark body::after { background: radial-gradient(circle, rgba(156, 39, 176, 0.08) 0%, rgba(156, 39, 176, 0) 70%); }
+
+/* 核心保留：禁用圖片長按原生選單、並防止選取 */
 img {
     -webkit-touch-callout: none !important; /* 禁用 iOS Safari 圖片長按選單 */
     -webkit-user-select: none !important;   /* 禁用 iOS Safari 選取 */
     user-select: none !important;           /* 禁用標準選取 */
-    pointer-events: none;                   /* 點擊直接穿透給父容器，完美避開 Android 長按圖片彈窗 */
+    pointer-events: none;                   /* 點擊穿透給父容器，避開 Android 原生彈窗 */
 }
 
-/* 霓虹光暈氣泡 1：左上角（靛藍）- 加大飽和度及不透明度 */
-body::before {
-    content: ''; position: fixed; top: -10%; left: -10%; width: 70vw; height: 70vw;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, rgba(99, 102, 241, 0) 70%);
-    border-radius: 50%; z-index: -1; pointer-events: none;
-}
-/* 霓虹光暈氣泡 2：右下角（洋紅）- 加大飽和度及不透明度 */
-body::after {
-    content: ''; position: fixed; bottom: -15%; right: -10%; width: 80vw; height: 80vw;
-    background: radial-gradient(circle, rgba(236, 72, 153, 0.28) 0%, rgba(236, 72, 153, 0) 70%);
-    border-radius: 50%; z-index: -1; pointer-events: none;
-}
-/* 霓虹光暈氣泡 3：中left側（青綠）- 加大飽和度及不透明度 */
-html::before {
-    content: ''; position: fixed; top: 30%; left: -15%; width: 60vw; height: 60vw;
-    background: radial-gradient(circle, rgba(20, 184, 166, 0.25) 0%, rgba(20, 184, 166, 0) 70%);
-    border-radius: 50%; z-index: -1; pointer-events: none;
-}
-
-/* 深色模式底層：更深邃、色彩對比更強烈 */
-html.dark body { 
-    background: linear-gradient(135deg, #05070f 0%, #0c0f17 50%, #111026 100%); 
-}
-html.dark body::before { background: radial-gradient(circle, rgba(99, 102, 241, 0.22) 0%, rgba(99, 102, 241, 0) 75%); }
-html.dark body::after { background: radial-gradient(circle, rgba(236, 72, 153, 0.18) 0%, rgba(236, 72, 153, 0) 75%); }
-html.dark html::before { background: radial-gradient(circle, rgba(20, 184, 166, 0.15) 0%, rgba(20, 184, 166, 0) 75%); }
-
-/* 主容器玻璃設定（調高不透明度由 0.45 增至 0.70，提升易讀性） */
 .main-container { 
-    background-color: rgba(255, 255, 255, 0.70); 
-    backdrop-filter: blur(40px); 
-    -webkit-backdrop-filter: blur(40px); 
-    border: 1.5px solid rgba(255, 255, 255, 0.75); 
-    box-shadow: 
-        0 16px 48px 0 rgba(31, 38, 135, 0.08), 
-        inset 0 1px 1px rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 255, 255, 0.65); 
+    backdrop-filter: blur(28px); 
+    -webkit-backdrop-filter: blur(28px); 
+    border: 1px solid rgba(255, 255, 255, 0.8); 
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
     transition: background-color 0.3s, border-color 0.3s; 
 }
 html.dark .main-container { 
-    background-color: rgba(21, 26, 35, 0.75); 
-    border: 1.5px solid rgba(255, 255, 255, 0.12); 
-    box-shadow: 
-        0 16px 48px 0 rgba(0, 0, 0, 0.35), 
-        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    background-color: rgba(22, 27, 34, 0.65); 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
 }
 
-/* 匯總區塊玻璃設定（調高不透明度由 0.35 增至 0.65） */
-.summary-box { 
-    background-color: rgba(227, 242, 253, 0.65); 
-    backdrop-filter: blur(20px); 
-    -webkit-backdrop-filter: blur(20px); 
-    border: 1px solid rgba(33, 150, 243, 0.4); 
-    color: var(--theme-color-summary-text); 
-    transition: all 0.3s ease; 
-}
-html.dark .summary-box { 
-    background-color: rgba(30, 41, 59, 0.75); 
-    border: 1px solid rgba(255, 255, 255, 0.15); 
-}
+.summary-box { background-color: rgba(227, 242, 253, 0.55); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(33, 150, 243, 0.3); color: var(--theme-color-summary-text); transition: all 0.3s ease; }
+html.dark .summary-box { background-color: rgba(33, 38, 45, 0.55); border: 1px solid rgba(255, 255, 255, 0.1); }
 
-/* 通用毛玻璃卡片組件 */
-.glass-card {
-    background-color: rgba(255, 255, 255, 0.60) !important;
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    border: 1.5px solid rgba(255, 255, 255, 0.65) !important;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.4) !important;
-    transition: all 0.3s ease;
-}
-html.dark .glass-card {
-    background-color: rgba(21, 26, 35, 0.70) !important;
-    border: 1.5px solid rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
-}
-
-/* 彈窗（Dialog）背景保持微透毛玻璃 */
-md-dialog {
-    --md-dialog-container-color: rgba(255, 255, 255, 0.75) !important;
-}
-html.dark md-dialog {
-    --md-dialog-container-color: rgba(21, 26, 35, 0.85) !important;
-}
-
-/* 專屬：對話框 (Dialog) 全域玻璃化 */
-md-dialog::part(container) {
-    backdrop-filter: blur(40px);
-    -webkit-backdrop-filter: blur(40px);
-    border: 1.5px solid rgba(255, 255, 255, 0.7);
-    box-shadow: 0 24px 64px 0 rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.6);
-    border-radius: 2rem;
-}
-html.dark md-dialog::part(container) {
-    border: 1.5px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 24px 64px 0 rgba(0, 0, 0, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.05);
-}
-
-/* 記錄卡片磨砂玻璃設定 */
 .record-card { 
     touch-action: pan-y; 
-    background-color: rgba(255, 255, 255, 0.60); 
-    backdrop-filter: blur(40px); 
-    -webkit-backdrop-filter: blur(40px); 
-    border: 1.5px solid rgba(255, 255, 255, 0.7);
-    position: relative; z-index: 2; transform: translateX(0); will-change: transform; 
-    box-shadow: 
-        0 10px 32px 0 rgba(31, 38, 135, 0.05), 
-        inset 0 1px 2px rgba(255, 255, 255, 0.5);
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+    background-color: rgba(255, 255, 255, 0.45); 
+    backdrop-filter: blur(20px); 
+    -webkit-backdrop-filter: blur(20px); 
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    position: relative; z-index: 2; transform: translateX(0); will-change: transform; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
 }
 html.dark .record-card { 
-    background-color: rgba(21, 26, 35, 0.70); 
-    border: 1.5px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 
-        0 10px 32px 0 rgba(0, 0, 0, 0.25), 
-        inset 0 1px 2px rgba(255, 255, 255, 0.05);
+    background-color: rgba(28, 33, 40, 0.5); 
+    border: 1px solid rgba(255, 255, 255, 0.1);
     text-shadow: 0 0 1px rgba(255,255,255,0.25); 
 }
 
@@ -208,51 +135,9 @@ html.dark .record-card {
 
 .platform-title { cursor: pointer; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
 
-/* 修正：大數據表格設為完全實色（不透明） */
-.global-stats-table {
-    background-color: var(--color-surface) !important;
-}
-.global-stats-table tbody tr {
-    background-color: var(--color-surface) !important;
-}
-.global-stats-table tbody tr:nth-child(even) {
-    background-color: var(--color-table-header-bg) !important;
-}
-
-/* 凍結首欄同樣設為實色，防止重疊透光 */
-.global-stats-table th.sticky-col { 
-    position: sticky; left: 0; 
-    background-color: var(--color-table-header-bg) !important; 
-    z-index: 20; box-shadow: 1px 0 0 var(--color-border); 
-}
-.global-stats-table td.sticky-col { 
-    position: sticky; left: 0; 
-    background-color: var(--color-surface) !important; 
-    z-index: 10; box-shadow: 1px 0 0 var(--color-border); font-weight: 700; 
-}
-
-/* 修正：計算機結果卡片設為完全實色（不透明） */
-#calculatorResult .rounded-lg,
-#calculatorResult .p-2\.5 {
-    background-color: var(--color-surface) !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border: 1px solid var(--color-border) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
-}
-
-/* 修正：將彈窗內嘅所有圖表背景、設定容器完全實色化（不透明），確保文字極致清晰 */
-#globalStatsDialogForm .glass-card,
-#statsDialogForm .glass-card,
-#calculatorDialogForm .glass-card,
-#statsDialogForm .p-4,
-#globalStatsDialogForm .p-4 {
-    background-color: var(--color-surface) !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border: 1px solid var(--color-border) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
-}
+.global-stats-table thead { background-color: var(--color-table-header-bg); color: var(--color-text-secondary); border-bottom: 1px solid var(--color-border); }
+.global-stats-table tbody tr { border-bottom: 1px solid var(--color-border); transition: background-color 0.2s; }
+.global-stats-table tbody tr:hover { background-color: var(--color-table-header-bg); }
 
 .used { opacity: 0.8; }
 .coupon-value { cursor: pointer; transition: all 0.2s; }
@@ -265,6 +150,7 @@ html.dark .record-card {
 md-outlined-select, md-outlined-text-field { width: 100%; min-width: 0; }
 md-select-option { --md-menu-item-one-line-container-height: 32px; white-space: nowrap; }
 md-select-option::part(label-text) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+md-dialog { --md-dialog-container-color: var(--color-surface); }
 .platform-color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
 .theme-dot { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: border-color 0.2s; }
 .theme-dot.selected { border-color: var(--theme-color-primary); transform: scale(1.1); }
@@ -275,5 +161,15 @@ md-filled-tonal-button .material-symbols-outlined, md-filled-button .material-sy
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.global-stats-table tbody tr { background-color: rgba(255, 255, 255, 0.5); backdrop-filter: blur(8px); }
+.global-stats-table th.sticky-col { position: sticky; left: 0; background-color: var(--color-table-header-bg); z-index: 20; box-shadow: 1px 0 0 var(--color-border); }
+.global-stats-table td.sticky-col { position: sticky; left: 0; background-color: var(--color-surface); z-index: 10; box-shadow: 1px 0 0 var(--color-border); font-weight: 700; }
+html.dark .global-stats-table td.sticky-col { background-color: var(--color-table-header-bg); }
+
+.app-toast { pointer-events: auto; animation: toastSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.app-toast.fade-out { animation: toastFadeOut 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes toastSlideIn { from { transform: translateY(-150%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes toastFadeOut { to { transform: translateY(-150%); opacity: 0; } }
 
 .platform-chip { touch-action: manipulation; user-select: none; -webkit-user-select: none; }
