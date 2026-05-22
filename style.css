@@ -62,6 +62,14 @@ body {
     transition: background 0.3s, color 0.3s;
 }
 
+/* 禁用長按圖片彈出原生系統選單，並防止圖片被選取 */
+img {
+    -webkit-touch-callout: none !important; /* 禁用 iOS Safari 圖片長按選單 */
+    -webkit-user-select: none !important;   /* 禁用 iOS Safari 選取 */
+    user-select: none !important;           /* 禁用標準選取 */
+    pointer-events: none;                   /* 點擊直接穿透給父容器，完美避開 Android 長按圖片彈窗 */
+}
+
 /* 霓虹光暈氣泡 1：左上角（靛藍）- 加大飽和度及不透明度 */
 body::before {
     content: ''; position: fixed; top: -10%; left: -10%; width: 70vw; height: 70vw;
