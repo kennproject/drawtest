@@ -1,5 +1,12 @@
 import { GLOBAL_STATS_DATA } from './data.js';
 
+// --- 全局防誤觸：攔截選單與禁用長按 ---
+window.addEventListener('contextmenu', (e) => {
+    if (e.target.closest('.platform-title') || e.target.closest('.platform-chip') || e.target.tagName === 'IMG') {
+        e.preventDefault();
+    }
+});
+
 // --- 網頁內建 Toast 通知系統 ---
 function showToast(title, messageLines) {
     const container = document.getElementById('toast-container');
@@ -270,6 +277,7 @@ function initializeAdvancedToggle() {
     });
 }
 
+// 綁定跨設備資料同步展開面板
 function initializeAuthToggle() {
     const authToggle = document.getElementById('auth-toggle'); const authOptionsContainer = document.getElementById('auth-options-container'); const authToggleIcon = document.getElementById('auth-toggle-icon');
     authToggle.addEventListener('click', () => {
@@ -400,7 +408,6 @@ function renderRecords() {
             return valB - valA; // 卡片內的個別券也按面額由大到小排序
         });
 
-        // 調整按鈕高度：h-12 sm:h-14
         const drawButtons = couponsData.map(item => {
             let styles = '';
             let classes = 'coupon-value flex-1 h-12 sm:h-14 flex items-center justify-center rounded-full text-base sm:text-lg font-bold transition-all box-border ';
@@ -448,7 +455,7 @@ function renderRecords() {
                 let moveX = swipeOpen ? deltaX - 80 : deltaX;
                 if (moveX < -90) moveX = -90; if (moveX > 0) moveX = 0;
                 innerCard.style.transform = `translateX(${moveX}px)`;
-                // 滑動超過 5px 才顯示紅色底，完美解決平時邊緣透色問題
+                // 滑動超過 5px 才顯示紅色底
                 swipeBg.style.opacity = moveX < -5 ? '1' : '0';
             }
         }, { passive: true });
@@ -519,7 +526,7 @@ function renderPlatformOptions() {
                 updateCouponSlotsUI(); 
             });
 
-            // 長按一鍵填 0 邏輯
+            // 長按一鍵填 0 邏輯 - 長按時長更新為 1000ms (1秒)
             let holdTimer = null;
             const startHold = (e) => {
                 if(e.type === 'touchstart' && navigator.vibrate) navigator.vibrate(10);
@@ -529,7 +536,7 @@ function renderPlatformOptions() {
                     currentInputPlatform = key;
                     currentInputValues = ['-', '-', '-'];
                     submitRecordLogic();
-                }, 600);
+                }, 1000);
             };
             const cancelHold = () => { if(holdTimer) { clearTimeout(holdTimer); holdTimer = null; } };
             
@@ -707,7 +714,6 @@ function getChartJsThemeOptions() {
         plugins: {
             legend: { labels: { color: textColor, font: { family: "'Noto Sans TC', sans-serif" } } },
             title: { color: titleColor, font: { family: "'Noto Sans TC', sans-serif", size: 16, weight: 'bold' } },
-            // 優化：將動態繪製圖表的提示框改為高質感半透明玻璃
             tooltip: { 
                 backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.65)' : 'rgba(255, 255, 255, 0.65)', 
                 titleColor: isDarkMode ? '#f8fafc' : '#0f172a', 
@@ -760,7 +766,6 @@ function renderGlobalStats(week) {
     const overviewEl = allDOMElements.globalStatsOverview;
     if (overview) {
         overviewEl.style.display = 'grid';
-        // 套用更顯眼嘅玻璃卡片外觀
         overviewEl.innerHTML = `
             <div class="glass-card flex flex-col justify-center items-center py-2 sm:py-3 rounded-xl shadow-sm">
                 <span class="text-[11px] sm:text-xs font-bold opacity-70 mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">groups</span> 總用戶數</span>
@@ -835,7 +840,6 @@ function renderGlobalStats(week) {
     const top3HTML = top3Platforms.map((p, i) => `<div class="flex justify-between items-center"><span class="opacity-80">${i+1}. ${p}</span><span class="font-bold text-base tabular-nums">${formatNumber(data[p].draws)}</span></div>`).join('');
 
     const funFactEl = document.getElementById('globalStatsFunFact');
-    // 套用高質感玻璃卡片
     funFactEl.innerHTML = `
         <h4 class="font-bold text-base sm:text-lg mb-4 flex items-center gap-2" style="color: var(--theme-color-summary-text);">
             <span class="material-symbols-outlined">lightbulb</span> 第 ${week} 周全網抽獎大數據
@@ -889,7 +893,7 @@ function renderGlobalStats(week) {
         type: 'doughnut',
         data: {
             labels: availablePlatforms.map(p => PLATFORMS[p]),
-            datasets: [{ data: availablePlatforms.map(p => data[p].amtShare * 100), backgroundColor: availablePlatforms.map(p => PLATFORM_COLORS[p]), borderColor: document.documentElement.style.getPropertyValue('--color-surface'), borderWidth: 2, hoverOffset: 4 }]
+            datasets: [{ data: availablePlatforms.map(p => data[p].amtShare * 100), backgroundColor: availablePlatforms.map(p => PLATFORM_COLORS[p]), borderColor: 'transparent', borderWidth: 2, hoverOffset: 4 }]
         },
         options: { ...chartTheme, responsive: true, maintainAspectRatio: false, cutout: '50%', plugins: { ...chartTheme.plugins, legend: { display: true, position: 'right', labels: { ...chartTheme.plugins.legend.labels, boxWidth: 12 } }, datalabels: { ...chartTheme.plugins.datalabels, formatter: (v, ctx) => { const total = ctx.chart.getDatasetMeta(0).total; if (total === 0) return ''; const percent = v / total; if (percent < 0.03) return ''; const fullLabel = ctx.chart.data.labels[ctx.dataIndex]; const shortLabel = fullLabel.replace(/^[a-zA-Z]+/g, '').trim() || fullLabel; return shortLabel + '\n' + v.toFixed(1) + '%'; }, color: '#fff', font: { weight: 'bold', size: 11, family: "'Noto Sans TC', sans-serif" }, textAlign: 'center' } } }
     });
@@ -1119,7 +1123,7 @@ allDOMElements.calculatorBtn.addEventListener('click', () => {
         });
     }
     
-    // 強制設定選項，解決 md-select 的非同步取值問題
+    // 強制設定選項，解決 md-select 嘅非同步取值問題
     setTimeout(() => { makeupSelect.value = 'auto'; }, 10);
     
     allDOMElements.calculatorDialog.show();
@@ -1167,10 +1171,10 @@ allDOMElements.calculateBtn.addEventListener('click', (event) => {
     for (const platform in groupedByPlatform) { totalRequiredSpend += groupedByPlatform[platform].reduce((sum, val) => sum + val * 3, 0); }
     const remainingAmount = targetAmount - totalRequiredSpend;
     
-    // 取不到值時強制回退為自動
+    // 取唔到值時強制回退為自動
     let makeupPlatform = document.getElementById('makeupPlatformSelect').value || 'auto';
 
-    // 智能補底邏輯：如果選擇「自動」，找出方案中消費最多的平台
+    // 智能補底邏輯：如果選擇「自動」，找出方案中消費最多嘅平台
     if (remainingAmount > 0 && makeupPlatform === 'auto') {
         let maxSpend = -1;
         let targetPlatform = null;
@@ -1331,6 +1335,7 @@ function toggleAllCouponsForElement(titleEl) {
     record.usedCoupons = updatedUsedCoupons; refreshUI(); scheduleWrite(docId, updatedUsedCoupons);
 }
 
+// 開始判定長按 - 時長更新為 1000ms (1秒)
 const startRecordPress = (e) => {
     const titleEl = e.target.closest('.platform-title');
     if (!titleEl) return;
@@ -1340,7 +1345,7 @@ const startRecordPress = (e) => {
         isRecordLongPress = true;
         if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
         toggleAllCouponsForElement(titleEl);
-    }, 450);
+    }, 1000);
 };
 
 const cancelRecordPress = () => { if (recordPressTimer) clearTimeout(recordPressTimer); };
@@ -1452,7 +1457,7 @@ allDOMElements.exportCsvBtn.addEventListener('click', () => {
 
 allDOMElements.disclaimerLink.addEventListener('click', (e) => {
     e.preventDefault();
-    const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存 or 處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀或洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即 নিকট表示您已閱讀、理解並同意以上所有條款。";
+    const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存 or 處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀 or 洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即 নিকট表示您已閱讀、理解並同意以上所有條款。";
     showAlertDialog(disclaimerText, "免責聲明");
 });
 
