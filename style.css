@@ -70,19 +70,19 @@ img {
     pointer-events: none;                   /* 點擊直接穿透給父容器，完美避開 Android 長按圖片彈窗 */
 }
 
-/* 霓虹光暈氣泡 1：左上角（靛藍）- 加大飽和度及不透明度 */
+/* 霓虹光暈氣泡 1：左上角（靛藍） */
 body::before {
     content: ''; position: fixed; top: -10%; left: -10%; width: 70vw; height: 70vw;
     background: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, rgba(99, 102, 241, 0) 70%);
     border-radius: 50%; z-index: -1; pointer-events: none;
 }
-/* 霓虹光暈氣泡 2：右下角（洋紅）- 加大飽和度及不透明度 */
+/* 霓虹光暈氣泡 2：右下角（洋紅） */
 body::after {
     content: ''; position: fixed; bottom: -15%; right: -10%; width: 80vw; height: 80vw;
     background: radial-gradient(circle, rgba(236, 72, 153, 0.28) 0%, rgba(236, 72, 153, 0) 70%);
     border-radius: 50%; z-index: -1; pointer-events: none;
 }
-/* 霓虹光暈氣泡 3：中left側（青綠）- 加大飽和度及不透明度 */
+/* 霓虹光暈氣泡 3：中left側（青綠） */
 html::before {
     content: ''; position: fixed; top: 30%; left: -15%; width: 60vw; height: 60vw;
     background: radial-gradient(circle, rgba(20, 184, 166, 0.25) 0%, rgba(20, 184, 166, 0) 70%);
@@ -97,9 +97,9 @@ html.dark body::before { background: radial-gradient(circle, rgba(99, 102, 241, 
 html.dark body::after { background: radial-gradient(circle, rgba(236, 72, 153, 0.18) 0%, rgba(236, 72, 153, 0) 75%); }
 html.dark html::before { background: radial-gradient(circle, rgba(20, 184, 166, 0.15) 0%, rgba(20, 184, 166, 0) 75%); }
 
-/* 主容器玻璃設定（調低不透明度，加大模糊，增強高光邊框與內發光） */
+/* 主容器玻璃設定（調高不透明度由 0.45 增至 0.70，提升易讀性） */
 .main-container { 
-    background-color: rgba(255, 255, 255, 0.45); 
+    background-color: rgba(255, 255, 255, 0.70); 
     backdrop-filter: blur(40px); 
     -webkit-backdrop-filter: blur(40px); 
     border: 1.5px solid rgba(255, 255, 255, 0.75); 
@@ -109,16 +109,16 @@ html.dark html::before { background: radial-gradient(circle, rgba(20, 184, 166, 
     transition: background-color 0.3s, border-color 0.3s; 
 }
 html.dark .main-container { 
-    background-color: rgba(15, 23, 42, 0.45); 
+    background-color: rgba(21, 26, 35, 0.75); 
     border: 1.5px solid rgba(255, 255, 255, 0.12); 
     box-shadow: 
         0 16px 48px 0 rgba(0, 0, 0, 0.35), 
         inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
-/* 匯總區塊玻璃設定 */
+/* 匯總區塊玻璃設定（調高不透明度由 0.35 增至 0.65） */
 .summary-box { 
-    background-color: rgba(227, 242, 253, 0.35); 
+    background-color: rgba(227, 242, 253, 0.65); 
     backdrop-filter: blur(20px); 
     -webkit-backdrop-filter: blur(20px); 
     border: 1px solid rgba(33, 150, 243, 0.4); 
@@ -126,13 +126,13 @@ html.dark .main-container {
     transition: all 0.3s ease; 
 }
 html.dark .summary-box { 
-    background-color: rgba(30, 41, 59, 0.45); 
+    background-color: rgba(30, 41, 59, 0.75); 
     border: 1px solid rgba(255, 255, 255, 0.15); 
 }
 
-/* 通用毛玻璃卡片組件 */
+/* 通用毛玻璃卡片組件（調高不透明度由 0.22 增至 0.60） */
 .glass-card {
-    background-color: rgba(255, 255, 255, 0.22) !important;
+    background-color: rgba(255, 255, 255, 0.60) !important;
     backdrop-filter: blur(30px);
     -webkit-backdrop-filter: blur(30px);
     border: 1.5px solid rgba(255, 255, 255, 0.65) !important;
@@ -140,17 +140,17 @@ html.dark .summary-box {
     transition: all 0.3s ease;
 }
 html.dark .glass-card {
-    background-color: rgba(15, 23, 42, 0.35) !important;
+    background-color: rgba(21, 26, 35, 0.70) !important;
     border: 1.5px solid rgba(255, 255, 255, 0.08) !important;
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
 }
 
-/* 核心修復：使用 CSS 自定義屬性來為 Material Web Dialog 元件注入玻璃透明色 */
+/* 彈窗（Dialog）背景透明度調高（由 0.18/0.35 增至 0.75/0.85），大幅強化文字對比 */
 md-dialog {
-    --md-dialog-container-color: rgba(255, 255, 255, 0.18) !important;
+    --md-dialog-container-color: rgba(255, 255, 255, 0.75) !important;
 }
 html.dark md-dialog {
-    --md-dialog-container-color: rgba(15, 23, 42, 0.35) !important;
+    --md-dialog-container-color: rgba(21, 26, 35, 0.85) !important;
 }
 
 /* 專屬：對話框 (Dialog) 全域玻璃化 */
@@ -166,10 +166,10 @@ html.dark md-dialog::part(container) {
     box-shadow: 0 24px 64px 0 rgba(0, 0, 0, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.05);
 }
 
-/* 記錄卡片磨砂玻璃設定 */
+/* 記錄卡片磨砂玻璃設定（底色不透明度由 0.22 提高至 0.60） */
 .record-card { 
     touch-action: pan-y; 
-    background-color: rgba(255, 255, 255, 0.22); 
+    background-color: rgba(255, 255, 255, 0.60); 
     backdrop-filter: blur(40px); 
     -webkit-backdrop-filter: blur(40px); 
     border: 1.5px solid rgba(255, 255, 255, 0.7);
@@ -180,7 +180,7 @@ html.dark md-dialog::part(container) {
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
 }
 html.dark .record-card { 
-    background-color: rgba(15, 23, 42, 0.35); 
+    background-color: rgba(21, 26, 35, 0.70); 
     border: 1.5px solid rgba(255, 255, 255, 0.1);
     box-shadow: 
         0 10px 32px 0 rgba(0, 0, 0, 0.25), 
@@ -208,38 +208,38 @@ html.dark .record-card {
 
 .platform-title { cursor: pointer; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
 
-/* 專屬：大數據表格毛玻璃滾動效果 */
+/* 大數據表格毛玻璃底色不透明度調高 */
 .global-stats-table {
     background-color: transparent !important;
 }
 .global-stats-table tbody tr {
-    background-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: rgba(255, 255, 255, 0.40) !important;
     backdrop-filter: blur(10px);
 }
 html.dark .global-stats-table tbody tr {
-    background-color: rgba(15, 23, 42, 0.15) !important;
+    background-color: rgba(21, 26, 35, 0.55) !important;
 }
 
-/* 凍結首欄 (平台名稱) 改用磨砂毛玻璃 */
+/* 凍結首欄 (平台名稱) 玻璃底層實色化 (由 0.55 增至 0.85) */
 .global-stats-table th.sticky-col { 
     position: sticky; left: 0; 
-    background-color: rgba(248, 250, 252, 0.55) !important; 
+    background-color: rgba(248, 250, 252, 0.85) !important; 
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     z-index: 20; box-shadow: 1px 0 0 var(--color-border); 
 }
 .global-stats-table td.sticky-col { 
     position: sticky; left: 0; 
-    background-color: rgba(255, 255, 255, 0.55) !important; 
+    background-color: rgba(255, 255, 255, 0.85) !important; 
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     z-index: 10; box-shadow: 1px 0 0 var(--color-border); font-weight: 700; 
 }
 html.dark .global-stats-table th.sticky-col { 
-    background-color: rgba(28, 33, 40, 0.55) !important; 
+    background-color: rgba(28, 33, 40, 0.85) !important; 
 }
 html.dark .global-stats-table td.sticky-col { 
-    background-color: rgba(22, 27, 34, 0.55) !important; 
+    background-color: rgba(22, 27, 34, 0.85) !important; 
 }
 
 .used { opacity: 0.8; }
