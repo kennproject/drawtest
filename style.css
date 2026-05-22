@@ -85,33 +85,50 @@ img {
     pointer-events: none;                   /* 點擊穿透給父容器，避開 Android 原生彈窗 */
 }
 
+/* 主容器：調低不透明度，由 0.65 降至 0.45，加強模糊度 */
 .main-container { 
-    background-color: rgba(255, 255, 255, 0.65); 
-    backdrop-filter: blur(28px); 
-    -webkit-backdrop-filter: blur(28px); 
-    border: 1px solid rgba(255, 255, 255, 0.8); 
+    background-color: rgba(255, 255, 255, 0.45); 
+    backdrop-filter: blur(32px); 
+    -webkit-backdrop-filter: blur(32px); 
+    border: 1px solid rgba(255, 255, 255, 0.85); 
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
     transition: background-color 0.3s, border-color 0.3s; 
 }
 html.dark .main-container { 
-    background-color: rgba(22, 27, 34, 0.65); 
-    border: 1px solid rgba(255, 255, 255, 0.1); 
+    background-color: rgba(22, 27, 34, 0.45); 
+    border: 1px solid rgba(255, 255, 255, 0.15); 
 }
 
-.summary-box { background-color: rgba(227, 242, 253, 0.55); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(33, 150, 243, 0.3); color: var(--theme-color-summary-text); transition: all 0.3s ease; }
-html.dark .summary-box { background-color: rgba(33, 38, 45, 0.55); border: 1px solid rgba(255, 255, 255, 0.1); }
+/* 匯總區塊：調低不透明度，由 0.55 降至 0.35 */
+.summary-box { 
+    background-color: rgba(227, 242, 253, 0.35); 
+    backdrop-filter: blur(16px); 
+    -webkit-backdrop-filter: blur(16px); 
+    border: 1px solid rgba(33, 150, 243, 0.35); 
+    color: var(--theme-color-summary-text); 
+    transition: all 0.3s ease; 
+}
+html.dark .summary-box { 
+    background-color: rgba(33, 38, 45, 0.35); 
+    border: 1px solid rgba(255, 255, 255, 0.12); 
+}
 
+/* 紀錄卡片：調低不透明度，由 0.45 降至 0.25 */
 .record-card { 
     touch-action: pan-y; 
-    background-color: rgba(255, 255, 255, 0.45); 
-    backdrop-filter: blur(20px); 
-    -webkit-backdrop-filter: blur(20px); 
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    position: relative; z-index: 2; transform: translateX(0); will-change: transform; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+    background-color: rgba(255, 255, 255, 0.25); 
+    backdrop-filter: blur(24px); 
+    -webkit-backdrop-filter: blur(24px); 
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    position: relative; 
+    z-index: 2; 
+    transform: translateX(0); 
+    will-change: transform; 
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
 }
 html.dark .record-card { 
-    background-color: rgba(28, 33, 40, 0.5); 
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(28, 33, 40, 0.30); 
+    border: 1px solid rgba(255, 255, 255, 0.08);
     text-shadow: 0 0 1px rgba(255,255,255,0.25); 
 }
 
