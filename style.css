@@ -51,33 +51,20 @@ html.dark {
     --md-list-container-color: #1c2128;
 }
 
+/* 網頁底層：升級版夢幻極光對比漸變背景 */
 body { 
     font-family: 'Roboto', 'Noto Sans TC', sans-serif; 
     color: var(--color-text-primary); 
     min-height: 100vh; 
-    background: linear-gradient(135deg, #e3f2fd 0%, #f4f7fa 40%, #e8eaf6 100%);
+    /* 引入色彩豐富、飽和度高嘅極光底色，極大化玻璃折射面 */
+    background: linear-gradient(135deg, #c7d2fe 0%, #f1f5f9 50%, #fbcfe8 100%);
     background-attachment: fixed;
     transition: background 0.3s, color 0.3s;
+    position: relative;
+    z-index: 1;
 }
 
-body::before {
-    content: ''; position: fixed; top: -10%; left: -10%; width: 50vw; height: 50vw;
-    background: radial-gradient(circle, rgba(33, 150, 243, 0.15) 0%, rgba(33, 150, 243, 0) 70%);
-    border-radius: 50%; z-index: -1; pointer-events: none;
-}
-body::after {
-    content: ''; position: fixed; bottom: -10%; right: -10%; width: 60vw; height: 60vw;
-    background: radial-gradient(circle, rgba(106, 27, 154, 0.1) 0%, rgba(106, 27, 154, 0) 70%);
-    border-radius: 50%; z-index: -1; pointer-events: none;
-}
-
-html.dark body { 
-    background: linear-gradient(135deg, #0f172a 0%, #0d1117 50%, #1e1b4b 100%); 
-}
-html.dark body::before { background: radial-gradient(circle, rgba(33, 150, 243, 0.12) 0%, rgba(33, 150, 243, 0) 70%); }
-html.dark body::after { background: radial-gradient(circle, rgba(156, 39, 176, 0.08) 0%, rgba(156, 39, 176, 0) 70%); }
-
-/* 核心保留：禁用圖片長按原生選單、並防止選取 */
+/* 禁用長按圖片彈出原生系統選單，並防止選取 */
 img {
     -webkit-touch-callout: none !important; /* 禁用 iOS Safari 圖片長按選單 */
     -webkit-user-select: none !important;   /* 禁用 iOS Safari 選取 */
@@ -85,7 +72,34 @@ img {
     pointer-events: none;                   /* 點擊穿透給父容器，避開 Android 原生彈窗 */
 }
 
-/* 主容器：調低不透明度，由 0.65 降至 0.45，加強模糊度 */
+/* 極光氣泡 1：左上角（飽和靛藍 Indigo Orb） */
+body::before {
+    content: ''; position: fixed; top: -10%; left: -10%; width: 65vw; height: 65vw;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.45) 0%, rgba(99, 102, 241, 0) 70%);
+    border-radius: 50%; z-index: -1; pointer-events: none;
+}
+/* 極光氣泡 2：右下角（艷麗玫瑰紅 Rose Orb） */
+body::after {
+    content: ''; position: fixed; bottom: -15%; right: -10%; width: 75vw; height: 75vw;
+    background: radial-gradient(circle, rgba(244, 63, 94, 0.35) 0%, rgba(244, 63, 94, 0) 70%);
+    border-radius: 50%; z-index: -1; pointer-events: none;
+}
+/* 極光氣泡 3：中左側（薄荷青綠 Teal Orb，配合 html 偽元素） */
+html::before {
+    content: ''; position: fixed; top: 30%; left: -15%; width: 55vw; height: 55vw;
+    background: radial-gradient(circle, rgba(20, 184, 166, 0.3) 0%, rgba(20, 184, 166, 0) 70%);
+    border-radius: 50%; z-index: -1; pointer-events: none;
+}
+
+/* 深色模式底層：賽博朋克霓虹夜色 (Cyberpunk Vibe) */
+html.dark body { 
+    background: linear-gradient(135deg, #090514 0%, #0d0e15 50%, #1c091a 100%); 
+}
+html.dark body::before { background: radial-gradient(circle, rgba(124, 58, 237, 0.35) 0%, rgba(124, 58, 237, 0) 75%); }
+html.dark body::after { background: radial-gradient(circle, rgba(244, 63, 94, 0.25) 0%, rgba(244, 63, 94, 0) 75%); }
+html.dark html::before { background: radial-gradient(circle, rgba(6, 182, 212, 0.25) 0%, rgba(6, 182, 212, 0) 75%); }
+
+/* 主容器玻璃設定（調回最適透光度，強化模糊特效） */
 .main-container { 
     background-color: rgba(255, 255, 255, 0.45); 
     backdrop-filter: blur(32px); 
@@ -99,7 +113,7 @@ html.dark .main-container {
     border: 1px solid rgba(255, 255, 255, 0.15); 
 }
 
-/* 匯總區塊：調低不透明度，由 0.55 降至 0.35 */
+/* 匯總區塊玻璃設定 */
 .summary-box { 
     background-color: rgba(227, 242, 253, 0.35); 
     backdrop-filter: blur(16px); 
@@ -113,7 +127,7 @@ html.dark .summary-box {
     border: 1px solid rgba(255, 255, 255, 0.12); 
 }
 
-/* 紀錄卡片：調低不透明度，由 0.45 降至 0.25 */
+/* 紀錄卡片磨砂玻璃設定 */
 .record-card { 
     touch-action: pan-y; 
     background-color: rgba(255, 255, 255, 0.25); 
