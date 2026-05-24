@@ -51,17 +51,18 @@ html.dark {
     --md-list-container-color: #1c2128;
 }
 
-/* 網頁底層：升級版夢幻極光對比漸變背景 */
+/* 網頁底層：極致炫彩極光對比漸變背景 */
 body { 
     font-family: 'Roboto', 'Noto Sans TC', sans-serif; 
     color: var(--color-text-primary); 
     min-height: 100vh; 
-    /* 引入色彩豐富、飽和度高嘅極光底色，極大化玻璃折射面 */
-    background: linear-gradient(135deg, #c7d2fe 0%, #f1f5f9 50%, #fbcfe8 100%);
+    /* 使用色彩極其飽和、大跨度的霓虹極光漸層底色 */
+    background: linear-gradient(135deg, #a5b4fc 0%, #fef08a 40%, #fbcfe8 75%, #99f6e4 100%);
     background-attachment: fixed;
     transition: background 0.3s, color 0.3s;
     position: relative;
     z-index: 1;
+    overflow-x: hidden;
 }
 
 /* 禁用長按圖片彈出原生系統選單，並防止選取 */
@@ -72,32 +73,58 @@ img {
     pointer-events: none;                   /* 點擊穿透給父容器，避開 Android 原生彈窗 */
 }
 
-/* 極光氣泡 1：左上角（飽和靛藍 Indigo Orb） */
-body::before {
-    content: ''; position: fixed; top: -10%; left: -10%; width: 65vw; height: 65vw;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.45) 0%, rgba(99, 102, 241, 0) 70%);
-    border-radius: 50%; z-index: -1; pointer-events: none;
+/* 慢速漂浮動畫：最大化減少 CPU 消耗，僅使用 transform 和 scale */
+@keyframes floatOrb1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(6vw, 4vh) scale(1.15); }
 }
-/* 極光氣泡 2：右下角（艷麗玫瑰紅 Rose Orb） */
-body::after {
-    content: ''; position: fixed; bottom: -15%; right: -10%; width: 75vw; height: 75vw;
-    background: radial-gradient(circle, rgba(244, 63, 94, 0.35) 0%, rgba(244, 63, 94, 0) 70%);
-    border-radius: 50%; z-index: -1; pointer-events: none;
+@keyframes floatOrb2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-5vw, -6vh) scale(1.12); }
 }
-/* 極光氣泡 3：中左側（薄荷青綠 Teal Orb，配合 html 偽元素） */
-html::before {
-    content: ''; position: fixed; top: 30%; left: -15%; width: 55vw; height: 55vw;
-    background: radial-gradient(circle, rgba(20, 184, 166, 0.3) 0%, rgba(20, 184, 166, 0) 70%);
-    border-radius: 50%; z-index: -1; pointer-events: none;
+@keyframes floatOrb3 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-4vw, 5vh) scale(1.08); }
 }
 
-/* 深色模式底層：賽博朋克霓虹夜色 (Cyberpunk Vibe) */
-html.dark body { 
-    background: linear-gradient(135deg, #090514 0%, #0d0e15 50%, #1c091a 100%); 
+/* 極光氣泡 1：左上角（高飽和深靛藍） */
+body::before {
+    content: ''; position: fixed; top: -15%; left: -15%; width: 75vw; height: 75vw;
+    background: radial-gradient(circle, rgba(67, 56, 202, 0.55) 0%, rgba(67, 56, 202, 0) 70%);
+    border-radius: 50%; z-index: -1; pointer-events: none;
+    animation: floatOrb1 25s infinite ease-in-out;
 }
-html.dark body::before { background: radial-gradient(circle, rgba(124, 58, 237, 0.35) 0%, rgba(124, 58, 237, 0) 75%); }
-html.dark body::after { background: radial-gradient(circle, rgba(244, 63, 94, 0.25) 0%, rgba(244, 63, 94, 0) 75%); }
-html.dark html::before { background: radial-gradient(circle, rgba(6, 182, 212, 0.25) 0%, rgba(6, 182, 212, 0) 75%); }
+/* 極光氣泡 2：右下角（高飽和艷麗玫瑰紅） */
+body::after {
+    content: ''; position: fixed; bottom: -20%; right: -15%; width: 85vw; height: 85vw;
+    background: radial-gradient(circle, rgba(225, 29, 72, 0.45) 0%, rgba(225, 29, 72, 0) 70%);
+    border-radius: 50%; z-index: -1; pointer-events: none;
+    animation: floatOrb2 30s infinite ease-in-out;
+}
+/* 極光氣泡 3：中左側（鮮豔翡翠綠） */
+html::before {
+    content: ''; position: fixed; top: 25%; left: -20%; width: 65vw; height: 65vw;
+    background: radial-gradient(circle, rgba(13, 148, 136, 0.4) 0%, rgba(13, 148, 136, 0) 70%);
+    border-radius: 50%; z-index: -1; pointer-events: none;
+    animation: floatOrb3 22s infinite ease-in-out;
+}
+
+/* 深色模式底層：高飽和度迷幻霓虹夜色 */
+html.dark body { 
+    background: linear-gradient(135deg, #03001e 0%, #12002f 40%, #1c0024 75%, #001a1a 100%); 
+}
+html.dark body::before { 
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.45) 0%, rgba(139, 92, 246, 0) 75%); 
+    animation-duration: 20s;
+}
+html.dark body::after { 
+    background: radial-gradient(circle, rgba(244, 63, 94, 0.38) 0%, rgba(244, 63, 94, 0) 75%); 
+    animation-duration: 25s;
+}
+html.dark html::before { 
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.35) 0%, rgba(6, 182, 212, 0) 75%); 
+    animation-duration: 18s;
+}
 
 /* 主容器玻璃設定（調回最適透光度，強化模糊特效） */
 .main-container { 
