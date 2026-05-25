@@ -7,6 +7,29 @@ window.addEventListener('contextmenu', (e) => {
     }
 });
 
+// --- 統一系統本地通知模組 ---
+function sendLocalNotification(title, body) {
+    if (!("Notification" in window)) return;
+    if (Notification.permission === "granted") {
+        const options = {
+            body: body,
+            icon: "./icon.png",
+            badge: "./icon.png",
+            vibrate: [200, 100, 200]
+        };
+        // 優先透過 Service Worker 喚醒後台推送，相容性與覆蓋率更好
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.ready.then(reg => {
+                reg.showNotification(title, options);
+            }).catch(() => {
+                new Notification(title, options);
+            });
+        } else {
+            new Notification(title, options);
+        }
+    }
+}
+
 // --- 網頁內建 Toast 通知系統 ---
 function showToast(title, messageLines) {
     const container = document.getElementById('toast-container');
@@ -176,6 +199,8 @@ const allDOMElements = {
     confirmDialog: document.getElementById('confirmDialog'), confirmTitle: document.getElementById('confirmTitle'), confirmMessage: document.getElementById('confirmMessage'),
     addFavoriteBtn: document.getElementById('addFavoriteBtn'), addToHomeScreenBtn: document.getElementById('addToHomeScreenBtn'), exportCsvBtn: document.getElementById('exportCsvBtn'), 
     calculatorBtn: document.getElementById('calculatorBtn'), calculatorDialog: document.getElementById('calculatorDialog'), spendingAmountInput: document.getElementById('spendingAmountInput'), calculatorResult: document.getElementById('calculatorResult'), calculateBtn: document.getElementById('calculateBtn'), markAsUsedBtn: document.getElementById('markAsUsedBtn'), cancelCalculatorBtn: document.getElementById('cancelCalculator'), statusAnnouncer: document.getElementById('status-announcer'),
+    // 新增按鈕綁定
+    quickNotifyBtn: document.getElementById('quickNotifyBtn')
 };
 
 function announceStatus(message) { allDOMElements.statusAnnouncer.textContent = message; }
@@ -893,7 +918,7 @@ function renderGlobalStats(week) {
         type: 'doughnut',
         data: {
             labels: availablePlatforms.map(p => PLATFORMS[p]),
-            datasets: [{ data: availablePlatforms.map(p => data[p].amtShare * 100), backgroundColor: availablePlatforms.map(p => PLATFORM_COLORS[p]), borderColor: 'transparent', borderWidth: 2, hoverOffset: 4 }]
+            datasets: [{ data: availablePlatforms.map(p => data[p].amtShare * 100), backgroundColor: availablePlatforms.map(p => PLATFORM_COLORS[p]), borderColor: document.documentElement.style.getPropertyValue('--color-surface'), borderWidth: 2, hoverOffset: 4 }]
         },
         options: { ...chartTheme, responsive: true, maintainAspectRatio: false, cutout: '50%', plugins: { ...chartTheme.plugins, legend: { display: true, position: 'right', labels: { ...chartTheme.plugins.legend.labels, boxWidth: 12 } }, datalabels: { ...chartTheme.plugins.datalabels, formatter: (v, ctx) => { const total = ctx.chart.getDatasetMeta(0).total; if (total === 0) return ''; const percent = v / total; if (percent < 0.03) return ''; const fullLabel = ctx.chart.data.labels[ctx.dataIndex]; const shortLabel = fullLabel.replace(/^[a-zA-Z]+/g, '').trim() || fullLabel; return shortLabel + '\n' + v.toFixed(1) + '%'; }, color: '#fff', font: { weight: 'bold', size: 11, family: "'Noto Sans TC', sans-serif" }, textAlign: 'center' } } }
     });
@@ -1457,9 +1482,113 @@ allDOMElements.exportCsvBtn.addEventListener('click', () => {
 
 allDOMElements.disclaimerLink.addEventListener('click', (e) => {
     e.preventDefault();
-    const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存 or 處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀 or 洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即 নিকট表示您已閱讀、理解並同意以上所有條款。";
+    const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存 or 處理任何個人可識別 information (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀 or 洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即 নিকট表示您已閱讀、理解並同意以上所有條款。";
     showAlertDialog(disclaimerText, "免責聲明");
 });
+
+// --- 新增：手動推送未用券狀態通知 ---
+if (allDOMElements.quickNotifyBtn) {
+    allDOMElements.quickNotifyBtn.addEventListener('click', async () => {
+        if (!("Notification" in window)) {
+            showAlertDialog("您的瀏覽器不支援桌面通知系統。");
+            return;
+        }
+        
+        if (Notification.permission === "default") {
+            const permission = await Notification.requestPermission();
+            if (permission !== "granted") {
+                showAlertDialog("您已拒絕通知權限。若想接收定時到期提醒，請至瀏覽器設定開啟通知功能。");
+                return;
+            }
+        } else if (Notification.permission === "denied") {
+            showAlertDialog("通知權限已被拒絕。請點擊網址列左側的鎖頭，手動允許此網站推送通知。");
+            return;
+        }
+
+        const currentWeek = getWeekNumber(new Date());
+        const weeklyRecords = records.filter(record => record.week === currentWeek);
+        let remainingCoupons = [];
+        let totalRemaining = 0;
+
+        weeklyRecords.forEach(record => {
+            const usedCoupons = record.usedCoupons || {};
+            const unusedForThisPlatform = [];
+            [record.draw1, record.draw2, record.draw3].forEach((c, i) => {
+                const val = parseInt(c) || 0;
+                if (val > 0 && !usedCoupons[`draw${i+1}`]) {
+                    unusedForThisPlatform.push(val);
+                    totalRemaining += val;
+                }
+            });
+            if (unusedForThisPlatform.length > 0) {
+                remainingCoupons.push(`${PLATFORMS[record.platform] || record.platform}: MOP ${unusedForThisPlatform.join('、')}`);
+            }
+        });
+
+        if (totalRemaining > 0) {
+            sendLocalNotification(
+                "您的未使用消費券明細 🔔", 
+                `本周未用總額: MOP ${totalRemaining}\n${remainingCoupons.join('\n')}`
+            );
+            showToast("通知已發送", [`已將您本期未用券明細發送至您的系統通知！`]);
+        } else {
+            sendLocalNotification(
+                "本周消費券已全數使用！🎉", 
+                "太棒了！本周所有抽到的消費券已標記為已使用，無任何未用券。繼續保持！"
+            );
+            showToast("通知已發送", [`本周無任何未用券，做得好！`]);
+        }
+    });
+}
+
+// --- 新增：定時背景檢查任務 (周四中午 12:00, 周日晚上 21:00) ---
+setInterval(() => {
+    const now = new Date();
+    const currentWeek = getWeekNumber(now);
+    const day = now.getDay();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+
+    // 周四中午 12:00 中清倉到期提醒
+    if (day === 4 && hours === 12 && minutes === 0) {
+        const key = `notified_thursday_w${currentWeek}`;
+        if (!localStorage.getItem(key)) {
+            let remainingMop = 0;
+            const weeklyRecords = records.filter(r => r.week === currentWeek);
+            weeklyRecords.forEach(record => {
+                const usedCoupons = record.usedCoupons || {};
+                [record.draw1, record.draw2, record.draw3].forEach((c, i) => {
+                    const val = parseInt(c) || 0;
+                    if (val > 0 && !usedCoupons[`draw${i+1}`]) remainingMop += val;
+                });
+            });
+            if (remainingMop > 0) {
+                sendLocalNotification(
+                    "快去清倉！周四到期提醒 ⏳", 
+                    `您本周還有 MOP ${formatNumber(remainingMop)} 的消費券未用！今晚就會過期失效啦！快點用券計數機清倉！`
+                );
+            }
+            localStorage.setItem(key, "true");
+        }
+    }
+
+    // 周日晚上 21:00 補抽券提醒
+    if (day === 0 && hours === 21 && minutes === 0) {
+        const key = `notified_sunday_w${currentWeek}`;
+        if (!localStorage.getItem(key)) {
+            const recordedPlatforms = records.filter(r => r.week === currentWeek).map(r => r.platform);
+            const availablePlatforms = Object.keys(PLATFORMS).filter(p => !hiddenPlatforms.includes(p));
+            const unrecorded = availablePlatforms.filter(p => !recordedPlatforms.includes(p));
+            if (unrecorded.length > 0) {
+                sendLocalNotification(
+                    "本周抽券記錄提醒 🎰", 
+                    `本周還有平台未記錄抽券：${unrecorded.map(p => PLATFORMS[p]).join('、')}。快去抽券記錄避免錯過啦！`
+                );
+            }
+            localStorage.setItem(key, "true");
+        }
+    }
+}, 30000); // 每 30 秒在背景悄悄檢查一次
 
 async function initializeAppFlow() {
     showLoadingSkeleton(); loadSettings();
