@@ -121,7 +121,7 @@
             overflow-x: hidden;
         }
 
-        /* 禁用長按圖片原生菜單與圖片拖拽 */
+        /* 核心保留：禁用長按圖片原生選單與圖片拖拽 */
         img {
             -webkit-touch-callout: none !important;
             -webkit-user-select: none !important;
@@ -249,7 +249,7 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .global-stats-table tbody tr { background-color: rgba(255, 255, 255, 0.5); backdrop-filter: blur(8px); }
+        .global-stats-table tbody tr { border-bottom: 1px solid var(--color-border); transition: background-color 0.2s; }
         .global-stats-table th.sticky-col { position: sticky; left: 0; background-color: var(--color-table-header-bg); z-index: 20; box-shadow: 1px 0 0 var(--color-border); }
         .global-stats-table td.sticky-col { position: sticky; left: 0; background-color: var(--color-surface); z-index: 10; box-shadow: 1px 0 0 var(--color-border); font-weight: 700; }
         html.dark .global-stats-table td.sticky-col { background-color: var(--color-table-header-bg); }
@@ -388,7 +388,7 @@
                     <!-- 卡片由 JS 動態生成 -->
                 </div>
 
-                <!-- 全局提示 (跳轉 APP / 長按全用) -->
+                <!-- 全局提示 -->
                 <div class="text-center text-xs sm:text-sm font-bold opacity-60 text-gray-600 dark:text-gray-400 mt-1 mb-2">
                     <span class="material-symbols-outlined text-[14px] align-middle">touch_app</span> 點擊平台圖示跳轉 APP (測試中) / 長按標記全用
                 </div>
@@ -432,7 +432,7 @@
                             <span class="material-symbols-outlined text-blue-500">bar_chart</span>
                         </md-icon-button>
 
-                        <!-- 優化：新增我的大獎賞總結按鈕 -->
+                        <!-- 我的大獎賞總結按鈕 -->
                         <md-icon-button id="myRewardsBtn" title="我的大獎賞" aria-label="打開我的大獎賞回顧" class="rounded-full shadow-sm border" style="background-color: var(--color-surface); border-color: var(--color-border);">
                             <span class="material-symbols-outlined text-amber-500">military_tech</span>
                         </md-icon-button>
@@ -800,7 +800,7 @@
                 "Alipay": { p0: 0.437, p10: 0.358, p20: 0.153, p50: 0.045, p100: 0.006, p200: 0.001, exp: 29.15, draws: 971, userShare: 0.676, amtShare: 0.103 },
                 "BOC": { p0: 0.119, p10: 0.599, p20: 0.213, p50: 0.059, p100: 0.006, p200: 0.004, exp: 43.80, draws: 1312, userShare: 0.914, amtShare: 0.209 },
                 "GFB": { p0: 0.339, p10: 0.374, p20: 0.183, p50: 0.086, p100: 0.011, p200: 0.005, exp: 41.77, draws: 440, userShare: 0.306, amtShare: 0.067 },
-                "ICBC": { p0: 0.294, p10: 0.544, p20: 0.130, p50: 0.026, p100: 0.004, p200: 0.002, exp: 30.33, draws: 1107, userShare: 0.771, amtShare: 0.122 },
+                "ICBC": { p0: 0.294, p10: 0.544, p20: 0.130, p50: 0.026, p100: 0.004, p200: 0.002, exp: 30.33, draws: 1107, userShare: 0.771, amtShare: 0.147 },
                 "Luso": { p0: 0.496, p10: 0.334, p20: 0.130, p50: 0.035, p100: 0.002, p200: 0.003, exp: 25.61, draws: 711, userShare: 0.495, amtShare: 0.066 },
                 "MPay": { p0: 0.210, p10: 0.508, p20: 0.186, p50: 0.074, p100: 0.011, p200: 0.011, exp: 47.41, draws: 1334, userShare: 0.929, amtShare: 0.230 },
                 "TFB": { p0: 0.294, p10: 0.409, p20: 0.193, p50: 0.087, p100: 0.008, p200: 0.009, exp: 44.39, draws: 782, userShare: 0.545, amtShare: 0.126 },
