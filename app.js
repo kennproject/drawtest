@@ -1443,7 +1443,7 @@ function bindAppEvents() {
         skipBtn.addEventListener('click', async () => {
             if (!currentInputPlatform) { showAlertDialog("請先點選上方要跳過的平台！"); return; }
             const platform = currentInputPlatform; const weekNumber = getEntryWeekNumber();
-            if (!weekNumber) { showAlertDialog("請選擇要記錄的周數！"); return; }
+            if (!weekNumber) { showAlertDialog("請選擇要操作的周數！"); return; }
             if (records.some(r => r.week === weekNumber && r.platform === platform)) { showAlertDialog(`第 ${weekNumber} 周已存在 ${platform} 的記錄！`); return; }
             const docId = `${weekNumber}-${platform}`;
             const newRecord = { id: docId, week: weekNumber, platform, draw1: "ND", draw2: "ND", draw3: "ND", usedCoupons: { draw1: true, draw2: true, draw3: true }, createdAt: new Date().toISOString() };
@@ -1480,15 +1480,9 @@ function bindAppEvents() {
 
     if (addToHomeScreenBtn) {
         addToHomeScreenBtn.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                await deferredPrompt.userChoice;
-                deferredPrompt = null;
-            } else {
-                const ua = navigator.userAgent;
-                const isIOS = /iPad|iPhone|iPod/.test(ua);
-                const isAndroid = /Android/.test(ua);
-                let message = '';
+            if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; } 
+            else {
+                const ua = navigator.userAgent; const isIOS = /iPad|iPhone|iPod/.test(ua); const isAndroid = /Android/.test(ua); let message = '';
                 if (isIOS) message = '<b>iOS/iPadOS 裝置:</b><br>1. 點擊底部工具列的「分享」<span class="material-symbols-outlined" style="font-size: 1em; vertical-align: -0.15em;">ios_share</span>按鈕。<br>2. 在選項中向下滑動，找到並點擊「加入主畫面」。';
                 else if (isAndroid) message = '<b>Android 裝置:</b><br>1. 點擊瀏覽器右上角的「選單」<span class="material-symbols-outlined" style="font-size: 1em; vertical-align: -0.15em;">more_vert</span>按鈕。<br>2. 找到並點擊「新增至主畫面」或「安裝應用程式」。';
                 else message = '請使用您的瀏覽器選單，尋找「新增至主畫面」、「安裝應用程式」或類似選項，即可將此網站像APP一樣放在桌面。';
@@ -1514,7 +1508,7 @@ function bindAppEvents() {
     if (disclaimerLink) {
         disclaimerLink.addEventListener('click', (e) => {
             e.preventDefault();
-            const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存 or 處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀 or 洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性 or 無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即 নিকট表示您已閱讀、理解並同意以上所有條款。";
+            const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存 or 處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀或洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即 নিকট表示您已閱讀、理解並同意以上所有條款。";
             showAlertDialog(disclaimerText, "免責聲明");
         });
     }
