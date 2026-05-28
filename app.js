@@ -1,5 +1,3 @@
-import { GLOBAL_STATS_DATA } from './data.js';
-
 // --- 全局防誤觸：攔截選單與禁用長按 ---
 window.addEventListener('contextmenu', (e) => {
     if (e.target.closest('.platform-title') || e.target.closest('.platform-chip') || e.target.tagName === 'IMG') {
@@ -832,29 +830,31 @@ function renderGlobalStats(week) {
     const top3HTML = top3Platforms.map((p, i) => `<div class="flex justify-between items-center"><span class="opacity-80">${i+1}. ${p}</span><span class="font-bold text-base tabular-nums">${formatNumber(data[p].draws)}</span></div>`).join('');
 
     const funFactEl = document.getElementById('globalStatsFunFact');
-    funFactEl.innerHTML = `
-        <h4 class="font-bold text-base sm:text-lg mb-4 flex items-center gap-2" style="color: var(--theme-color-summary-text);">
-            <span class="material-symbols-outlined">lightbulb</span> 第 ${week} 周全網抽獎大數據
-        </h4>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm" style="color: var(--theme-color-summary-text);">
-            <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
-                <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-green-500">trending_up</span> 最高期望值(MOP)</span>
-                <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${maxEvPlatform}</strong><span class="text-3xl font-black text-green-600 dark:text-green-400 leading-none tabular-nums">${data[maxEvPlatform].exp.toFixed(1)}</span></div>
+    if (funFactEl) {
+        funFactEl.innerHTML = `
+            <h4 class="font-bold text-base sm:text-lg mb-4 flex items-center gap-2" style="color: var(--theme-color-summary-text);">
+                <span class="material-symbols-outlined">lightbulb</span> 第 ${week} 周全網抽獎大數據
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm" style="color: var(--theme-color-summary-text);">
+                <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
+                    <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-green-500">trending_up</span> 最高期望值(MOP)</span>
+                    <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${maxEvPlatform}</strong><span class="text-3xl font-black text-green-600 dark:text-green-400 leading-none tabular-nums">${data[maxEvPlatform].exp.toFixed(1)}</span></div>
+                </div>
+                <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
+                    <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-gray-500">sentiment_dissatisfied</span> 最容易中0元</span>
+                    <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${max0Platform}</strong><span class="text-3xl font-black text-gray-600 dark:text-gray-400 leading-none tabular-nums">${(data[max0Platform].p0 * 100).toFixed(1)}%</span></div>
+                </div>
+                <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
+                    <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-yellow-500">workspace_premium</span> 最容易中200元</span>
+                    <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${max200Platform}</strong><span class="text-3xl font-black text-yellow-600 dark:text-yellow-400 leading-none tabular-nums">${(data[max200Platform].p200 * 100).toFixed(2)}%</span></div>
+                </div>
+                <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
+                    <span class="flex items-center gap-1 font-bold opacity-80 text-[13px] mb-2"><span class="material-symbols-outlined text-[18px] text-blue-500">format_list_numbered</span> 第 ${week} 周抽獎次數排名</span>
+                    <div class="flex flex-col gap-1.5 mt-auto">${top3HTML}</div>
+                </div>
             </div>
-            <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
-                <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-gray-500">sentiment_dissatisfied</span> 最容易中0元</span>
-                <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${max0Platform}</strong><span class="text-3xl font-black text-gray-600 dark:text-gray-400 leading-none tabular-nums">${(data[max0Platform].p0 * 100).toFixed(1)}%</span></div>
-            </div>
-            <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
-                <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-yellow-500">workspace_premium</span> 最容易中200元</span>
-                <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${max200Platform}</strong><span class="text-3xl font-black text-yellow-600 dark:text-yellow-400 leading-none tabular-nums">${(data[max200Platform].p200 * 100).toFixed(2)}%</span></div>
-            </div>
-            <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
-                <span class="flex items-center gap-1 font-bold opacity-80 text-[13px] mb-2"><span class="material-symbols-outlined text-[18px] text-blue-500">format_list_numbered</span> 第 ${week} 周抽獎次數排名</span>
-                <div class="flex flex-col gap-1.5 mt-auto">${top3HTML}</div>
-            </div>
-        </div>
-    `;
+        `;
+    }
 
     if (!window.Chart || !window.ChartDataLabels) return;
     const chartTheme = getChartJsThemeOptions();
@@ -912,7 +912,7 @@ function renderCharts(week) {
     couponCountChart = new Chart(couponCtx, {
         type: 'bar',
         data: { labels: couponOrder, datasets: [{ label: '張數', data: couponOrder.map(key => couponCounts[key]), backgroundColor: ['#F6F6F6', '#BA4040', '#6F4E9F', '#825211', '#3C72A1', '#E18C1F'], borderColor: ['#e5e7eb', 'transparent', 'transparent', 'transparent', 'transparent', 'transparent'], borderWidth: [1, 0, 0, 0, 0, 0], borderRadius: 4 }] },
-        options: { ...chartTheme, responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } }, x: {} }, plugins: { ...chartTheme.plugins, legend: { display: false }, datalabels: { ...chartTheme.plugins.datalabels, anchor: 'start', align: 'end', backgroundColor: (ctx) => document.documentElement.classList.contains('dark') ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.85)', color: (ctx) => document.documentElement.classList.contains('dark') ? '#ffffff' : '#1f2937', borderRadius: 6, padding: 4, font: { weight: 'bold', size: 10, family: "'Noto Sans TC", sans-serif" }, textAlign: 'center', formatter: (v, ctx) => { if (v === 0) return ''; const total = ctx.dataset.data.reduce((a, b) => a + b, 0); const pct = ((v / total) * 100).toFixed(1) + '%'; return v + '\n(' + pct + ')'; } } }
+        options: { ...chartTheme, responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } }, x: {} }, plugins: { ...chartTheme.plugins, legend: { display: false }, datalabels: { ...chartTheme.plugins.datalabels, anchor: 'start', align: 'end', backgroundColor: (ctx) => document.documentElement.classList.contains('dark') ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.85)', color: (ctx) => document.documentElement.classList.contains('dark') ? '#ffffff' : '#1f2937', borderRadius: 6, padding: 4, font: { weight: 'bold', size: 10, family: "'Noto Sans TC', sans-serif" }, textAlign: 'center', formatter: (v, ctx) => { if (v === 0) return ''; const total = ctx.dataset.data.reduce((a, b) => a + b, 0); const pct = ((v / total) * 100).toFixed(1) + '%'; return v + '\n(' + pct + ')'; } } } }
     });
     
     const platformTotals = Object.keys(PLATFORMS).reduce((acc, p) => ({...acc, [p]: 0}), {});
@@ -925,7 +925,7 @@ function renderCharts(week) {
     if (platformTotalChart) platformTotalChart.destroy();
     platformTotalChart = new Chart(document.getElementById('platformTotalChart'), {
         type: 'doughnut',
-        data: { labels: sortedPlatforms.map(p => PLATFORMS[p[0]]), datasets: [{ data: sortedPlatforms.map(p => p[1]), backgroundColor: sortedPlatforms.map(p => PLATFORM_COLORS[p[0]]), borderColor: 'transparent', borderWidth: 2, hoverOffset: 4 }] },
+        data: { labels: sortedPlatforms.map(p => PLATFORMS[p[0]]), datasets: [{ data: sortedPlatforms.map(p => p[1]), backgroundColor: sortedPlatforms.map(p => PLATFORM_COLORS[p[0]]), borderColor: document.documentElement.style.getPropertyValue('--color-surface'), borderWidth: 2, hoverOffset: 4 }] },
         options: { ...chartTheme, responsive: true, maintainAspectRatio: false, cutout: '40%', layout: { padding: 10 }, scales: { x: { display: false }, y: { display: false } }, plugins: { ...chartTheme.plugins, legend: { display: false }, datalabels: { ...chartTheme.plugins.datalabels, formatter: (v, ctx) => { const total = ctx.chart.getDatasetMeta(0).total; if (total === 0) return ''; const percent = v / total; if (percent < 0.04) return ''; const fullLabel = ctx.chart.data.labels[ctx.dataIndex]; const shortLabel = fullLabel.replace(/^[a-zA-Z]+/g, '').trim() || fullLabel; return shortLabel + '\n' + (percent * 100).toFixed(0) + '%'; }, color: '#fff', font: { weight: 'bold', size: 12, family: "'Noto Sans TC', sans-serif" }, textAlign: 'center' } } }
     });
 
@@ -982,17 +982,6 @@ function renderCharts(week) {
         options: { ...chartTheme, responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true }, x: {} }, plugins: { ...chartTheme.plugins, legend: { display: false }, datalabels: { ...chartTheme.plugins.datalabels, anchor: 'end', align: 'end', color: chartTheme.color, formatter: v => v > 0 ? formatNumber(v) : '' } } }
     });
 }
-
-allDOMElements.statsBtn.addEventListener('click', async () => {
-    await loadScript('https://cdn.jsdelivr.net/npm/chart.js'); await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js');
-    const { statsWeekFilter, statsDialog } = allDOMElements;
-    statsWeekFilter.innerHTML = '<md-select-option value="all" selected>全部周數</md-select-option>';
-    const weeks = [...new Set(records.map(r => r.week))].sort((a,b) => a-b);
-    weeks.forEach(w => statsWeekFilter.innerHTML += `<md-select-option value="${w}">第 ${w} 周</md-select-option>`);
-    renderCharts('all'); statsDialog.show();
-});
-allDOMElements.closeStatsDialogBtn.addEventListener('click', () => allDOMElements.statsDialog.close());
-allDOMElements.statsWeekFilter.addEventListener('change', (e) => renderCharts(e.target.value));
 
 function applyTheme(themeName) {
     const theme = THEMES[themeName]; if (!theme) return;
@@ -1133,7 +1122,7 @@ function calculateAndRenderMyRewards() {
         }
     });
 
-    // 海報去ID化 (回應：戰績回顧不要顯示ID)
+    // 海報去ID化 (戰績回顧不顯示ID)
     document.getElementById('poster-total-won').textContent = `MOP ${formatNumber(totalWon)}`;
     document.getElementById('poster-total-spent').textContent = `MOP ${formatNumber(totalSpent)}`;
     document.getElementById('poster-max-platform').textContent = maxWonAmount > 0 ? `${maxWonPlatform} (MOP ${maxWonAmount})` : '暫無紀錄';
@@ -1339,7 +1328,7 @@ function bindAppEvents() {
                  return;
             }
             
-            let resultHTML = `<div class="font-bold text-lg mb-3 pb-2 border-b" style="border-color: var(--color-border); color: var(--text-primary);">✅ 目標消費：MOP ${targetAmount}</div>`;
+            let resultHTML = `<div class="font-bold text-lg mb-3 pb-2 border-b" style="border-color: var(--color-border); color: var(--color-text-primary);">✅ 目標消費：MOP ${targetAmount}</div>`;
             resultHTML += `<div class="flex flex-col gap-2 mb-3">`;
 
             const groupedByPlatform = bestCouponCombination.reduce((acc, coupon) => { acc[coupon.platform] = acc[coupon.platform] || []; acc[coupon.platform].push(coupon.value); return acc; }, {});
@@ -1454,7 +1443,7 @@ function bindAppEvents() {
         skipBtn.addEventListener('click', async () => {
             if (!currentInputPlatform) { showAlertDialog("請先點選上方要跳過的平台！"); return; }
             const platform = currentInputPlatform; const weekNumber = getEntryWeekNumber();
-            if (!weekNumber) { showAlertDialog("請選擇要操作的周數！"); return; }
+            if (!weekNumber) { showAlertDialog("請選擇要記錄的周數！"); return; }
             if (records.some(r => r.week === weekNumber && r.platform === platform)) { showAlertDialog(`第 ${weekNumber} 周已存在 ${platform} 的記錄！`); return; }
             const docId = `${weekNumber}-${platform}`;
             const newRecord = { id: docId, week: weekNumber, platform, draw1: "ND", draw2: "ND", draw3: "ND", usedCoupons: { draw1: true, draw2: true, draw3: true }, createdAt: new Date().toISOString() };
@@ -1491,9 +1480,15 @@ function bindAppEvents() {
 
     if (addToHomeScreenBtn) {
         addToHomeScreenBtn.addEventListener('click', async () => {
-            if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; } 
-            else {
-                const ua = navigator.userAgent; const isIOS = /iPad|iPhone|iPod/.test(ua); const isAndroid = /Android/.test(ua); let message = '';
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                await deferredPrompt.userChoice;
+                deferredPrompt = null;
+            } else {
+                const ua = navigator.userAgent;
+                const isIOS = /iPad|iPhone|iPod/.test(ua);
+                const isAndroid = /Android/.test(ua);
+                let message = '';
                 if (isIOS) message = '<b>iOS/iPadOS 裝置:</b><br>1. 點擊底部工具列的「分享」<span class="material-symbols-outlined" style="font-size: 1em; vertical-align: -0.15em;">ios_share</span>按鈕。<br>2. 在選項中向下滑動，找到並點擊「加入主畫面」。';
                 else if (isAndroid) message = '<b>Android 裝置:</b><br>1. 點擊瀏覽器右上角的「選單」<span class="material-symbols-outlined" style="font-size: 1em; vertical-align: -0.15em;">more_vert</span>按鈕。<br>2. 找到並點擊「新增至主畫面」或「安裝應用程式」。';
                 else message = '請使用您的瀏覽器選單，尋找「新增至主畫面」、「安裝應用程式」或類似選項，即可將此網站像APP一樣放在桌面。';
@@ -1519,7 +1514,7 @@ function bindAppEvents() {
     if (disclaimerLink) {
         disclaimerLink.addEventListener('click', (e) => {
             e.preventDefault();
-            const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存 or 處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀 or 洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即 নিকট表示您已閱讀、理解並同意以上所有條款。";
+            const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存 or 處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀 or 洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性 or 無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即 নিকট表示您已閱讀、理解並同意以上所有條款。";
             showAlertDialog(disclaimerText, "免責聲明");
         });
     }
