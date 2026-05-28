@@ -227,8 +227,13 @@
                             <span class="material-symbols-outlined text-blue-500">bar_chart</span>
                         </md-icon-button>
 
-                        <!-- 優化：新增手動推送未用券狀態通知按鈕 -->
-                        <md-icon-button id="quickNotifyBtn" title="推送未用券通知" aria-label="推送未用券通知" class="rounded-full shadow-sm border animate-pulse" style="background-color: var(--color-surface); border-color: var(--color-border);">
+                        <!-- 優化：新增我的大獎賞總結按鈕 -->
+                        <md-icon-button id="myRewardsBtn" title="我的大獎賞" aria-label="打開我的大獎賞回顧" class="rounded-full shadow-sm border" style="background-color: var(--color-surface); border-color: var(--color-border);">
+                            <span class="material-symbols-outlined text-amber-500">military_tech</span>
+                        </md-icon-button>
+
+                        <!-- 推送未用券狀態通知按鈕 -->
+                        <md-icon-button id="quickNotifyBtn" title="推送未用券通知" aria-label="推送未用券通知" class="rounded-full shadow-sm border" style="background-color: var(--color-surface); border-color: var(--color-border);">
                             <span class="material-symbols-outlined text-orange-500">notifications_active</span>
                         </md-icon-button>
 
@@ -420,7 +425,7 @@
         </div>
     </md-dialog>
     
-    <!-- 優化：彈窗放大、移除結果區塊的內嵌捲軸 -->
+    <!-- 用券計數機 Dialog -->
     <md-dialog id="calculatorDialog" role="dialog" aria-labelledby="calculatorDialogTitle" style="--md-dialog-container-max-width: 800px; width: 95vw;">
         <div slot="headline" id="calculatorDialogTitle" class="font-bold flex items-center gap-2">
             <span class="material-symbols-outlined text-[24px]">calculate</span> 用券計數機
@@ -431,7 +436,6 @@
                 <md-filled-button id="calculateBtn" class="flex-shrink-0 whitespace-nowrap h-12 px-2">計算</md-filled-button>
             </div>
             
-            <!-- 精簡的策略區塊 -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
                     <span class="text-sm font-bold opacity-80 text-[var(--color-text-primary)]">策略</span>
@@ -450,7 +454,6 @@
                 </div>
             </div>
 
-            <!-- 取消內嵌滾動，讓結果自然延伸 -->
             <div id="calculatorResult" class="flex-1 mt-2 text-sm leading-relaxed transition-all" aria-live="polite" style="color: var(--color-text-primary);">
                 請輸入上方欲消費金額後點擊「計算」。
             </div>
@@ -458,6 +461,104 @@
         <div slot="actions">
             <md-text-button id="cancelCalculator">關閉</md-text-button>
             <md-filled-button id="markAsUsedBtn" class="hidden">套用並標記為已使用</md-filled-button>
+        </div>
+    </md-dialog>
+
+    <!-- 「我的大獎賞」專屬海報 Dialog (內置海報、不透明卡片設計、文字極佳易讀性) -->
+    <md-dialog id="myRewardsDialog" role="dialog" aria-labelledby="myRewardsDialogTitle" style="--md-dialog-container-max-width: 800px; width: 95vw;">
+        <div slot="headline" id="myRewardsDialogTitle" class="font-bold flex items-center gap-2 text-amber-500">
+            <span class="material-symbols-outlined text-[28px]">workspace_premium</span> 我的大獎賞戰績
+        </div>
+        <form slot="content" id="myRewardsDialogForm" class="flex flex-col gap-4 mt-2 max-h-[70vh] overflow-y-auto no-scrollbar">
+            <!-- 預覽海報容器 (寬度鎖定，保證導出圖片的最佳排版) -->
+            <div id="myRewardsPoster" class="w-full max-w-[680px] mx-auto p-5 sm:p-8 rounded-[2rem] flex flex-col gap-5 text-white relative overflow-hidden shadow-2xl border border-white/20" style="background: linear-gradient(135deg, #090c15 0%, #111827 50%, #1e1b4b 100%);">
+                
+                <!-- 裝飾極光光源 -->
+                <div class="absolute -top-10 -left-10 w-64 h-64 rounded-full filter blur-[80px] opacity-40 pointer-events-none" style="background: radial-gradient(circle, #6366f1 0%, transparent 70%);"></div>
+                <div class="absolute -bottom-10 -right-10 w-72 h-72 rounded-full filter blur-[80px] opacity-35 pointer-events-none" style="background: radial-gradient(circle, #ec4899 0%, transparent 70%);"></div>
+                
+                <!-- 標頭 -->
+                <div class="text-center relative z-10 flex flex-col gap-1 border-b border-white/10 pb-4">
+                    <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-300">
+                        2026 社區消費大獎賞
+                    </h2>
+                    <p class="text-xs sm:text-sm font-bold text-indigo-200 tracking-wider">✨ 我的專屬消費戰績回顧 ✨</p>
+                    <p id="poster-user-id" class="text-[10px] text-gray-400 font-mono mt-1 opacity-80"></p>
+                </div>
+
+                <!-- 戰績卡片網格 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 relative z-10">
+                    <!-- 1. 總共抽到 -->
+                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[36px] text-amber-400">payments</span>
+                        <div>
+                            <p class="text-xs font-bold text-gray-300">總共抽到金額</p>
+                            <h3 id="poster-total-won" class="text-xl sm:text-2xl font-black text-amber-300 tabular-nums">MOP 0</h3>
+                        </div>
+                    </div>
+                    <!-- 2. 至少已消費 -->
+                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[36px] text-emerald-400">shopping_bag</span>
+                        <div>
+                            <p class="text-xs font-bold text-gray-300">累計消費金額至少</p>
+                            <h3 id="poster-total-spent" class="text-xl sm:text-2xl font-black text-emerald-300 tabular-nums">MOP 0</h3>
+                        </div>
+                    </div>
+                    <!-- 3. 最旺平台 -->
+                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-3 col-span-1 sm:col-span-2">
+                        <span class="material-symbols-outlined text-[36px] text-indigo-400">workspace_premium</span>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-bold text-gray-300">抽中金額最多嘅平台</p>
+                            <h3 id="poster-max-platform" class="text-lg sm:text-xl font-black text-indigo-200 truncate">暫無</h3>
+                        </div>
+                    </div>
+                    <!-- 4. 200蚊次數 -->
+                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[36px] text-yellow-500">military_tech</span>
+                        <div>
+                            <p class="text-xs font-bold text-gray-300">抽出 200 蚊次數</p>
+                            <h3 id="poster-count-200" class="text-xl sm:text-2xl font-black text-yellow-300 tabular-nums">0 次</h3>
+                        </div>
+                    </div>
+                    <!-- 5. 抽唔到平台 -->
+                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-3">
+                        <span class="material-symbols-outlined text-[36px] text-rose-400">heart_broken</span>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-bold text-gray-300">「多謝參與」最多平台</p>
+                            <h3 id="poster-max-miss-platform" class="text-base sm:text-lg font-black text-rose-300 truncate">暫無</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 圖表展示區 (不透明卡片底保證圖表完美對比度) -->
+                <div class="flex flex-col gap-5 mt-2 relative z-10">
+                    <!-- 圖表 1 -->
+                    <div class="p-4 rounded-2xl bg-[#111827] border border-white/10 flex flex-col gap-2">
+                        <h4 class="text-xs font-bold text-indigo-200 flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">bar_chart</span> 各平台累計抽出金額 (MOP)</h4>
+                        <div class="h-44 relative"><canvas id="posterPlatformChart"></canvas></div>
+                    </div>
+                    <!-- 圖表 2 -->
+                    <div class="p-4 rounded-2xl bg-[#111827] border border-white/10 flex flex-col gap-2">
+                        <h4 class="text-xs font-bold text-indigo-200 flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">equalizer</span> 各面額抽出次數</h4>
+                        <div class="h-44 relative"><canvas id="posterCouponChart"></canvas></div>
+                    </div>
+                    <!-- 圖表 3 -->
+                    <div class="p-4 rounded-2xl bg-[#111827] border border-white/10 flex flex-col gap-2">
+                        <h4 class="text-xs font-bold text-indigo-200 flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">show_chart</span> 每周抽出金額趨勢</h4>
+                        <div class="h-44 relative"><canvas id="posterWeeklyTrendChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- 頁尾 -->
+                <div class="text-center relative z-10 border-t border-white/10 pt-4 flex flex-col gap-1 text-[11px] text-gray-400 font-medium">
+                    <p class="font-bold tracking-widest text-indigo-300">🔗 https://2026macaudraw.netlify.app</p>
+                    <p class="opacity-70">✨ 全網最齊消費券機率與戰績管理平台 ✨</p>
+                </div>
+            </div>
+        </form>
+        <div slot="actions">
+            <md-text-button id="closeMyRewardsBtn">關閉</md-text-button>
+            <md-filled-button id="downloadPosterBtn" class="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-none font-bold">一鍵下載成分享圖片</md-filled-button>
         </div>
     </md-dialog>
 
