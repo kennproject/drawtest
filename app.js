@@ -684,7 +684,6 @@ function loadSettings() {
     renderPlatformOptions(); 
 }
 
-// 綁定設定對話框點擊
 function bindSettingsEvents() {
     if (allDOMElements.settingsBtn) {
         allDOMElements.settingsBtn.addEventListener('click', () => {
@@ -829,34 +828,31 @@ function renderGlobalStats(week) {
     const top3HTML = top3Platforms.map((p, i) => `<div class="flex justify-between items-center"><span class="opacity-80">${i+1}. ${p}</span><span class="font-bold text-base tabular-nums">${formatNumber(data[p].draws)}</span></div>`).join('');
 
     const funFactEl = document.getElementById('globalStatsFunFact');
-    if (funFactEl) {
-        funFactEl.innerHTML = `
-            <h4 class="font-bold text-base sm:text-lg mb-4 flex items-center gap-2" style="color: var(--theme-color-summary-text);">
-                <span class="material-symbols-outlined">lightbulb</span> 第 ${week} 周全網抽獎大數據
-            </h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm" style="color: var(--theme-color-summary-text);">
-                <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
-                    <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-green-500">trending_up</span> 最高期望值(MOP)</span>
-                    <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${maxEvPlatform}</strong><span class="text-3xl font-black text-green-600 dark:text-green-400 leading-none tabular-nums">${data[maxEvPlatform].exp.toFixed(1)}</span></div>
-                </div>
-                <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
-                    <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-gray-500">sentiment_dissatisfied</span> 最容易中0元</span>
-                    <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${max0Platform}</strong><span class="text-3xl font-black text-gray-600 dark:text-gray-400 leading-none tabular-nums">${(data[max0Platform].p0 * 100).toFixed(1)}%</span></div>
-                </div>
-                <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
-                    <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-yellow-500">workspace_premium</span> 最容易中200元</span>
-                    <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${max200Platform}</strong><span class="text-3xl font-black text-yellow-600 dark:text-yellow-400 leading-none tabular-nums">${(data[max200Platform].p200 * 100).toFixed(2)}%</span></div>
-                </div>
-                <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
-                    <span class="flex items-center gap-1 font-bold opacity-80 text-[13px] mb-2"><span class="material-symbols-outlined text-[18px] text-blue-500">format_list_numbered</span> 第 ${week} 周抽獎次數排名</span>
-                    <div class="flex flex-col gap-1.5 mt-auto">${top3HTML}</div>
-                </div>
+    funFactEl.innerHTML = `
+        <h4 class="font-bold text-base sm:text-lg mb-4 flex items-center gap-2" style="color: var(--theme-color-summary-text);">
+            <span class="material-symbols-outlined">lightbulb</span> 第 ${week} 周全網抽獎大數據
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm" style="color: var(--theme-color-summary-text);">
+            <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
+                <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-green-500">trending_up</span> 最高期望值(MOP)</span>
+                <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${maxEvPlatform}</strong><span class="text-3xl font-black text-green-600 dark:text-green-400 leading-none tabular-nums">${data[maxEvPlatform].exp.toFixed(1)}</span></div>
             </div>
-        `;
-    }
+            <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
+                <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-gray-500">sentiment_dissatisfied</span> 最容易中0元</span>
+                <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${max0Platform}</strong><span class="text-3xl font-black text-gray-600 dark:text-gray-400 leading-none tabular-nums">${(data[max0Platform].p0 * 100).toFixed(1)}%</span></div>
+            </div>
+            <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
+                <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-yellow-500">workspace_premium</span> 最容易中200元</span>
+                <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${max200Platform}</strong><span class="text-3xl font-black text-yellow-600 dark:text-yellow-400 leading-none tabular-nums">${(data[max200Platform].p200 * 100).toFixed(2)}%</span></div>
+            </div>
+            <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
+                <span class="flex items-center gap-1 font-bold opacity-80 text-[13px] mb-2"><span class="material-symbols-outlined text-[18px] text-blue-500">format_list_numbered</span> 第 ${week} 周抽獎次數排名</span>
+                <div class="flex flex-col gap-1.5 mt-auto">${top3HTML}</div>
+            </div>
+        </div>
+    `;
 
     if (!window.Chart || !window.ChartDataLabels) return;
-    Chart.register(ChartDataLabels);
     const chartTheme = getChartJsThemeOptions();
 
     if (globalCouponChart) globalCouponChart.destroy();
@@ -983,6 +979,17 @@ function renderCharts(week) {
     });
 }
 
+allDOMElements.statsBtn.addEventListener('click', async () => {
+    await loadScript('https://cdn.jsdelivr.net/npm/chart.js'); await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js');
+    const { statsWeekFilter, statsDialog } = allDOMElements;
+    statsWeekFilter.innerHTML = '<md-select-option value="all" selected>全部周數</md-select-option>';
+    const weeks = [...new Set(records.map(r => r.week))].sort((a,b) => a-b);
+    weeks.forEach(w => statsWeekFilter.innerHTML += `<md-select-option value="${w}">第 ${w} 周</md-select-option>`);
+    renderCharts('all'); statsDialog.show();
+});
+allDOMElements.closeStatsDialogBtn.addEventListener('click', () => allDOMElements.statsDialog.close());
+allDOMElements.statsWeekFilter.addEventListener('change', (e) => renderCharts(e.target.value));
+
 function applyTheme(themeName) {
     const theme = THEMES[themeName]; if (!theme) return;
     const root = document.documentElement;
@@ -1009,7 +1016,7 @@ function findBestCouponCombination(coupons, targetAmount, strategy = 'large') {
     const platformCouponCounts = coupons.reduce((acc, coupon) => { acc[coupon.platform] = (acc[coupon.platform] || 0) + 1; return acc; }, {});
     const didClearPlatform = (combination) => {
         if (combination.length === 0) return false;
-        const comboCounts = combination.reduce((acc, coupon) => { acc[coupon.platform] = (acc[combo.platform] || 0) + 1; return acc; }, {});
+        const comboCounts = combination.reduce((acc, coupon) => { acc[coupon.platform] = (acc[coupon.platform] || 0) + 1; return acc; }, {});
         for (const platform in comboCounts) if (comboCounts[platform] === platformCouponCounts[platform]) return true;
         return false;
     };
@@ -1065,7 +1072,7 @@ function findBestCouponCombination(coupons, targetAmount, strategy = 'large') {
     find(0, 0, []); return bestSolution.combination;
 }
 
-// --- 「我的大獎賞」統計、海報生成及圖片下載邏輯 ---
+// --- 「我的大獎賞」統計、海報生成及圖片下載邏輯 (優化、修復裁剪、圖表不顯示Bug) ---
 function calculateAndRenderMyRewards() {
     let totalWon = 0;
     let baseSpend = 0;
@@ -1122,7 +1129,7 @@ function calculateAndRenderMyRewards() {
         }
     });
 
-    document.getElementById('poster-user-id').textContent = `用戶 ID: ${currentUserId || '未連接雲端'}`;
+    // 海報去ID化 (回應：戰績回顧不要顯示ID)
     document.getElementById('poster-total-won').textContent = `MOP ${formatNumber(totalWon)}`;
     document.getElementById('poster-total-spent').textContent = `MOP ${formatNumber(totalSpent)}`;
     document.getElementById('poster-max-platform').textContent = maxWonAmount > 0 ? `${maxWonPlatform} (MOP ${maxWonAmount})` : '暫無紀錄';
@@ -1328,7 +1335,7 @@ function bindAppEvents() {
                  return;
             }
             
-            let resultHTML = `<div class="font-bold text-lg mb-3 pb-2 border-b" style="border-color: var(--color-border); color: var(--color-text-primary);">✅ 目標消費：MOP ${targetAmount}</div>`;
+            let resultHTML = `<div class="font-bold text-lg mb-3 pb-2 border-b" style="border-color: var(--color-border); color: var(--text-primary);">✅ 目標消費：MOP ${targetAmount}</div>`;
             resultHTML += `<div class="flex flex-col gap-2 mb-3">`;
 
             const groupedByPlatform = bestCouponCombination.reduce((acc, coupon) => { acc[coupon.platform] = acc[coupon.platform] || []; acc[coupon.platform].push(coupon.value); return acc; }, {});
@@ -1414,291 +1421,4 @@ function bindAppEvents() {
             const confirmed = await showConfirmDialog('確定要將計算結果中的消費券標示為「已使用」嗎？\n此操作將會直接更新您的記錄。', '確認操作');
             if (!confirmed) return;
             try {
-                const updates = {}; bestCouponCombination.forEach(coupon => { updates[`records.${coupon.recordId}.usedCoupons.${coupon.couponKey}`] = true; });
-                await safeUpdateRecordDoc(updates, null); 
-                announceStatus("已成功標示消費券為已使用。"); allDOMElements.calculatorDialog.close();
-            } catch (error) { showAlertDialog('操作失敗，請稍後再試。'); }
-        });
-    }
-
-    if (filterWeekSelect) {
-        filterWeekSelect.addEventListener('change', renderRecords);
-    }
-
-    if (filterPlatformSelect) {
-        filterPlatformSelect.addEventListener('change', renderRecords);
-    }
-
-    if (filterCurrentWeekBtn) {
-        filterCurrentWeekBtn.addEventListener('click', () => {
-            const select = filterWeekSelect; select.value = getWeekNumber(new Date()).toString(); select.dispatchEvent(new Event('change', { bubbles: true }));
-        });
-    }
-
-    if (addRecordBtn) {
-        addRecordBtn.addEventListener('click', submitRecordLogic);
-    }
-
-    if (skipBtn) {
-        skipBtn.addEventListener('click', async () => {
-            if (!currentInputPlatform) { showAlertDialog("請先點選上方要跳過的平台！"); return; }
-            const platform = currentInputPlatform; const weekNumber = getEntryWeekNumber();
-            if (!weekNumber) { showAlertDialog("請選擇要操作的周數！"); return; }
-            if (records.some(r => r.week === weekNumber && r.platform === platform)) { showAlertDialog(`第 ${weekNumber} 周已存在 ${platform} 的記錄！`); return; }
-            const docId = `${weekNumber}-${platform}`;
-            const newRecord = { id: docId, week: weekNumber, platform, draw1: "ND", draw2: "ND", draw3: "ND", usedCoupons: { draw1: true, draw2: true, draw3: true }, createdAt: new Date().toISOString() };
-            try {
-                await safeUpdateRecordDoc({ [`records.${docId}`]: newRecord }, { records: { [docId]: newRecord } });
-                currentInputPlatform = ''; renderPlatformOptions(); announceStatus(`已成功新增 ${PLATFORMS[platform]} 的跳過紀錄。`);
-            } catch (error) { showAlertDialog("新增 Skip 紀錄失敗，請檢查網絡連線。"); }
-        });
-    }
-
-    if (copyUserIdBtn) {
-        copyUserIdBtn.addEventListener('click', () => {
-            const { userIdInput } = allDOMElements;
-            if (navigator.clipboard && userIdInput.value) {
-                navigator.clipboard.writeText(userIdInput.value).then(() => { showAlertDialog('用戶 ID 已成功複製！\n請妥善保存以防資料遺失。'); announceStatus('用戶 ID 已複製到剪貼簿。'); }).catch(() => { showAlertDialog('複製失敗，請手動複製。'); });
-            }
-        });
-    }
-
-    if (switchUserBtn) {
-        switchUserBtn.addEventListener('click', () => {
-            const newUserId = allDOMElements.userIdInput.value.trim();
-            if (newUserId && newUserId !== currentUserId) {
-                currentUserId = newUserId; localStorage.setItem('savedUserId', currentUserId);
-                showAlertDialog(`已成功切換至帳號 ID:\n${currentUserId}`); announceStatus(`已切換至新用戶。`);
-                loadCachedData(currentUserId); syncRecords(currentUserId);
-            } else if (!newUserId) { showAlertDialog('請輸入有效的用戶 ID！'); }
-        });
-    }
-
-    if (addFavoriteBtn) {
-        addFavoriteBtn.addEventListener('click', () => { showAlertDialog('<b>電腦:</b> 按下 `Ctrl + D` 或 `Cmd + D` 將此頁加入書籤。<br><br><b>手機:</b> 請點擊瀏覽器選單按鈕，然後選擇「新增至書籤」或類似選項。', '新增至書籤/最愛'); });
-    }
-
-    if (addToHomeScreenBtn) {
-        addToHomeScreenBtn.addEventListener('click', async () => {
-            if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; } 
-            else {
-                const ua = navigator.userAgent; const isIOS = /iPad|iPhone|iPod/.test(ua); const isAndroid = /Android/.test(ua); let message = '';
-                if (isIOS) message = '<b>iOS/iPadOS 裝置:</b><br>1. 點擊底部工具列的「分享」<span class="material-symbols-outlined" style="font-size: 1em; vertical-align: -0.15em;">ios_share</span>按鈕。<br>2. 在選項中向下滑動，找到並點擊「加入主畫面」。';
-                else if (isAndroid) message = '<b>Android 裝置:</b><br>1. 點擊瀏覽器右上角的「選單」<span class="material-symbols-outlined" style="font-size: 1em; vertical-align: -0.15em;">more_vert</span>按鈕。<br>2. 找到並點擊「新增至主畫面」或「安裝應用程式」。';
-                else message = '請使用您的瀏覽器選單，尋找「新增至主畫面」、「安裝應用程式」或類似選項，即可將此網站像APP一樣放在桌面。';
-                showAlertDialog(message, '安裝應用程式/新增到主畫面');
-            }
-        });
-    }
-
-    if (exportCsvBtn) {
-        exportCsvBtn.addEventListener('click', () => {
-            if (records.length === 0) { showAlertDialog('沒有可匯出的資料。'); return; }
-            const headers = ['周數', '平台', '券1', '券2', '券3', '券1已使用', '券2已使用', '券3已使用', '建立時間']; const rows = [headers];
-            const sortedRecords = [...records].sort((a, b) => (a.week !== b.week) ? a.week - b.week : a.platform.localeCompare(b.platform));
-            sortedRecords.forEach(record => {
-                const usedCoupons = record.usedCoupons || {}; const createdAt = record.createdAt ? new Date(record.createdAt).toLocaleString('zh-HK') : '';
-                rows.push([ record.week, PLATFORMS[record.platform] || record.platform, record.draw1, record.draw2, record.draw3, usedCoupons.draw1 ? '是' : '否', usedCoupons.draw2 ? '是' : '否', usedCoupons.draw3 ? '是' : '否', createdAt ]);
-            });
-            const now = new Date(); const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
-            exportToCsv(`社區消費獎賞2026_${timestamp}_${currentUserId}.csv`, rows);
-        });
-    }
-
-    if (disclaimerLink) {
-        disclaimerLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存 or 處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀 or 洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即 নিকট表示您已閱讀、理解並同意以上所有條款。";
-            showAlertDialog(disclaimerText, "免責聲明");
-        });
-    }
-
-    // 手動推送未用券狀態通知
-    if (quickNotifyBtn) {
-        quickNotifyBtn.addEventListener('click', async () => {
-            if (!("Notification" in window)) {
-                showAlertDialog("您的瀏覽器不支援桌面通知系統。");
-                return;
-            }
-            
-            if (Notification.permission === "default") {
-                const permission = await Notification.requestPermission();
-                if (permission !== "granted") {
-                    showAlertDialog("您已拒絕通知權限。若想接收定時到期提醒，請至瀏覽器設定開啟通知功能。");
-                    return;
-                }
-            } else if (Notification.permission === "denied") {
-                showAlertDialog("通知權限已被拒絕。請點擊網址列左側的鎖頭，手動允許此網站推送通知。");
-                return;
-            }
-
-            const currentWeek = getWeekNumber(new Date());
-            const weeklyRecords = records.filter(record => record.week === currentWeek);
-            let remainingCoupons = [];
-            let totalRemaining = 0;
-
-            weeklyRecords.forEach(record => {
-                const usedCoupons = record.usedCoupons || {};
-                const unusedForThisPlatform = [];
-                [record.draw1, record.draw2, record.draw3].forEach((c, i) => {
-                    const val = parseInt(c) || 0;
-                    if (val > 0 && !usedCoupons[`draw${i+1}`]) {
-                        unusedForThisPlatform.push(val);
-                        totalRemaining += val;
-                    }
-                });
-                if (unusedForThisPlatform.length > 0) {
-                    remainingCoupons.push(`${PLATFORMS[record.platform] || record.platform}: MOP ${unusedForThisPlatform.join('、')}`);
-                }
-            });
-
-            if (totalRemaining > 0) {
-                sendLocalNotification(
-                    "您的未使用消費券明細 🔔", 
-                    `本周未用總額: MOP ${totalRemaining}\n${remainingCoupons.join('\n')}`
-                );
-                showToast("通知已發送", [`已將您本期未用券明細發送至您的系統通知！`]);
-            } else {
-                sendLocalNotification(
-                    "本周消費券已全數使用！🎉", 
-                    "太棒了！本周所有抽到的消費券已標記為已使用，無任何未用券。繼續保持！"
-                );
-                showToast("通知已發送", [`本周無任何未用券，做得好！`]);
-            }
-        });
-    }
-
-    // 我的大獎賞回顧
-    if (myRewardsBtn) {
-        myRewardsBtn.addEventListener('click', async () => {
-            await loadScript('https://cdn.jsdelivr.net/npm/chart.js');
-            await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js');
-            calculateAndRenderMyRewards();
-            allDOMElements.myRewardsDialog.show();
-        });
-    }
-
-    if (closeMyRewardsBtn) {
-        closeMyRewardsBtn.addEventListener('click', () => {
-            allDOMElements.myRewardsDialog.close();
-        });
-    }
-
-    if (downloadPosterBtn) {
-        downloadPosterBtn.addEventListener('click', async () => {
-            const originalText = downloadPosterBtn.textContent;
-            downloadPosterBtn.disabled = true;
-            downloadPosterBtn.textContent = '圖片生成中...';
-            
-            try {
-                await loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
-                const posterEl = document.getElementById('myRewardsPoster');
-                
-                const canvas = await html2canvas(posterEl, {
-                    useCORS: true,
-                    scale: 2, 
-                    backgroundColor: null,
-                    logging: false
-                });
-                
-                const dataUrl = canvas.toDataURL('image/png');
-                const link = document.createElement('a');
-                link.download = `我的大獎賞戰績2026_${currentUserId ? currentUserId.substring(0, 8) : '匿名'}.png`;
-                link.href = dataUrl;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                showToast("戰績海報已下載 🏆", ["快去朋友圈或群組分享你的手氣啦！"]);
-            } catch (err) {
-                console.error('導出海報失敗:', err);
-                showAlertDialog('圖片生成失敗，請稍後再試。');
-            } finally {
-                downloadPosterBtn.disabled = false;
-                downloadPosterBtn.textContent = originalText;
-            }
-        });
-    }
-}
-
-// --- 定時背景檢查任務 (周四中午 12:00, 周日晚上 21:00) ---
-setInterval(() => {
-    const now = new Date();
-    const currentWeek = getWeekNumber(now);
-    const day = now.getDay();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-
-    if (day === 4 && hours === 12 && minutes === 0) {
-        const key = `notified_thursday_w${currentWeek}`;
-        if (!localStorage.getItem(key)) {
-            let remainingMop = 0;
-            const weeklyRecords = records.filter(r => r.week === currentWeek);
-            weeklyRecords.forEach(record => {
-                const usedCoupons = record.usedCoupons || {};
-                [record.draw1, record.draw2, record.draw3].forEach((c, i) => {
-                    const val = parseInt(c) || 0;
-                    if (val > 0 && !usedCoupons[`draw${i+1}`]) remainingMop += val;
-                });
-            });
-            if (remainingMop > 0) {
-                sendLocalNotification(
-                    "快去清倉！周四到期提醒 ⏳", 
-                    `您本周還有 MOP ${formatNumber(remainingMop)} 的消費券未用！今晚就會過期失效啦！快點用券計數機清倉！`
-                );
-            }
-            localStorage.setItem(key, "true");
-        }
-    }
-
-    if (day === 0 && hours === 21 && minutes === 0) {
-        const key = `notified_sunday_w${currentWeek}`;
-        if (!localStorage.getItem(key)) {
-            const recordedPlatforms = records.filter(r => r.week === currentWeek).map(r => r.platform);
-            const availablePlatforms = Object.keys(PLATFORMS).filter(p => !hiddenPlatforms.includes(p));
-            const unrecorded = availablePlatforms.filter(p => !recordedPlatforms.includes(p));
-            if (unrecorded.length > 0) {
-                sendLocalNotification(
-                    "本周抽券記錄提醒 🎰", 
-                    `本周還有平台未記錄抽券：${unrecorded.map(p => PLATFORMS[p]).join('、')}。快去抽券記錄避免錯過啦！`
-                );
-            }
-            localStorage.setItem(key, "true");
-        }
-    }
-}, 30000); 
-
-async function initializeAppFlow() {
-    initDOMElements(); // 1. 初始化 DOM 緩存
-    showLoadingSkeleton(); 
-    loadSettings(); // 2. 載入顯示設定
-    bindAppEvents(); // 3. 綁定所有點擊事件
-    bindSettingsEvents(); // 4. 綁定設定視窗點擊事件
-
-    const savedTheme = localStorage.getItem('selectedTheme') || 'blue'; applyTheme(savedTheme);
-    const savedMode = localStorage.getItem('darkMode');
-    if (savedMode === 'enabled' || (savedMode !== 'disabled' && window.matchMedia('(prefers-color-scheme: dark)').matches)) toggleDarkMode(true);
-    else toggleDarkMode(false);
-
-    updateTimeInfo(); 
-    initializeEntryWeekSelect(); 
-    initializeAdvancedToggle(); 
-    initializeAuthToggle();
-    initRecordPanelUI(); 
-    
-    if (window.requestIdleCallback) {
-        requestIdleCallback(lazyLoadFirebase);
-    } else {
-        setTimeout(lazyLoadFirebase, 100);
-    }
-    
-    const currentWeek = getWeekNumber(new Date()).toString();
-    if (allDOMElements.filterWeekSelect) {
-        allDOMElements.filterWeekSelect.value = currentWeek;
-    }
-}
-
-// 監聽 DOMContentLoaded 確保網頁節點完全生成後才執行 initialization，防止 timed null crash
-window.addEventListener('DOMContentLoaded', () => {
-    initializeAppFlow();
-});
+                const updates = {}; bestCouponCombination.
