@@ -1,101 +1,36 @@
-// 將數據寫入 window 全域變數，徹底避免本地 file:// 協議載入時嘅 CORS 跨域安全報錯
-window.GLOBAL_STATS_DATA = {
-"1": {
-cutoff: "2026年4月13日00:00",
-overview: { totalUsers: "1,575", usersWith200: "89", maxUserAmount: "950", avgUserAmount: "195", medianUserAmount: "160", avgPlatformsPerUser: "4" },
-stats: {
-"Alipay": { p0: 0.458, p10: 0.217, p20: 0.226, p50: 0.081, p100: 0.014, p200: 0.005, exp: 39.23, draws: 816, userShare: 0.518, amtShare: 0.104 },
-"BOC": { p0: 0.116, p10: 0.369, p20: 0.332, p50: 0.159, p100: 0.016, p200: 0.008, exp: 64.69, draws: 1287, userShare: 0.817, amtShare: 0.271 },
-"GFB": { p0: 0.339, p10: 0.305, p20: 0.224, p50: 0.101, p100: 0.029, p200: 0.003, exp: 48.22, draws: 314, userShare: 0.199, amtShare: 0.049 },
-"ICBC": { p0: 0.263, p10: 0.402, p20: 0.242, p50: 0.073, p100: 0.017, p200: 0.003, exp: 44.48, draws: 925, userShare: 0.587, amtShare: 0.134 },
-"Luso": { p0: 0.395, p10: 0.318, p20: 0.209, p50: 0.067, p100: 0.009, p200: 0.003, exp: 36.58, draws: 526, userShare: 0.334, amtShare: 0.063 },
-"MPay": { p0: 0.232, p10: 0.379, p20: 0.273, p50: 0.091, p100: 0.018, p200: 0.006, exp: 50.56, draws: 1291, userShare: 0.820, amtShare: 0.213 },
-"TFB": { p0: 0.372, p10: 0.247, p20: 0.257, p50: 0.100, p100: 0.017, p200: 0.007, exp: 47.36, draws: 636, userShare: 0.404, amtShare: 0.098 },
-"UePay": { p0: 0.360, p10: 0.359, p20: 0.237, p50: 0.028, p100: 0.011, p200: 0.005, exp: 35.58, draws: 581, userShare: 0.369, amtShare: 0.067 }
+const VALID_PLATFORMS = ['Alipay', 'BOC', 'GFB', 'ICBC', 'Luso', 'MPay', 'TFB', 'UePay'];
+
+function parseRawCSV(csvText) {
+    const lines = csvText.trim().split('\n');
+    const stats = {};
+    lines.forEach(line => {
+        const cols = line.split(/,|\t/).map(c => c.trim().replace(/"/g, ''));
+        const platform = cols[0];
+        if (VALID_PLATFORMS.includes(platform)) {
+            stats[platform] = {
+                p0: parseFloat(cols[1]) || 0, p10: parseFloat(cols[2]) || 0, p20: parseFloat(cols[3]) || 0,
+                p50: parseFloat(cols[4]) || 0, p100: parseFloat(cols[5]) || 0, p200: parseFloat(cols[6]) || 0,
+                exp: parseFloat(cols[7]) || 0, draws: parseInt(cols[8]) || 0, userShare: parseFloat(cols[9]) || 0, amtShare: parseFloat(cols[10]) || 0
+            };
+        }
+    });
+    return stats;
 }
-},
-"2": {
-cutoff: "2026年4月20日00:00",
-overview: { totalUsers: "1,512", usersWith200: "98", maxUserAmount: "1,010", avgUserAmount: "201", medianUserAmount: "170", avgPlatformsPerUser: "4.75" },
-stats: {
-"Alipay": { p0: 0.410, p10: 0.281, p20: 0.200, p50: 0.098, p100: 0.010, p200: 0.001, exp: 38.90, draws: 935, userShare: 0.618, amtShare: 0.119 },
-"BOC": { p0: 0.224, p10: 0.399, p20: 0.299, p50: 0.066, p100: 0.008, p200: 0.003, exp: 43.90, draws: 1325, userShare: 0.876, amtShare: 0.191 },
-"GFB": { p0: 0.338, p10: 0.281, p20: 0.244, p50: 0.108, p100: 0.022, p200: 0.007, exp: 50.20, draws: 409, userShare: 0.271, amtShare: 0.067 },
-"ICBC": { p0: 0.301, p10: 0.376, p20: 0.242, p50: 0.061, p100: 0.016, p200: 0.003, exp: 41.60, draws: 1075, userShare: 0.711, amtShare: 0.147 },
-"Luso": { p0: 0.500, p10: 0.258, p20: 0.190, p50: 0.044, p100: 0.006, p200: 0.001, exp: 28.49, draws: 669, userShare: 0.442, amtShare: 0.063 },
-"MPay": { p0: 0.373, p10: 0.208, p20: 0.293, p50: 0.105, p100: 0.014, p200: 0.008, exp: 48.59, draws: 1317, userShare: 0.871, amtShare: 0.210 },
-"TFB": { p0: 0.367, p10: 0.264, p20: 0.246, p50: 0.096, p100: 0.017, p200: 0.011, exp: 48.55, draws: 771, userShare: 0.510, amtShare: 0.123 },
-"UePay": { p0: 0.404, p10: 0.353, p20: 0.193, p50: 0.028, p100: 0.016, p200: 0.007, exp: 35.17, draws: 688, userShare: 0.455, amtShare: 0.079 }
-}
-},
-"3": {
-cutoff: "2026年4月27日00:00",
-overview: { totalUsers: "1,452", usersWith200: "75", maxUserAmount: "690", avgUserAmount: "186", medianUserAmount: "160", avgPlatformsPerUser: "4.7" },
-stats: {
-"Alipay": { p0: 0.404, p10: 0.370, p20: 0.172, p50: 0.045, p100: 0.007, p200: 0.002, exp: 31.47, draws: 994, userShare: 0.685, amtShare: 0.116 },
-"BOC": { p0: 0.148, p10: 0.568, p20: 0.223, p50: 0.052, p100: 0.006, p200: 0.003, exp: 41.49, draws: 1327, userShare: 0.914, amtShare: 0.203 },
-"GFB": { p0: 0.333, p10: 0.393, p20: 0.160, p50: 0.092, p100: 0.015, p200: 0.008, exp: 44.28, draws: 437, userShare: 0.301, amtShare: 0.072 },
-"ICBC": { p0: 0.307, p10: 0.497, p20: 0.149, p50: 0.041, p100: 0.003, p200: 0.003, exp: 32.61, draws: 1117, userShare: 0.769, amtShare: 0.135 },
-"Luso": { p0: 0.472, p10: 0.350, p20: 0.129, p50: 0.044, p100: 0.005, p200: 0.000, exp: 26.58, draws: 734, userShare: 0.506, amtShare: 0.072 },
-"MPay": { p0: 0.208, p10: 0.535, p20: 0.198, p50: 0.051, p100: 0.006, p200: 0.003, exp: 39.03, draws: 1360, userShare: 0.937, amtShare: 0.196 },
-"TFB": { p0: 0.337, p10: 0.398, p20: 0.182, p50: 0.067, p100: 0.010, p200: 0.007, exp: 40.17, draws: 805, userShare: 0.554, amtShare: 0.119 },
-"UePay": { p0: 0.426, p10: 0.364, p20: 0.161, p50: 0.031, p100: 0.012, p200: 0.005, exp: 32.13, draws: 733, userShare: 0.505, amtShare: 0.087 }
-}
-},
-"4": {
-cutoff: "2026年5月7日23:00",
-overview: { totalUsers: "1,436", usersWith200: "108", maxUserAmount: "840", avgUserAmount: "192", medianUserAmount: "160", avgPlatformsPerUser: "5.12" },
-stats: {
-"Alipay": { p0: 0.437, p10: 0.358, p20: 0.153, p50: 0.045, p100: 0.006, p200: 0.001, exp: 29.15, draws: 971, userShare: 0.676, amtShare: 0.103 },
-"BOC": { p0: 0.119, p10: 0.599, p20: 0.213, p50: 0.059, p100: 0.006, p200: 0.004, exp: 43.80, draws: 1312, userShare: 0.914, amtShare: 0.209 },
-"GFB": { p0: 0.339, p10: 0.374, p20: 0.183, p50: 0.086, p100: 0.011, p200: 0.005, exp: 41.77, draws: 440, userShare: 0.306, amtShare: 0.067 },
-"ICBC": { p0: 0.294, p10: 0.544, p20: 0.130, p50: 0.026, p100: 0.004, p200: 0.002, exp: 30.33, draws: 1107, userShare: 0.771, amtShare: 0.122 },
-"Luso": { p0: 0.496, p10: 0.334, p20: 0.130, p50: 0.035, p100: 0.002, p200: 0.003, exp: 25.61, draws: 711, userShare: 0.495, amtShare: 0.066 },
-"MPay": { p0: 0.210, p10: 0.508, p20: 0.186, p50: 0.074, p100: 0.011, p200: 0.011, exp: 47.41, draws: 1334, userShare: 0.929, amtShare: 0.230 },
-"TFB": { p0: 0.294, p10: 0.409, p20: 0.193, p50: 0.087, p100: 0.008, p200: 0.009, exp: 44.39, draws: 782, userShare: 0.545, amtShare: 0.126 },
-"UePay": { p0: 0.455, p10: 0.354, p20: 0.148, p50: 0.028, p100: 0.010, p200: 0.006, exp: 30.19, draws: 700, userShare: 0.487, amtShare: 0.077 }
-}
-},
-"5": {
-cutoff: "2026年5月11日00:30",
-overview: { totalUsers: "1,359", usersWith200: "108", maxUserAmount: "760", avgUserAmount: "202", medianUserAmount: "180", avgPlatformsPerUser: "5.24" },
-stats: {
-"Alipay": { p0: 0.418, p10: 0.376, p20: 0.149, p50: 0.050, p100: 0.006, p200: 0.002, exp: 30.60, draws: 946, userShare: 0.696, amtShare: 0.105 },
-"BOC": { p0: 0.151, p10: 0.556, p20: 0.213, p50: 0.067, p100: 0.009, p200: 0.004, exp: 44.67, draws: 1247, userShare: 0.918, amtShare: 0.202 },
-"GFB": { p0: 0.357, p10: 0.381, p20: 0.154, p50: 0.079, p100: 0.021, p200: 0.009, exp: 43.92, draws: 421, userShare: 0.310, amtShare: 0.067 },
-"ICBC": { p0: 0.310, p10: 0.461, p20: 0.149, p50: 0.075, p100: 0.004, p200: 0.001, exp: 35.94, draws: 1061, userShare: 0.781, amtShare: 0.139 },
-"Luso": { p0: 0.456, p10: 0.374, p20: 0.130, p50: 0.034, p100: 0.004, p200: 0.002, exp: 26.34, draws: 713, userShare: 0.525, amtShare: 0.068 },
-"MPay": { p0: 0.154, p10: 0.503, p20: 0.241, p50: 0.091, p100: 0.006, p200: 0.004, exp: 47.55, draws: 1253, userShare: 0.922, amtShare: 0.216 },
-"TFB": { p0: 0.309, p10: 0.409, p20: 0.189, p50: 0.071, p100: 0.014, p200: 0.009, exp: 43.44, draws: 784, userShare: 0.577, amtShare: 0.124 },
-"UePay": { p0: 0.466, p10: 0.338, p20: 0.148, p50: 0.030, p100: 0.011, p200: 0.007, exp: 30.91, draws: 696, userShare: 0.512, amtShare: 0.078 }
-}
-},
-"6": {
-cutoff: "2026年5月18日00:00",
-overview: { totalUsers: "1,289", usersWith200: "63", maxUserAmount: "980", avgUserAmount: "190", medianUserAmount: "170", avgPlatformsPerUser: "5.19" },
-stats: {
-"Alipay": { p0: 0.416, p10: 0.398, p20: 0.154, p50: 0.025, p100: 0.004, p200: 0.002, exp: 27.38, draws: 879, userShare: 0.682, amtShare: 0.098 },
-"BOC": { p0: 0.194, p10: 0.551, p20: 0.183, p50: 0.057, p100: 0.012, p200: 0.003, exp: 41.62, draws: 1176, userShare: 0.912, amtShare: 0.199 },
-"GFB": { p0: 0.349, p10: 0.387, p20: 0.173, p50: 0.072, p100: 0.015, p200: 0.003, exp: 39.28, draws: 414, userShare: 0.321, amtShare: 0.066 },
-"ICBC": { p0: 0.279, p10: 0.452, p20: 0.180, p50: 0.079, p100: 0.008, p200: 0.002, exp: 39.72, draws: 984, userShare: 0.763, amtShare: 0.159 },
-"Luso": { p0: 0.505, p10: 0.327, p20: 0.125, p50: 0.033, p100: 0.008, p200: 0.002, exp: 25.61, draws: 638, userShare: 0.495, amtShare: 0.067 },
-"MPay": { p0: 0.218, p10: 0.499, p20: 0.197, p50: 0.074, p100: 0.008, p200: 0.004, exp: 42.61, draws: 1194, userShare: 0.926, amtShare: 0.207 },
-"TFB": { p0: 0.322, p10: 0.407, p20: 0.180, p50: 0.075, p100: 0.011, p200: 0.006, exp: 40.70, draws: 724, userShare: 0.562, amtShare: 0.120 },
-"UePay": { p0: 0.464, p10: 0.338, p20: 0.155, p50: 0.024, p100: 0.013, p200: 0.005, exp: 30.19, draws: 675, userShare: 0.524, amtShare: 0.083 }
-}
-},
-"7": {
-cutoff: "2026年5月25日23:30",
-overview: { totalUsers: "1,321", usersWith200: "133", maxUserAmount: "770", avgUserAmount: "209", medianUserAmount: "190", avgPlatformsPerUser: "5.27" },
-stats: {
-"Alipay": { p0: 0.407, p10: 0.361, p20: 0.196, p50: 0.024, p100: 0.008, p200: 0.004, exp: 30.89, draws: 919, userShare: 0.696, amtShare: 0.103 },
-"BOC": { p0: 0.109, p10: 0.553, p20: 0.280, p50: 0.032, p100: 0.019, p200: 0.008, exp: 48.61, draws: 1201, userShare: 0.909, amtShare: 0.211 },
-"GFB": { p0: 0.300, p10: 0.416, p20: 0.208, p50: 0.048, p100: 0.017, p200: 0.011, exp: 44.00, draws: 415, userShare: 0.314, amtShare: 0.066 },
-"ICBC": { p0: 0.264, p10: 0.420, p20: 0.273, p50: 0.023, p100: 0.017, p200: 0.004, exp: 39.86, draws: 1023, userShare: 0.774, amtShare: 0.148 },
-"Luso": { p0: 0.436, p10: 0.343, p20: 0.189, p50: 0.018, p100: 0.009, p200: 0.005, exp: 30.03, draws: 702, userShare: 0.531, amtShare: 0.076 },
-"MPay": { p0: 0.162, p10: 0.522, p20: 0.248, p50: 0.038, p100: 0.025, p200: 0.007, exp: 47.61, draws: 1226, userShare: 0.928, amtShare: 0.211 },
-"TFB": { p0: 0.341, p10: 0.352, p20: 0.235, p50: 0.039, p100: 0.024, p200: 0.010, exp: 43.79, draws: 742, userShare: 0.562, amtShare: 0.118 },
-"UePay": { p0: 0.499, p10: 0.352, p20: 0.122, p50: 0.014, p100: 0.008, p200: 0.006, exp: 25.60, draws: 730, userShare: 0.553, amtShare: 0.068 }
-}
-}
+
+const RAW_DATA_WEEK_1 = `Alipay,0.458,0.217,0.226,0.081,0.014,0.005,39.23,816,0.518,0.104\nBOC,0.116,0.369,0.332,0.159,0.016,0.008,64.69,1287,0.817,0.271\nGFB,0.339,0.305,0.224,0.101,0.029,0.003,48.22,314,0.199,0.049\nICBC,0.263,0.402,0.242,0.073,0.017,0.003,44.48,925,0.587,0.134\nLuso,0.395,0.318,0.209,0.067,0.009,0.003,36.58,526,0.334,0.063\nMPay,0.232,0.379,0.273,0.091,0.018,0.006,50.56,1291,0.820,0.213\nTFB,0.372,0.247,0.257,0.100,0.017,0.007,47.36,636,0.404,0.098\nUePay,0.360,0.359,0.237,0.028,0.011,0.005,35.58,581,0.369,0.067`;
+const RAW_DATA_WEEK_2 = `Alipay,0.410,0.281,0.200,0.098,0.010,0.001,38.90,935,0.618,0.119\nBOC,0.224,0.399,0.299,0.066,0.008,0.003,43.90,1325,0.876,0.191\nGFB,0.338,0.281,0.244,0.108,0.022,0.007,50.20,409,0.271,0.067\nICBC,0.301,0.376,0.242,0.061,0.016,0.003,41.60,1075,0.711,0.147\nLuso,0.500,0.258,0.190,0.044,0.006,0.001,28.49,669,0.442,0.063\nMPay,0.373,0.208,0.293,0.105,0.014,0.008,48.59,1317,0.871,0.210\nTFB,0.367,0.264,0.246,0.096,0.017,0.011,48.55,771,0.510,0.123\nUePay,0.404,0.353,0.193,0.028,0.016,0.007,35.17,688,0.455,0.079`;
+const RAW_DATA_WEEK_3 = `Alipay,0.404,0.370,0.172,0.045,0.007,0.002,31.47,994,0.685,0.116\nBOC,0.148,0.568,0.223,0.052,0.006,0.003,41.49,1327,0.914,0.203\nGFB,0.333,0.393,0.160,0.092,0.015,0.008,44.28,437,0.301,0.072\nICBC,0.307,0.497,0.149,0.041,0.003,0.003,32.61,1117,0.769,0.135\nLuso,0.472,0.350,0.129,0.044,0.005,0.000,26.58,734,0.506,0.072\nMPay,0.208,0.535,0.198,0.051,0.006,0.003,39.03,1360,0.937,0.196\nTFB,0.337,0.398,0.182,0.067,0.010,0.007,40.17,805,0.554,0.119\nUePay,0.426,0.364,0.161,0.031,0.012,0.005,32.13,733,0.505,0.087`;
+const RAW_DATA_WEEK_4 = `Alipay,0.437,0.358,0.153,0.045,0.006,0.001,29.15,971,0.676,0.103\nBOC,0.119,0.599,0.213,0.059,0.006,0.004,43.80,1312,0.914,0.209\nGFB,0.339,0.374,0.183,0.086,0.011,0.005,41.77,440,0.306,0.067\nICBC,0.294,0.544,0.130,0.026,0.004,0.002,30.33,1107,0.771,0.122\nLuso,0.496,0.334,0.130,0.035,0.002,0.003,25.61,711,0.495,0.066\nMPay,0.210,0.508,0.186,0.074,0.011,0.011,47.41,1334,0.929,0.230\nTFB,0.294,0.409,0.193,0.087,0.008,0.009,44.39,782,0.545,0.126\nUePay,0.455,0.354,0.148,0.028,0.010,0.006,30.19,700,0.487,0.077`;
+const RAW_DATA_WEEK_5 = `Alipay,0.418,0.376,0.149,0.050,0.006,0.002,30.60,946,0.696,0.105\nBOC,0.151,0.556,0.213,0.067,0.009,0.004,44.67,1247,0.918,0.202\nGFB,0.357,0.381,0.154,0.079,0.021,0.009,43.92,421,0.310,0.067\nICBC,0.310,0.461,0.149,0.075,0.004,0.001,35.94,1061,0.781,0.139\nLuso,0.456,0.374,0.130,0.034,0.004,0.002,26.34,713,0.525,0.068\nMPay,0.154,0.503,0.241,0.091,0.006,0.004,47.55,1253,0.922,0.216\nTFB,0.309,0.409,0.189,0.071,0.014,0.009,43.44,784,0.577,0.124\nUePay,0.466,0.338,0.148,0.030,0.011,0.007,30.91,696,0.512,0.078`;
+const RAW_DATA_WEEK_6 = `Alipay,0.416,0.398,0.154,0.025,0.004,0.002,27.38,879,0.682,0.098\nBOC,0.194,0.551,0.183,0.057,0.012,0.003,41.62,1176,0.912,0.199\nGFB,0.349,0.387,0.173,0.072,0.015,0.003,39.28,414,0.321,0.066\nICBC,0.279,0.452,0.180,0.079,0.008,0.002,39.72,984,0.763,0.159\nLuso,0.505,0.327,0.125,0.033,0.008,0.002,25.61,638,0.495,0.067\nMPay,0.218,0.499,0.197,0.074,0.008,0.004,42.61,1194,0.926,0.207\nTFB,0.322,0.407,0.180,0.075,0.011,0.006,40.70,724,0.562,0.120\nUePay,0.464,0.338,0.155,0.024,0.013,0.005,30.19,675,0.524,0.083`;
+const RAW_DATA_WEEK_7 = `Alipay,0.407,0.361,0.196,0.024,0.008,0.004,30.89,919,0.696,0.103\nBOC,0.109,0.553,0.280,0.032,0.019,0.008,48.61,1201,0.909,0.211\nGFB,0.300,0.416,0.208,0.048,0.017,0.011,44.00,415,0.314,0.066\nICBC,0.264,0.420,0.273,0.023,0.017,0.004,39.86,1023,0.774,0.148\nLuso,0.436,0.343,0.189,0.018,0.009,0.005,30.03,702,0.531,0.076\nMPay,0.162,0.522,0.248,0.038,0.025,0.007,47.61,1226,0.928,0.211\nTFB,0.341,0.352,0.235,0.039,0.024,0.010,43.79,742,0.562,0.118\nUePay,0.499,0.352,0.122,0.014,0.008,0.006,25.60,730,0.553,0.068`;
+
+export const GLOBAL_STATS_DATA = {
+    "1": { cutoff: "2026年4月13日00:00", overview: { totalUsers: "1,575", usersWith200: "89", maxUserAmount: "950", avgUserAmount: "195", medianUserAmount: "160", avgPlatformsPerUser: "4" }, stats: parseRawCSV(RAW_DATA_WEEK_1) },
+    "2": { cutoff: "2026年4月20日00:00", overview: { totalUsers: "1,512", usersWith200: "98", maxUserAmount: "1,010", avgUserAmount: "201", medianUserAmount: "170", avgPlatformsPerUser: "4.75" }, stats: parseRawCSV(RAW_DATA_WEEK_2) },
+    "3": { cutoff: "2026年4月27日00:00", overview: { totalUsers: "1,452", usersWith200: "75", maxUserAmount: "690", avgUserAmount: "186", medianUserAmount: "160", avgPlatformsPerUser: "4.7" }, stats: parseRawCSV(RAW_DATA_WEEK_3) },
+    "4": { cutoff: "2026年5月7日23:00", overview: { totalUsers: "1,436", usersWith200: "108", maxUserAmount: "840", avgUserAmount: "192", medianUserAmount: "160", avgPlatformsPerUser: "5.12" }, stats: parseRawCSV(RAW_DATA_WEEK_4) },
+    "5": { cutoff: "2026年5月11日00:30", overview: { totalUsers: "1,359", usersWith200: "108", maxUserAmount: "760", avgUserAmount: "202", medianUserAmount: "180", avgPlatformsPerUser: "5.24" }, stats: parseRawCSV(RAW_DATA_WEEK_5) },
+    "6": { cutoff: "2026年5月18日00:00", overview: { totalUsers: "1,289", usersWith200: "63", maxUserAmount: "980", avgUserAmount: "190", medianUserAmount: "170", avgPlatformsPerUser: "5.19" }, stats: parseRawCSV(RAW_DATA_WEEK_6) },
+    "7": { cutoff: "2026年5月25日23:30", overview: { totalUsers: "1,321", usersWith200: "133", maxUserAmount: "770", avgUserAmount: "209", medianUserAmount: "190", avgPlatformsPerUser: "5.27" }, stats: parseRawCSV(RAW_DATA_WEEK_7) }
 };
