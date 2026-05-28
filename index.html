@@ -12,7 +12,6 @@
     <meta id="meta-theme-color" name="theme-color" content="#1976D2">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="消費大獎賞">
     <link rel="icon" type="image/png" href="./icon.png">
     <link rel="apple-touch-icon" href="./icon.png">
@@ -57,10 +56,6 @@
     }
     </script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/@material/web/all.js?module"></script>
-    
-    <!-- 引入數據庫與主邏輯，移除 type="module" 避免本地雙擊時因 CORS 攔截導致癱瘓 -->
-    <script src="./data.js" defer></script>
-    <script src="./app.js" defer></script>
 </head>
 <body class="flex flex-col items-center p-2 sm:p-6 lg:p-8 min-h-screen transition-colors">
 
@@ -232,14 +227,14 @@
                             <span class="material-symbols-outlined text-blue-500">bar_chart</span>
                         </md-icon-button>
 
-                        <!-- 手動推送未用券狀態通知按鈕 -->
-                        <md-icon-button id="quickNotifyBtn" title="推送未用券通知" aria-label="推送未用券通知" class="rounded-full shadow-sm border" style="background-color: var(--color-surface); border-color: var(--color-border);">
-                            <span class="material-symbols-outlined text-orange-500">notifications_active</span>
-                        </md-icon-button>
-
-                        <!-- 新增：我的大獎賞總結按鈕 -->
+                        <!-- 優化：新增我的大獎賞總結按鈕 -->
                         <md-icon-button id="myRewardsBtn" title="我的大獎賞" aria-label="打開我的大獎賞回顧" class="rounded-full shadow-sm border" style="background-color: var(--color-surface); border-color: var(--color-border);">
                             <span class="material-symbols-outlined text-amber-500">military_tech</span>
+                        </md-icon-button>
+
+                        <!-- 推送未用券狀態通知按鈕 -->
+                        <md-icon-button id="quickNotifyBtn" title="推送未用券通知" aria-label="推送未用券通知" class="rounded-full shadow-sm border" style="background-color: var(--color-surface); border-color: var(--color-border);">
+                            <span class="material-symbols-outlined text-orange-500">notifications_active</span>
                         </md-icon-button>
 
                         <md-icon-button id="exportCsvBtn" title="匯出CSV" aria-label="匯出紀錄為CSV檔案" class="rounded-full shadow-sm border" style="background-color: var(--color-surface); border-color: var(--color-border);">
@@ -413,9 +408,7 @@
                     <h4 class="text-center font-bold mb-4 flex items-center justify-center gap-2" style="color: var(--color-text-secondary);">
                         <span class="material-symbols-outlined text-[20px]">trending_up</span> 各平台每周趨勢
                     </h4>
-                    <div class="chart-container" style="height: 350px;">
-                        <canvas id="platformWeeklyTotalChart"></canvas>
-                    </div>
+                    <div class="chart-container" style="height: 350px;"><canvas id="platformWeeklyTotalChart"></canvas></div>
                 </div>
                 <div class="lg:col-span-2 p-4 border rounded-2xl shadow-sm" style="border-color: var(--color-border);">
                     <h4 class="text-center font-bold mb-4 flex items-center justify-center gap-2" style="color: var(--color-text-secondary);">
@@ -564,5 +557,7 @@
     </md-dialog>
 
     <div id="image-export-container"></div>
+
+    <script type="module" src="./app.js"></script>
 </body>
 </html>
