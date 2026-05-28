@@ -13,8 +13,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="消費大獎賞">
+    <link rel="icon" type="image/png" href="./icon.png">
+    <link rel="apple-touch-icon" href="./icon.png">
+    <link id="manifest-link" rel="manifest" href="">
 
-    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-N52D7GBKGT"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -36,6 +38,7 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link rel="stylesheet" href="./style.css">
     
     <script type="importmap">
     {
@@ -53,214 +56,6 @@
     }
     </script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/@material/web/all.js?module"></script>
-
-    <style>
-        /* --- THEME & DARK MODE VARIABLES --- */
-        :root {
-            --theme-color-primary: #1976D2;
-            --theme-color-title: #2196F3;
-            --theme-color-summary-bg: #E3F2FD;
-            --theme-color-summary-border: #2196F3;
-            --theme-color-summary-text: #1565C0;
-
-            --color-bg: #f3f4f6;
-            --color-surface: #ffffff;
-            --color-text-primary: #1f2937;
-            --color-text-secondary: #6b7280;
-            --color-text-tertiary: #9ca3af;
-            --color-border: #e5e7eb;
-            --color-table-header-bg: #f8fafc;
-            --color-table-row-odd-bg: transparent;
-
-            --md-sys-color-primary: var(--theme-color-primary);
-            --md-sys-color-on-primary: #FFFFFF;
-            --md-sys-color-primary-container: var(--theme-color-title);
-            --md-sys-color-on-primary-container: #FFFFFF;
-            --md-sys-color-secondary-container: var(--theme-color-summary-bg);
-            --md-sys-color-on-secondary-container: var(--theme-color-summary-text);
-            --md-sys-color-surface: var(--color-surface);
-            --md-sys-color-on-surface: var(--color-text-primary);
-            --md-sys-color-surface-variant: var(--color-table-header-bg);
-            --md-sys-color-on-surface-variant: var(--color-text-secondary);
-            --md-sys-color-outline: var(--color-border);
-        }
-
-        html.dark {
-            --color-bg: #0d1117;
-            --color-surface: #161b22;
-            --color-text-primary: #e2e8f0; 
-            --color-text-secondary: #b0b8c4; 
-            --color-text-tertiary: #586069;
-            --color-border: #30363d;
-            --color-table-header-bg: #1c2128;
-            --color-table-row-odd-bg: transparent;
-
-            --md-sys-color-primary: var(--theme-color-title);
-            --md-sys-color-on-primary: #0d1117;
-            --md-sys-color-primary-container: var(--theme-color-primary);
-            --md-sys-color-on-primary-container: #FFFFFF;
-            --md-sys-color-secondary-container: #21262d;
-            --md-sys-color-on-secondary-container: var(--color-text-primary);
-            --md-sys-color-surface-variant: var(--color-table-header-bg);
-            --md-sys-color-surface-container: #1c2128;
-            --md-sys-color-surface-container-highest: #30363d;
-            --md-menu-container-color: #1c2128;
-            --md-list-container-color: #1c2128;
-        }
-
-        body { 
-            font-family: 'Roboto', 'Noto Sans TC', sans-serif; 
-            color: var(--color-text-primary); 
-            min-height: 100vh; 
-            /* 更強烈炫目的背景漸變 */
-            background: linear-gradient(135deg, #a5b4fc 0%, #fef08a 40%, #fbcfe8 75%, #99f6e4 100%);
-            background-attachment: fixed;
-            transition: background 0.3s, color 0.3s;
-            position: relative;
-            z-index: 1;
-            overflow-x: hidden;
-        }
-
-        /* 核心保留：禁用長按圖片原生選單與圖片拖拽 */
-        img {
-            -webkit-touch-callout: none !important;
-            -webkit-user-select: none !important;
-            user-select: none !important;
-            pointer-events: none; 
-        }
-
-        /* 動態霓虹極光光暈氣泡漂浮動畫 */
-        @keyframes floatOrb1 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(6vw, 4vh) scale(1.15); }
-        }
-        @keyframes floatOrb2 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-5vw, -6vh) scale(1.12); }
-        }
-        @keyframes floatOrb3 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-4vw, 5vh) scale(1.08); }
-        }
-
-        body::before {
-            content: ''; position: fixed; top: -15%; left: -15%; width: 75vw; height: 75vw;
-            background: radial-gradient(circle, rgba(67, 56, 202, 0.55) 0%, rgba(67, 56, 202, 0) 70%);
-            border-radius: 50%; z-index: -1; pointer-events: none;
-            animation: floatOrb1 25s infinite ease-in-out;
-        }
-        body::after {
-            content: ''; position: fixed; bottom: -20%; right: -15%; width: 85vw; height: 85vw;
-            background: radial-gradient(circle, rgba(225, 29, 72, 0.45) 0%, rgba(225, 29, 72, 0) 70%);
-            border-radius: 50%; z-index: -1; pointer-events: none;
-            animation: floatOrb2 30s infinite ease-in-out;
-        }
-        html::before {
-            content: ''; position: fixed; top: 25%; left: -20%; width: 65vw; height: 65vw;
-            background: radial-gradient(circle, rgba(13, 148, 136, 0.4) 0%, rgba(13, 148, 136, 0) 70%);
-            border-radius: 50%; z-index: -1; pointer-events: none;
-            animation: floatOrb3 22s infinite ease-in-out;
-        }
-
-        html.dark body { 
-            background: linear-gradient(135deg, #03001e 0%, #12002f 40%, #1c0024 75%, #001a1a 100%); 
-        }
-        html.dark body::before { background: radial-gradient(circle, rgba(139, 92, 246, 0.45) 0%, rgba(139, 92, 246, 0) 75%); animation-duration: 20s; }
-        html.dark body::after { background: radial-gradient(circle, rgba(244, 63, 94, 0.38) 0%, rgba(244, 63, 94, 0) 75%); animation-duration: 25s; }
-        html.dark html::before { background: radial-gradient(circle, rgba(6, 182, 212, 0.35) 0%, rgba(6, 182, 212, 0) 75%); animation-duration: 18s; }
-
-        /* 主容器與面板超透毛玻璃效果 */
-        .main-container { 
-            background-color: rgba(255, 255, 255, 0.45); 
-            backdrop-filter: blur(32px); 
-            -webkit-backdrop-filter: blur(32px); 
-            border: 1px solid rgba(255, 255, 255, 0.85); 
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-            transition: background-color 0.3s, border-color 0.3s; 
-        }
-        html.dark .main-container { 
-            background-color: rgba(22, 27, 34, 0.45); 
-            border: 1px solid rgba(255, 255, 255, 0.15); 
-        }
-
-        .summary-box { 
-            background-color: rgba(227, 242, 253, 0.35); 
-            backdrop-filter: blur(16px); 
-            -webkit-backdrop-filter: blur(16px); 
-            border: 1px solid rgba(33, 150, 243, 0.35); 
-            color: var(--theme-color-summary-text); 
-            transition: all 0.3s ease; 
-        }
-        html.dark .summary-box { 
-            background-color: rgba(33, 38, 45, 0.35); 
-            border: 1px solid rgba(255, 255, 255, 0.12); 
-        }
-
-        .record-card { 
-            touch-action: pan-y; 
-            background-color: rgba(255, 255, 255, 0.25); 
-            backdrop-filter: blur(24px); 
-            -webkit-backdrop-filter: blur(24px); 
-            border: 1px solid rgba(255, 255, 255, 0.75);
-            position: relative; 
-            z-index: 2; 
-            transform: translateX(0); 
-            will-change: transform; 
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
-        }
-        html.dark .record-card { 
-            background-color: rgba(28, 33, 40, 0.30); 
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            text-shadow: 0 0 1px rgba(255,255,255,0.25); 
-        }
-
-        .tabular-nums { font-variant-numeric: tabular-nums; }
-        .summary-divider::after { content: ''; position: absolute; right: 0; top: 25%; height: 50%; width: 1px; background-color: var(--theme-color-summary-border); opacity: 0.2; }
-
-        .swipe-container { position: relative; overflow: hidden; border-radius: 1.5rem; transform: translateZ(0); }
-        .swipe-action-bg { position: absolute; right: 0; top: 0; bottom: 0; width: 100px; background-color: #ef4444; color: white; display: flex; align-items: center; justify-content: flex-end; padding-right: 1.25rem; font-weight: bold; border-radius: 1.5rem; z-index: 1; cursor: pointer; opacity: 0; transition: opacity 0.2s ease; }
-
-        .platform-title { cursor: pointer; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
-
-        .global-stats-table thead { background-color: var(--color-table-header-bg); color: var(--color-text-secondary); border-bottom: 1px solid var(--color-border); }
-        .global-stats-table tbody tr { border-bottom: 1px solid var(--color-border); transition: background-color 0.2s; }
-        .global-stats-table tbody tr:hover { background-color: var(--color-table-header-bg); }
-
-        .used { opacity: 0.8; }
-        .coupon-value { cursor: pointer; transition: all 0.2s; }
-        .coupon-value.invalid { cursor: not-allowed; }
-        .coupon-value:not(.invalid):hover { transform: scale(1.05); }
-        .coupon-value.striked { text-decoration: line-through; opacity: 0.8; }
-
-        .chart-container { position: relative; height: 300px; width: 100%; }
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
-        md-outlined-select, md-outlined-text-field { width: 100%; min-width: 0; }
-        md-select-option { --md-menu-item-one-line-container-height: 32px; white-space: nowrap; }
-        md-select-option::part(label-text) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        md-dialog { --md-dialog-container-color: var(--color-surface); }
-        .platform-color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
-        .theme-dot { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: border-color 0.2s; }
-        .theme-dot.selected { border-color: var(--theme-color-primary); transform: scale(1.1); }
-        md-filled-tonal-button .material-symbols-outlined, md-filled-button .material-symbols-outlined { line-height: 0.7; }
-
-        .skeleton-loader { background-color: var(--color-border); border-radius: 0.25rem; animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .global-stats-table tbody tr { border-bottom: 1px solid var(--color-border); transition: background-color 0.2s; }
-        .global-stats-table th.sticky-col { position: sticky; left: 0; background-color: var(--color-table-header-bg); z-index: 20; box-shadow: 1px 0 0 var(--color-border); }
-        .global-stats-table td.sticky-col { position: sticky; left: 0; background-color: var(--color-surface); z-index: 10; box-shadow: 1px 0 0 var(--color-border); font-weight: 700; }
-        html.dark .global-stats-table td.sticky-col { background-color: var(--color-table-header-bg); }
-
-        .app-toast { pointer-events: auto; animation: toastSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .app-toast.fade-out { animation: toastFadeOut 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes toastSlideIn { from { transform: translateY(-150%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes toastFadeOut { to { transform: translateY(-150%); opacity: 0; } }
-
-        .platform-chip { touch-action: manipulation; user-select: none; -webkit-user-select: none; }
-    </style>
 </head>
 <body class="flex flex-col items-center p-2 sm:p-6 lg:p-8 min-h-screen transition-colors">
 
@@ -388,7 +183,7 @@
                     <!-- 卡片由 JS 動態生成 -->
                 </div>
 
-                <!-- 全局提示 -->
+                <!-- 全局提示 (跳轉 APP / 長按全用) -->
                 <div class="text-center text-xs sm:text-sm font-bold opacity-60 text-gray-600 dark:text-gray-400 mt-1 mb-2">
                     <span class="material-symbols-outlined text-[14px] align-middle">touch_app</span> 點擊平台圖示跳轉 APP (測試中) / 長按標記全用
                 </div>
@@ -432,13 +227,8 @@
                             <span class="material-symbols-outlined text-blue-500">bar_chart</span>
                         </md-icon-button>
 
-                        <!-- 我的大獎賞總結按鈕 -->
-                        <md-icon-button id="myRewardsBtn" title="我的大獎賞" aria-label="打開我的大獎賞回顧" class="rounded-full shadow-sm border" style="background-color: var(--color-surface); border-color: var(--color-border);">
-                            <span class="material-symbols-outlined text-amber-500">military_tech</span>
-                        </md-icon-button>
-
-                        <!-- 推送未用券狀態通知按鈕 -->
-                        <md-icon-button id="quickNotifyBtn" title="推送未用券通知" aria-label="推送未用券通知" class="rounded-full shadow-sm border" style="background-color: var(--color-surface); border-color: var(--color-border);">
+                        <!-- 優化：新增手動推送未用券狀態通知按鈕 -->
+                        <md-icon-button id="quickNotifyBtn" title="推送未用券通知" aria-label="推送未用券通知" class="rounded-full shadow-sm border animate-pulse" style="background-color: var(--color-surface); border-color: var(--color-border);">
                             <span class="material-symbols-outlined text-orange-500">notifications_active</span>
                         </md-icon-button>
 
@@ -613,7 +403,9 @@
                     <h4 class="text-center font-bold mb-4 flex items-center justify-center gap-2" style="color: var(--color-text-secondary);">
                         <span class="material-symbols-outlined text-[20px]">trending_up</span> 各平台每周趨勢
                     </h4>
-                    <div class="chart-container" style="height: 350px;"><canvas id="platformWeeklyTotalChart"></canvas></div>
+                    <div class="chart-container" style="height: 350px;">
+                        <canvas id="platformWeeklyTotalChart"></canvas>
+                    </div>
                 </div>
                 <div class="lg:col-span-2 p-4 border rounded-2xl shadow-sm" style="border-color: var(--color-border);">
                     <h4 class="text-center font-bold mb-4 flex items-center justify-center gap-2" style="color: var(--color-text-secondary);">
@@ -628,7 +420,7 @@
         </div>
     </md-dialog>
     
-    <!-- 用券計數機 Dialog -->
+    <!-- 優化：彈窗放大、移除結果區塊的內嵌捲軸 -->
     <md-dialog id="calculatorDialog" role="dialog" aria-labelledby="calculatorDialogTitle" style="--md-dialog-container-max-width: 800px; width: 95vw;">
         <div slot="headline" id="calculatorDialogTitle" class="font-bold flex items-center gap-2">
             <span class="material-symbols-outlined text-[24px]">calculate</span> 用券計數機
@@ -639,6 +431,7 @@
                 <md-filled-button id="calculateBtn" class="flex-shrink-0 whitespace-nowrap h-12 px-2">計算</md-filled-button>
             </div>
             
+            <!-- 精簡的策略區塊 -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
                     <span class="text-sm font-bold opacity-80 text-[var(--color-text-primary)]">策略</span>
@@ -657,6 +450,7 @@
                 </div>
             </div>
 
+            <!-- 取消內嵌滾動，讓結果自然延伸 -->
             <div id="calculatorResult" class="flex-1 mt-2 text-sm leading-relaxed transition-all" aria-live="polite" style="color: var(--color-text-primary);">
                 請輸入上方欲消費金額後點擊「計算」。
             </div>
@@ -667,177 +461,8 @@
         </div>
     </md-dialog>
 
-    <!-- 「我的大獎賞」專屬海報 Dialog (不透明卡片設計、優化行高文字防剪切、去ID化) -->
-    <md-dialog id="myRewardsDialog" role="dialog" aria-labelledby="myRewardsDialogTitle" style="--md-dialog-container-max-width: 800px; width: 95vw;">
-        <div slot="headline" id="myRewardsDialogTitle" class="font-bold flex items-center gap-2 text-amber-500">
-            <span class="material-symbols-outlined text-[28px]">workspace_premium</span> 我的大獎賞戰績
-        </div>
-        <form slot="content" id="myRewardsDialogForm" class="flex flex-col gap-4 mt-2 max-h-[70vh] overflow-y-auto no-scrollbar">
-            <!-- 預覽海報容器 (寬度鎖定，防剪切、高對比易讀排版) -->
-            <div id="myRewardsPoster" class="w-full max-w-[680px] mx-auto p-5 sm:p-8 rounded-[2rem] flex flex-col gap-5 text-white relative overflow-hidden shadow-2xl border border-white/20" style="background: linear-gradient(135deg, #090c15 0%, #111827 50%, #1e1b4b 100%);">
-                
-                <!-- 裝飾極光光源 -->
-                <div class="absolute -top-10 -left-10 w-64 h-64 rounded-full filter blur-[80px] opacity-40 pointer-events-none" style="background: radial-gradient(circle, #6366f1 0%, transparent 70%);"></div>
-                <div class="absolute -bottom-10 -right-10 w-72 h-72 rounded-full filter blur-[80px] opacity-35 pointer-events-none" style="background: radial-gradient(circle, #ec4899 0%, transparent 70%);"></div>
-                
-                <!-- 標頭 (避開 html2canvas 不支援的 bg-clip-text gradient 漸變字體，完美防止生成大黃條) -->
-                <div class="text-center relative z-10 flex flex-col gap-1 border-b border-white/10 pb-4">
-                    <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-amber-400">
-                        2026 社區消費大獎賞
-                    </h2>
-                    <p class="text-xs sm:text-sm font-bold text-indigo-200 tracking-wider">✨ 我的專屬消費戰績回顧 ✨</p>
-                </div>
-
-                <!-- 戰績卡片網格 (加入極度易讀、寬鬆 line-height 兼防裁剪 pb 與高度保護) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 relative z-10">
-                    <!-- 1. 總共抽到 -->
-                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-3 min-h-[90px]">
-                        <span class="material-symbols-outlined text-[36px] text-amber-400 flex-shrink-0">payments</span>
-                        <div class="min-w-0 flex-1 py-1">
-                            <p class="text-xs font-bold text-gray-300 leading-normal mb-0.5">總共抽到金額</p>
-                            <h3 id="poster-total-won" class="text-xl sm:text-2xl font-black text-amber-300 tabular-nums leading-snug pb-0.5">MOP 0</h3>
-                        </div>
-                    </div>
-                    <!-- 2. 至少已消費 -->
-                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-3 min-h-[90px]">
-                        <span class="material-symbols-outlined text-[36px] text-emerald-400 flex-shrink-0">shopping_bag</span>
-                        <div class="min-w-0 flex-1 py-1">
-                            <p class="text-xs font-bold text-gray-300 leading-normal mb-0.5">累計消費金額至少</p>
-                            <h3 id="poster-total-spent" class="text-xl sm:text-2xl font-black text-emerald-300 tabular-nums leading-snug pb-0.5">MOP 0</h3>
-                        </div>
-                    </div>
-                    <!-- 3. 最旺平台 -->
-                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-3 col-span-1 sm:col-span-2 min-h-[90px]">
-                        <span class="material-symbols-outlined text-[36px] text-indigo-400 flex-shrink-0">workspace_premium</span>
-                        <div class="min-w-0 flex-1 py-1">
-                            <p class="text-xs font-bold text-gray-300 leading-normal mb-0.5">抽中金額最多嘅平台</p>
-                            <h3 id="poster-max-platform" class="text-lg sm:text-xl font-black text-indigo-200 leading-snug pb-0.5 truncate">暫無</h3>
-                        </div>
-                    </div>
-                    <!-- 4. 200蚊次數 -->
-                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-3 min-h-[90px]">
-                        <span class="material-symbols-outlined text-[36px] text-yellow-500 flex-shrink-0">military_tech</span>
-                        <div class="min-w-0 flex-1 py-1">
-                            <p class="text-xs font-bold text-gray-300 leading-normal mb-0.5">抽出 200 蚊次數</p>
-                            <h3 id="poster-count-200" class="text-xl sm:text-2xl font-black text-yellow-300 leading-snug pb-0.5 tabular-nums">0 次</h3>
-                        </div>
-                    </div>
-                    <!-- 5. 抽唔到平台 -->
-                    <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-3 min-h-[90px]">
-                        <span class="material-symbols-outlined text-[36px] text-rose-400 flex-shrink-0">heart_broken</span>
-                        <div class="min-w-0 flex-1 py-1">
-                            <p class="text-xs font-bold text-gray-300 leading-normal mb-0.5">「多謝參與」最多平台</p>
-                            <h3 id="poster-max-miss-platform" class="text-base sm:text-lg font-black text-rose-300 leading-snug pb-0.5 truncate">暫無</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 圖表展示區 (高畫質不透明底圖表) -->
-                <div class="flex flex-col gap-5 mt-2 relative z-10">
-                    <div class="p-4 rounded-2xl bg-[#111827] border border-white/10 flex flex-col gap-2">
-                        <h4 class="text-xs font-bold text-indigo-200 flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">bar_chart</span> 各平台累計抽出金額 (MOP)</h4>
-                        <div class="h-44 relative"><canvas id="posterPlatformChart"></canvas></div>
-                    </div>
-                    <div class="p-4 rounded-2xl bg-[#111827] border border-white/10 flex flex-col gap-2">
-                        <h4 class="text-xs font-bold text-indigo-200 flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">equalizer</span> 各面額抽出次數</h4>
-                        <div class="h-44 relative"><canvas id="posterCouponChart"></canvas></div>
-                    </div>
-                    <div class="p-4 rounded-2xl bg-[#111827] border border-white/10 flex flex-col gap-2">
-                        <h4 class="text-xs font-bold text-indigo-200 flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">show_chart</span> 每周抽出金額趨勢</h4>
-                        <div class="h-44 relative"><canvas id="posterWeeklyTrendChart"></canvas></div>
-                    </div>
-                </div>
-
-                <!-- 頁尾 (網址完全保留在圖片底部) -->
-                <div class="text-center relative z-10 border-t border-white/10 pt-4 flex flex-col gap-1 text-[11px] text-gray-400 font-medium">
-                    <p class="font-bold tracking-widest text-indigo-300">🔗 https://2026macaudraw.netlify.app</p>
-                    <p class="opacity-70">✨ 全網最齊消費券機率與戰績管理平台 ✨</p>
-                </div>
-            </div>
-        </form>
-        <div slot="actions">
-            <md-text-button id="closeMyRewardsBtn">關閉</md-text-button>
-            <md-filled-button id="downloadPosterBtn" class="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-none font-bold">一鍵下載成分享圖片</md-filled-button>
-        </div>
-    </md-dialog>
-
     <div id="image-export-container"></div>
 
-    <script>
-        // 完全繞過 CORS 跨域限制，順序並聯全域變數載入
-        window.GLOBAL_STATS_DATA = {
-            "1": { cutoff: "2026年4月13日 00:00", overview: { totalUsers: "1,575", usersWith200: "89", maxUserAmount: "950", avgUserAmount: "195", medianUserAmount: "160", avgPlatformsPerUser: "4" }, stats: {
-                "Alipay": { p0: 0.458, p10: 0.217, p20: 0.226, p50: 0.081, p100: 0.014, p200: 0.005, exp: 39.23, draws: 816, userShare: 0.518, amtShare: 0.104 },
-                "BOC": { p0: 0.116, p10: 0.369, p20: 0.332, p50: 0.159, p100: 0.016, p200: 0.008, exp: 64.69, draws: 1287, userShare: 0.817, amtShare: 0.271 },
-                "GFB": { p0: 0.339, p10: 0.305, p20: 0.224, p50: 0.101, p100: 0.029, p200: 0.003, exp: 48.22, draws: 314, userShare: 0.199, amtShare: 0.049 },
-                "ICBC": { p0: 0.263, p10: 0.402, p20: 0.242, p50: 0.073, p100: 0.017, p200: 0.003, exp: 44.48, draws: 925, userShare: 0.587, amtShare: 0.134 },
-                "Luso": { p0: 0.395, p10: 0.318, p20: 0.209, p50: 0.067, p100: 0.009, p200: 0.003, exp: 36.58, draws: 526, userShare: 0.334, amtShare: 0.063 },
-                "MPay": { p0: 0.232, p10: 0.379, p20: 0.273, p50: 0.091, p100: 0.018, p200: 0.006, exp: 50.56, draws: 1291, userShare: 0.820, amtShare: 0.213 },
-                "TFB": { p0: 0.372, p10: 0.247, p20: 0.257, p50: 0.100, p100: 0.017, p200: 0.007, exp: 47.36, draws: 636, userShare: 0.404, amtShare: 0.098 },
-                "UePay": { p0: 0.360, p10: 0.359, p20: 0.237, p50: 0.028, p100: 0.011, p200: 0.005, exp: 35.58, draws: 581, userShare: 0.369, amtShare: 0.067 }
-            }},
-            "2": { cutoff: "2026年4月20日 00:00", overview: { totalUsers: "1,512", usersWith200: "98", maxUserAmount: "1,010", avgUserAmount: "201", medianUserAmount: "170", avgPlatformsPerUser: "4.75" }, stats: {
-                "Alipay": { p0: 0.410, p10: 0.281, p20: 0.200, p50: 0.098, p100: 0.010, p200: 0.001, exp: 38.90, draws: 935, userShare: 0.618, amtShare: 0.119 },
-                "BOC": { p0: 0.224, p10: 0.399, p20: 0.299, p50: 0.066, p100: 0.008, p200: 0.003, exp: 43.90, draws: 1325, userShare: 0.876, amtShare: 0.191 },
-                "GFB": { p0: 0.338, p10: 0.281, p20: 0.244, p50: 0.108, p100: 0.022, p200: 0.007, exp: 50.20, draws: 409, userShare: 0.271, amtShare: 0.067 },
-                "ICBC": { p0: 0.301, p10: 0.376, p20: 0.242, p50: 0.061, p100: 0.016, p200: 0.003, exp: 41.60, draws: 1075, userShare: 0.711, amtShare: 0.147 },
-                "Luso": { p0: 0.500, p10: 0.258, p20: 0.190, p50: 0.044, p100: 0.006, p200: 0.001, exp: 28.49, draws: 669, userShare: 0.442, amtShare: 0.063 },
-                "MPay": { p0: 0.373, p10: 0.208, p20: 0.293, p50: 0.105, p100: 0.014, p200: 0.008, exp: 48.59, draws: 1317, userShare: 0.871, amtShare: 0.210 },
-                "TFB": { p0: 0.367, p10: 0.264, p20: 0.246, p50: 0.096, p100: 0.017, p200: 0.011, exp: 48.55, draws: 771, userShare: 0.510, amtShare: 0.123 },
-                "UePay": { p0: 0.404, p10: 0.353, p20: 0.193, p50: 0.028, p100: 0.016, p200: 0.007, exp: 35.17, draws: 688, userShare: 0.455, amtShare: 0.079 }
-            }},
-            "3": { cutoff: "2026年4月27日 00:00", overview: { totalUsers: "1,452", usersWith200: "75", maxUserAmount: "690", avgUserAmount: "186", medianUserAmount: "160", avgPlatformsPerUser: "4.7" }, stats: {
-                "Alipay": { p0: 0.404, p10: 0.370, p20: 0.172, p50: 0.045, p100: 0.007, p200: 0.002, exp: 31.47, draws: 994, userShare: 0.685, amtShare: 0.116 },
-                "BOC": { p0: 0.148, p10: 0.568, p20: 0.223, p50: 0.052, p100: 0.006, p200: 0.003, exp: 41.49, draws: 1327, userShare: 0.914, amtShare: 0.203 },
-                "GFB": { p0: 0.333, p10: 0.393, p20: 0.160, p50: 0.092, p100: 0.015, p200: 0.008, exp: 44.28, draws: 437, userShare: 0.301, amtShare: 0.072 },
-                "ICBC": { p0: 0.307, p10: 0.497, p20: 0.149, p50: 0.041, p100: 0.003, p200: 0.003, exp: 32.61, draws: 1117, userShare: 0.769, amtShare: 0.135 },
-                "Luso": { p0: 0.472, p10: 0.350, p20: 0.129, p50: 0.044, p100: 0.005, p200: 0.000, exp: 26.58, draws: 734, userShare: 0.506, amtShare: 0.072 },
-                "MPay": { p0: 0.208, p10: 0.535, p20: 0.198, p50: 0.051, p100: 0.006, p200: 0.003, exp: 39.03, draws: 1360, userShare: 0.937, amtShare: 0.196 },
-                "TFB": { p0: 0.337, p10: 0.398, p20: 0.182, p50: 0.067, p100: 0.010, p200: 0.007, exp: 40.17, draws: 805, userShare: 0.554, amtShare: 0.119 },
-                "UePay": { p0: 0.426, p10: 0.364, p20: 0.161, p50: 0.031, p100: 0.012, p200: 0.005, exp: 32.13, draws: 733, userShare: 0.505, amtShare: 0.087 }
-            }},
-            "4": { cutoff: "2026年5月7日 23:00", overview: { totalUsers: "1,436", usersWith200: "108", maxUserAmount: "840", avgUserAmount: "192", medianUserAmount: "160", avgPlatformsPerUser: "5.12" }, stats: {
-                "Alipay": { p0: 0.437, p10: 0.358, p20: 0.153, p50: 0.045, p100: 0.006, p200: 0.001, exp: 29.15, draws: 971, userShare: 0.676, amtShare: 0.103 },
-                "BOC": { p0: 0.119, p10: 0.599, p20: 0.213, p50: 0.059, p100: 0.006, p200: 0.004, exp: 43.80, draws: 1312, userShare: 0.914, amtShare: 0.209 },
-                "GFB": { p0: 0.339, p10: 0.374, p20: 0.183, p50: 0.086, p100: 0.011, p200: 0.005, exp: 41.77, draws: 440, userShare: 0.306, amtShare: 0.067 },
-                "ICBC": { p0: 0.294, p10: 0.544, p20: 0.130, p50: 0.026, p100: 0.004, p200: 0.002, exp: 30.33, draws: 1107, userShare: 0.771, amtShare: 0.147 },
-                "Luso": { p0: 0.496, p10: 0.334, p20: 0.130, p50: 0.035, p100: 0.002, p200: 0.003, exp: 25.61, draws: 711, userShare: 0.495, amtShare: 0.066 },
-                "MPay": { p0: 0.210, p10: 0.508, p20: 0.186, p50: 0.074, p100: 0.011, p200: 0.011, exp: 47.41, draws: 1334, userShare: 0.929, amtShare: 0.230 },
-                "TFB": { p0: 0.294, p10: 0.409, p20: 0.193, p50: 0.087, p100: 0.008, p200: 0.009, exp: 44.39, draws: 782, userShare: 0.545, amtShare: 0.126 },
-                "UePay": { p0: 0.455, p10: 0.354, p20: 0.148, p50: 0.028, p100: 0.010, p200: 0.006, exp: 30.19, draws: 700, userShare: 0.487, amtShare: 0.077 }
-            }},
-            "5": { cutoff: "2026年5月11日 00:30", overview: { totalUsers: "1,359", usersWith200: "108", maxUserAmount: "760", avgUserAmount: "202", medianUserAmount: "180", avgPlatformsPerUser: "5.24" }, stats: {
-                "Alipay": { p0: 0.418, p10: 0.376, p20: 0.149, p50: 0.050, p100: 0.006, p200: 0.002, exp: 30.60, draws: 946, userShare: 0.696, amtShare: 0.105 },
-                "BOC": { p0: 0.151, p10: 0.556, p20: 0.213, p50: 0.067, p100: 0.009, p200: 0.004, exp: 44.67, draws: 1247, userShare: 0.918, amtShare: 0.202 },
-                "GFB": { p0: 0.357, p10: 0.381, p20: 0.154, p50: 0.079, p100: 0.021, p200: 0.009, exp: 43.92, draws: 421, userShare: 0.310, amtShare: 0.067 },
-                "ICBC": { p0: 0.310, p10: 0.461, p20: 0.149, p50: 0.075, p100: 0.004, p200: 0.001, exp: 35.94, draws: 1061, userShare: 0.781, amtShare: 0.139 },
-                "Luso": { p0: 0.456, p10: 0.374, p20: 0.130, p50: 0.034, p100: 0.004, p200: 0.002, exp: 26.34, draws: 713, userShare: 0.525, amtShare: 0.068 },
-                "MPay": { p0: 0.154, p10: 0.503, p20: 0.241, p50: 0.091, p100: 0.006, p200: 0.004, exp: 47.55, draws: 1253, userShare: 0.922, amtShare: 0.216 },
-                "TFB": { p0: 0.309, p10: 0.409, p20: 0.189, p50: 0.071, p100: 0.014, p200: 0.009, exp: 43.44, draws: 784, userShare: 0.577, amtShare: 0.124 },
-                "UePay": { p0: 0.466, p10: 0.338, p20: 0.148, p50: 0.030, p100: 0.011, p200: 0.007, exp: 30.91, draws: 696, userShare: 0.512, amtShare: 0.078 }
-            }},
-            "6": { cutoff: "2026年5月18日 00:00", overview: { totalUsers: "1,289", usersWith200: "63", maxUserAmount: "980", avgUserAmount: "190", medianUserAmount: "170", avgPlatformsPerUser: "5.19" }, stats: {
-                "Alipay": { p0: 0.416, p10: 0.398, p20: 0.154, p50: 0.025, p100: 0.004, p200: 0.002, exp: 27.38, draws: 879, userShare: 0.682, amtShare: 0.098 },
-                "BOC": { p0: 0.194, p10: 0.551, p20: 0.183, p50: 0.057, p100: 0.012, p200: 0.003, exp: 41.62, draws: 1176, userShare: 0.912, amtShare: 0.199 },
-                "GFB": { p0: 0.349, p10: 0.387, p20: 0.173, p50: 0.072, p100: 0.015, p200: 0.003, exp: 39.28, draws: 414, userShare: 0.321, amtShare: 0.066 },
-                "ICBC": { p0: 0.279, p10: 0.452, p20: 0.180, p50: 0.079, p100: 0.008, p200: 0.002, exp: 39.72, draws: 984, userShare: 0.763, amtShare: 0.159 },
-                "Luso": { p0: 0.505, p10: 0.327, p20: 0.125, p50: 0.033, p100: 0.008, p200: 0.002, exp: 25.61, draws: 638, userShare: 0.495, amtShare: 0.067 },
-                "MPay": { p0: 0.218, p10: 0.499, p20: 0.197, p50: 0.074, p100: 0.008, p200: 0.004, exp: 42.61, draws: 1194, userShare: 0.926, amtShare: 0.207 },
-                "TFB": { p0: 0.322, p10: 0.407, p20: 0.180, p50: 0.075, p100: 0.011, p200: 0.006, exp: 40.70, draws: 724, userShare: 0.562, amtShare: 0.120 },
-                "UePay": { p0: 0.464, p10: 0.338, p20: 0.155, p50: 0.024, p100: 0.013, p200: 0.005, exp: 30.19, draws: 675, userShare: 0.524, amtShare: 0.083 }
-            }},
-            "7": { cutoff: "2026年5月25日 23:30", overview: { totalUsers: "1,321", usersWith200: "133", maxUserAmount: "770", avgUserAmount: "209", medianUserAmount: "190", avgPlatformsPerUser: "5.27" }, stats: {
-                "Alipay": { p0: 0.407, p10: 0.361, p20: 0.196, p50: 0.024, p100: 0.008, p200: 0.004, exp: 30.89, draws: 919, userShare: 0.696, amtShare: 0.103 },
-                "BOC": { p0: 0.109, p10: 0.553, p20: 0.280, p50: 0.032, p100: 0.019, p200: 0.008, exp: 48.61, draws: 1201, userShare: 0.909, amtShare: 0.211 },
-                "GFB": { p0: 0.300, p10: 0.416, p20: 0.208, p50: 0.048, p100: 0.017, p200: 0.011, exp: 44.00, draws: 415, userShare: 0.314, amtShare: 0.066 },
-                "ICBC": { p0: 0.264, p10: 0.420, p20: 0.273, p50: 0.023, p100: 0.017, p200: 0.004, exp: 39.86, draws: 1023, userShare: 0.774, amtShare: 0.148 },
-                "Luso": { p0: 0.436, p10: 0.343, p20: 0.189, p50: 0.018, p100: 0.009, p200: 0.005, exp: 30.03, draws: 702, userShare: 0.531, amtShare: 0.076 },
-                "MPay": { p0: 0.162, p10: 0.522, p20: 0.248, p50: 0.038, p100: 0.025, p200: 0.007, exp: 47.61, draws: 1226, userShare: 0.928, amtShare: 0.211 },
-                "TFB": { p0: 0.341, p10: 0.352, p20: 0.235, p50: 0.039, p100: 0.024, p200: 0.010, exp: 43.79, draws: 742, userShare: 0.562, amtShare: 0.118 },
-                "UePay": { p0: 0.499, p10: 0.352, p20: 0.122, p50: 0.014, p100: 0.008, p200: 0.006, exp: 25.60, draws: 730, userShare: 0.553, amtShare: 0.068 }
-            }}
-        };
-    </script>
     <script type="module" src="./app.js"></script>
 </body>
 </html>
