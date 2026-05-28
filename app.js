@@ -1,5 +1,3 @@
-import { GLOBAL_STATS_DATA } from './data.js';
-
 // --- 全局防誤觸：攔截選單與禁用長按 ---
 window.addEventListener('contextmenu', (e) => {
     if (e.target.closest('.platform-title') || e.target.closest('.platform-chip') || e.target.tagName === 'IMG') {
@@ -70,7 +68,10 @@ const setupPWA = () => {
         background_color: "#f3f4f6", theme_color: "#1976D2",
         icons: [ { src: "./icon.png", sizes: "192x192 512x512", type: "image/png", purpose: "any maskable" } ]
     };
-    document.getElementById('manifest-link').href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
+    const linkEl = document.getElementById('manifest-link');
+    if (linkEl) {
+        linkEl.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
+    }
 
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -89,7 +90,6 @@ const setupPWA = () => {
         });
     }
 };
-setupPWA();
 
 // --- 核心動態載入工具 ---
 const loadScript = (src) => {
@@ -107,7 +107,6 @@ const PLATFORMS = { 'Alipay': 'Alipay支付寶', 'BOC': 'BOC中銀', 'GFB': 'GFB
 const PLATFORM_COLORS = { 'Alipay': '#003c8b', 'BOC': '#a71930', 'GFB': '#e3041f', 'ICBC': '#C7000B', 'Luso': '#0c4890', 'MPay': '#ff8201', 'TFB': '#ffd801', 'UePay': '#58c0df' };
 const PLATFORM_ICONS = { 'Alipay': './alipay_icon.webp', 'BOC': './boc_icon.webp', 'GFB': './guangfa_icon.webp', 'ICBC': './icbc_icon.webp', 'Luso': './luso_icon.webp', 'MPay': './mpay_icon.webp', 'TFB': './taifung_icon.webp', 'UePay': './uepay_icon.webp' };
 
-// UePay / GFB 等 App 跳轉 Scheme
 const APP_SCHEMES = { 
     'Alipay': 'alipays://', 
     'BOC': 'bocmmobilebankeid://', 
@@ -119,7 +118,6 @@ const APP_SCHEMES = {
     'UePay': 'intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.foorich.uepay;end'
 };
 
-// 統一管理跳轉 APP 邏輯
 function jumpToApp(platform) {
     if (!platform) return;
     var userAgent = navigator.userAgent || navigator.vendor || window.opera;
@@ -167,7 +165,6 @@ const THEMES = {
 
 let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
 
-// --- Firebase Lazy Loading 初始化 ---
 const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{"apiKey":"AIzaSyBi7ljiBtEW6D2ZZFxj4z4DGemsYviRM_g","authDomain":"macaudraw2-e4d16.firebaseapp.com","projectId":"macaudraw2-e4d16","storageBucket":"macaudraw2-e4d16.firebasestorage.app","messagingSenderId":"1088106363043","appId":"1:1088106363043:web:5f727855b41165f8216716"}');
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'macau-draw-2026';
 let FB = {}; 
@@ -178,65 +175,54 @@ let globalCouponChart = null, globalShareChart = null;
 let bestCouponCombination = []; let writeTimeout = null; let pendingWrites = {};
 let currentInputPlatform = ''; let currentInputValues = ['-', '-', '-']; let currentInputIndex = 0;
 
-// 我的大獎賞海報專用 Chart 實例
 let posterPlatformChart = null;
 let posterCouponChart = null;
 let posterWeeklyTrendChart = null;
 
-const allDOMElements = {
-    mainTitle: document.getElementById('main-title'), timeInfoEl: document.getElementById('timeInfo'),
-    userIdInput: document.getElementById('userIdInput'), copyUserIdBtn: document.getElementById('copyUserId'), switchUserBtn: document.getElementById('switchUserBtn'),
-    addRecordSection: document.getElementById('addRecordSection'), allCompletedMsg: document.getElementById('allCompletedMsg'),
-    toggleRecordPanelBtn: document.getElementById('toggleRecordPanelBtn'), recordPanel: document.getElementById('recordPanel'), toggleRecordIcon: document.getElementById('toggleRecordIcon'),
-    platformChipsContainer: document.getElementById('platformChipsContainer'), couponSlots: document.querySelectorAll('.coupon-slot'), valBtns: document.querySelectorAll('.val-btn'), clearSlotsBtn: document.getElementById('clearSlotsBtn'),
-    skipBtn: document.getElementById('skipBtn'),
-    advancedToggle: document.getElementById('advanced-toggle'), advancedToggleIcon: document.getElementById('advanced-toggle-icon'), advancedOptionsContainer: document.getElementById('advanced-options-container'), entryWeek: document.getElementById('entryWeek'),
-    filterWeekSelect: document.getElementById('filterWeek'), filterCurrentWeekBtn: document.getElementById('filterCurrentWeekBtn'), filterPlatformSelect: document.getElementById('filterPlatform'),
-    addRecordBtn: document.getElementById('addRecordBtn'), recordsList: document.getElementById('recordsList'), expiringAlertContainer: document.getElementById('expiringAlertContainer'),
-    summaryTotal: document.getElementById('summary-total'), summaryRemaining: document.getElementById('summary-remaining'), summarySpending: document.getElementById('summary-spending'),
-    settingsBtn: document.getElementById('settingsBtn'), settingsDialog: document.getElementById('settingsDialog'), platformSettingsEl: document.getElementById('platformSettings'), saveSettingsBtn: document.getElementById('saveSettings'), cancelSettingsBtn: document.getElementById('cancelSettings'),
-    disclaimerLink: document.getElementById('disclaimerLink'), 
-    statsBtn: document.getElementById('statsBtn'), statsDialog: document.getElementById('statsDialog'), closeStatsDialogBtn: document.getElementById('closeStatsDialog'), statsWeekFilter: document.getElementById('statsWeekFilter'), downloadStatsBtn: document.getElementById('downloadStatsBtn'),
-    globalStatsBtn: document.getElementById('globalStatsBtn'), globalStatsDialog: document.getElementById('globalStatsDialog'), closeGlobalStatsBtn: document.getElementById('closeGlobalStatsBtn'), globalStatsWeekFilter: document.getElementById('globalStatsWeekFilter'), globalStatsTbody: document.getElementById('globalStatsTbody'), globalStatsCutoff: document.getElementById('globalStatsCutoff'), globalStatsOverview: document.getElementById('globalStatsOverview'),
-    themeBtn: document.getElementById('themeBtn'), themeDialog: document.getElementById('themeDialog'), themeOptions: document.getElementById('theme-options'), darkModeSwitch: document.getElementById('darkModeSwitch'),
-    alertDialog: document.getElementById('alertDialog'), alertTitle: document.getElementById('alertTitle'), alertMessage: document.getElementById('alertMessage'),
-    confirmDialog: document.getElementById('confirmDialog'), confirmTitle: document.getElementById('confirmTitle'), confirmMessage: document.getElementById('confirmMessage'),
-    addFavoriteBtn: document.getElementById('addFavoriteBtn'), addToHomeScreenBtn: document.getElementById('addToHomeScreenBtn'), exportCsvBtn: document.getElementById('exportCsvBtn'), 
-    calculatorBtn: document.getElementById('calculatorBtn'), calculatorDialog: document.getElementById('calculatorDialog'), spendingAmountInput: document.getElementById('spendingAmountInput'), calculatorResult: document.getElementById('calculatorResult'), calculateBtn: document.getElementById('calculateBtn'), markAsUsedBtn: document.getElementById('markAsUsedBtn'), cancelCalculatorBtn: document.getElementById('cancelCalculator'), statusAnnouncer: document.getElementById('status-announcer'),
-    quickNotifyBtn: document.getElementById('quickNotifyBtn'),
-    
-    // 我的大獎賞 DOM 綁定
-    myRewardsBtn: document.getElementById('myRewardsBtn'),
-    myRewardsDialog: document.getElementById('myRewardsDialog'),
-    closeMyRewardsBtn: document.getElementById('closeMyRewardsBtn'),
-    downloadPosterBtn: document.getElementById('downloadPosterBtn')
-};
+// 在 DOM 加載後統一初始化，確保獲取到的 DOM 節點 100% 存在，防止 null Crash 
+let allDOMElements = {};
 
-function announceStatus(message) { allDOMElements.statusAnnouncer.textContent = message; }
+function initDOMElements() {
+    allDOMElements = {
+        mainTitle: document.getElementById('main-title'), timeInfoEl: document.getElementById('timeInfo'),
+        userIdInput: document.getElementById('userIdInput'), copyUserIdBtn: document.getElementById('copyUserId'), switchUserBtn: document.getElementById('switchUserBtn'),
+        addRecordSection: document.getElementById('addRecordSection'), allCompletedMsg: document.getElementById('allCompletedMsg'),
+        toggleRecordPanelBtn: document.getElementById('toggleRecordPanelBtn'), recordPanel: document.getElementById('recordPanel'), toggleRecordIcon: document.getElementById('toggleRecordIcon'),
+        platformChipsContainer: document.getElementById('platformChipsContainer'), couponSlots: document.querySelectorAll('.coupon-slot'), valBtns: document.querySelectorAll('.val-btn'), clearSlotsBtn: document.getElementById('clearSlotsBtn'),
+        skipBtn: document.getElementById('skipBtn'),
+        advancedToggle: document.getElementById('advanced-toggle'), advancedToggleIcon: document.getElementById('advanced-toggle-icon'), advancedOptionsContainer: document.getElementById('advanced-options-container'), entryWeek: document.getElementById('entryWeek'),
+        filterWeekSelect: document.getElementById('filterWeek'), filterCurrentWeekBtn: document.getElementById('filterCurrentWeekBtn'), filterPlatformSelect: document.getElementById('filterPlatform'),
+        addRecordBtn: document.getElementById('addRecordBtn'), recordsList: document.getElementById('recordsList'), expiringAlertContainer: document.getElementById('expiringAlertContainer'),
+        summaryTotal: document.getElementById('summary-total'), summaryRemaining: document.getElementById('summary-remaining'), summarySpending: document.getElementById('summary-spending'),
+        settingsBtn: document.getElementById('settingsBtn'), settingsDialog: document.getElementById('settingsDialog'), platformSettingsEl: document.getElementById('platformSettings'), saveSettingsBtn: document.getElementById('saveSettings'), cancelSettingsBtn: document.getElementById('cancelSettings'),
+        disclaimerLink: document.getElementById('disclaimerLink'), 
+        statsBtn: document.getElementById('statsBtn'), statsDialog: document.getElementById('statsDialog'), closeStatsDialogBtn: document.getElementById('closeStatsDialog'), statsWeekFilter: document.getElementById('statsWeekFilter'), downloadStatsBtn: document.getElementById('downloadStatsBtn'),
+        globalStatsBtn: document.getElementById('globalStatsBtn'), globalStatsDialog: document.getElementById('globalStatsDialog'), closeGlobalStatsBtn: document.getElementById('closeGlobalStatsBtn'), globalStatsWeekFilter: document.getElementById('globalStatsWeekFilter'), globalStatsTbody: document.getElementById('globalStatsTbody'), globalStatsCutoff: document.getElementById('globalStatsCutoff'), globalStatsOverview: document.getElementById('globalStatsOverview'),
+        themeBtn: document.getElementById('themeBtn'), themeDialog: document.getElementById('themeDialog'), themeOptions: document.getElementById('theme-options'), darkModeSwitch: document.getElementById('darkModeSwitch'),
+        alertDialog: document.getElementById('alertDialog'), alertTitle: document.getElementById('alertTitle'), alertMessage: document.getElementById('alertMessage'),
+        confirmDialog: document.getElementById('confirmDialog'), confirmTitle: document.getElementById('confirmTitle'), confirmMessage: document.getElementById('confirmMessage'),
+        addFavoriteBtn: document.getElementById('addFavoriteBtn'), addToHomeScreenBtn: document.getElementById('addToHomeScreenBtn'), exportCsvBtn: document.getElementById('exportCsvBtn'), 
+        calculatorBtn: document.getElementById('calculatorBtn'), calculatorDialog: document.getElementById('calculatorDialog'), spendingAmountInput: document.getElementById('spendingAmountInput'), calculatorResult: document.getElementById('calculatorResult'), calculateBtn: document.getElementById('calculateBtn'), markAsUsedBtn: document.getElementById('markAsUsedBtn'), cancelCalculatorBtn: document.getElementById('cancelCalculator'), statusAnnouncer: document.getElementById('status-announcer'),
+        quickNotifyBtn: document.getElementById('quickNotifyBtn'),
+        
+        myRewardsBtn: document.getElementById('myRewardsBtn'),
+        myRewardsDialog: document.getElementById('myRewardsDialog'),
+        closeMyRewardsBtn: document.getElementById('closeMyRewardsBtn'),
+        downloadPosterBtn: document.getElementById('downloadPosterBtn')
+    };
+}
 
-function showLoadingSkeleton() {
-    const { recordsList } = allDOMElements;
-    recordsList.innerHTML = ''; recordsList.setAttribute('aria-busy', 'true');
-    for (let i = 0; i < 6; i++) {
-        const card = document.createElement('div');
-        card.className = 'p-3 sm:p-4 rounded-[1.5rem] border shadow-sm bg-white/60 dark:bg-[#1c2128]/60 backdrop-blur-md flex flex-row items-center gap-3 sm:gap-4 border-white/40 dark:border-gray-700/40';
-        card.innerHTML = `
-            <div class="flex flex-row items-center w-[140px] sm:w-[170px] flex-shrink-0 gap-2 overflow-hidden">
-                <div class="skeleton-loader w-14 h-14 sm:w-16 sm:h-16 rounded-[1rem] flex-shrink-0"></div>
-                <div class="flex flex-col items-start gap-1 mt-0.5"><div class="skeleton-loader h-4 w-10 rounded-full"></div><div class="skeleton-loader h-6 w-16 rounded-full"></div></div>
-            </div>
-            <div class="flex-1 flex justify-between items-center gap-2 pl-2">
-                <div class="skeleton-loader h-12 sm:h-14 flex-1 rounded-full"></div><div class="skeleton-loader h-12 sm:h-14 flex-1 rounded-full"></div><div class="skeleton-loader h-12 sm:h-14 flex-1 rounded-full"></div>
-            </div>
-        `;
-        recordsList.appendChild(card);
-    }
+// 讀取全網數據（安全讀取全域變數 window.GLOBAL_STATS_DATA）
+function getGlobalStatsData() {
+    return window.GLOBAL_STATS_DATA || {};
 }
 
 function updateSundayReminder() {
     const today = new Date();
     const reminderEl = document.getElementById('sundayReminder');
     const reminderText = document.getElementById('sundayReminderText');
+    if (!reminderEl || !reminderText) return;
+    
     if (today.getDay() === 0) { 
         const currentWeek = getWeekNumber(today);
         const recordedPlatforms = records.filter(r => r.week === currentWeek).map(r => r.platform);
@@ -253,9 +239,13 @@ function refreshUI() { renderRecords(); updateWeeklySummary(); updatePlatformOpt
 
 function initRecordPanelUI() {
     const { toggleRecordPanelBtn, recordPanel, toggleRecordIcon, valBtns, clearSlotsBtn, couponSlots, entryWeek } = allDOMElements;
+    if (!toggleRecordPanelBtn || !recordPanel) return;
+    
     toggleRecordPanelBtn.addEventListener('click', () => {
         const isHidden = recordPanel.classList.toggle('hidden');
-        toggleRecordIcon.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+        if (toggleRecordIcon) {
+            toggleRecordIcon.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
     });
     couponSlots.forEach((slot, index) => { slot.addEventListener('click', () => { currentInputIndex = index; updateCouponSlotsUI(); }); });
     valBtns.forEach(btn => {
@@ -267,16 +257,20 @@ function initRecordPanelUI() {
             }
         });
     });
-    clearSlotsBtn.addEventListener('click', () => {
-        if (currentInputIndex === 3) currentInputIndex = 2; 
-        if (currentInputValues[currentInputIndex] !== '-') currentInputValues[currentInputIndex] = '-';
-        else if (currentInputIndex > 0) { currentInputIndex--; currentInputValues[currentInputIndex] = '-'; }
-        updateCouponSlotsUI();
-    });
-    entryWeek.addEventListener('change', () => {
-        updatePlatformOptionsAvailability();
-        if(recordPanel.classList.contains('hidden')) toggleRecordPanelBtn.click();
-    });
+    if (clearSlotsBtn) {
+        clearSlotsBtn.addEventListener('click', () => {
+            if (currentInputIndex === 3) currentInputIndex = 2; 
+            if (currentInputValues[currentInputIndex] !== '-') currentInputValues[currentInputIndex] = '-';
+            else if (currentInputIndex > 0) { currentInputIndex--; currentInputValues[currentInputIndex] = '-'; }
+            updateCouponSlotsUI();
+        });
+    }
+    if (entryWeek) {
+        entryWeek.addEventListener('change', () => {
+            updatePlatformOptionsAvailability();
+            if(recordPanel.classList.contains('hidden')) toggleRecordPanelBtn.click();
+        });
+    }
 }
 
 function updateCouponSlotsUI() {
@@ -291,7 +285,8 @@ function updateCouponSlotsUI() {
 }
 
 function initializeEntryWeekSelect() {
-    const { entryWeek } = allDOMElements; const currentWeek = getWeekNumber(new Date()); const previousSelection = entryWeek.value;
+    const { entryWeek } = allDOMElements; if (!entryWeek) return;
+    const currentWeek = getWeekNumber(new Date()); const previousSelection = entryWeek.value;
     entryWeek.innerHTML = ''; entryWeek.disabled = false;
     if (currentWeek > 1) {
         for (let i = 1; i < currentWeek; i++) entryWeek.innerHTML += `<md-select-option value="${i}">第 ${i} 周</md-select-option>`;
@@ -303,73 +298,35 @@ function initializeEntryWeekSelect() {
 }
 
 function initializeAdvancedToggle() {
-    allDOMElements.advancedToggle.addEventListener('click', () => {
-        const isHidden = allDOMElements.advancedOptionsContainer.classList.toggle('hidden');
-        allDOMElements.advancedToggle.setAttribute('aria-expanded', !isHidden);
-        allDOMElements.advancedToggleIcon.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+    const { advancedToggle, advancedToggleIcon, advancedOptionsContainer } = allDOMElements;
+    if (!advancedToggle) return;
+    advancedToggle.addEventListener('click', () => {
+        const isHidden = advancedOptionsContainer.classList.toggle('hidden');
+        advancedToggle.setAttribute('aria-expanded', !isHidden);
+        if (advancedToggleIcon) advancedToggleIcon.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
         updatePlatformOptionsAvailability();
     });
 }
 
-// 綁定跨設備資料同步展開面板
 function initializeAuthToggle() {
     const authToggle = document.getElementById('auth-toggle'); const authOptionsContainer = document.getElementById('auth-options-container'); const authToggleIcon = document.getElementById('auth-toggle-icon');
+    if (!authToggle || !authOptionsContainer) return;
     authToggle.addEventListener('click', () => {
         const isHidden = authOptionsContainer.classList.toggle('hidden');
         authToggle.setAttribute('aria-expanded', !isHidden);
-        authToggleIcon.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+        if (authToggleIcon) authToggleIcon.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
     });
 }
 
-function showAlertDialog(message, title = "通知") { allDOMElements.alertTitle.textContent = title; allDOMElements.alertMessage.innerHTML = message.replace(/\n/g, '<br>'); allDOMElements.alertDialog.show(); }
-function showConfirmDialog(message, title = "請確認") { allDOMElements.confirmTitle.textContent = title; allDOMElements.confirmMessage.textContent = message; allDOMElements.confirmDialog.show(); return new Promise(resolve => { allDOMElements.confirmDialog.addEventListener('close', (event) => { resolve(event.target.returnValue === 'confirm'); }, { once: true }); }); }
-
 function getEntryWeekNumber() {
-    if (!allDOMElements.advancedOptionsContainer.classList.contains('hidden') && allDOMElements.entryWeek.value) return parseInt(allDOMElements.entryWeek.value);
+    if (allDOMElements.advancedOptionsContainer && !allDOMElements.advancedOptionsContainer.classList.contains('hidden') && allDOMElements.entryWeek && allDOMElements.entryWeek.value) {
+        return parseInt(allDOMElements.entryWeek.value);
+    }
     return getWeekNumber(new Date());
 }
 
-function getWeekNumber(date) { 
-    const startOfFirstWeek = new Date(2026, 3, 10); 
-    const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const diff = targetDate - startOfFirstWeek; 
-    if (diff < 0) return 1; 
-    const weekNum = Math.floor(diff / (7 * 24 * 60 * 60 * 1000)) + 1; 
-    return weekNum > 10 ? 10 : weekNum; 
-}
-
-function formatNumber(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
-
-function updateTimeInfo() { 
-    const date = new Date();
-    const weekNumber = getWeekNumber(date);
-    const days = ['日', '一', '二', '三', '四', '五', '六'];
-    allDOMElements.timeInfoEl.innerHTML = `
-        <div class="flex items-center justify-center sm:justify-start gap-2 sm:gap-3">
-            <div class="h-9 flex items-center gap-2 px-4 rounded-full shadow-inner border box-border transition-colors" style="background-color: var(--color-bg); border-color: var(--color-border);">
-                <span class="text-sm font-bold" style="color: var(--color-text-secondary);">第</span>
-                <span class="flex items-center justify-center w-6 h-6 rounded-full font-black text-sm shadow-sm leading-none border transition-colors tabular-nums" style="background-color: var(--color-surface); border-color: var(--color-border); color: var(--theme-color-primary);">${weekNumber}</span>
-                <span class="text-sm font-bold" style="color: var(--color-text-secondary);">周</span>
-            </div>
-            <div class="h-9 flex items-center gap-1.5 px-4 rounded-full shadow-inner border box-border transition-colors tabular-nums" style="background-color: var(--theme-color-summary-bg); border-color: var(--theme-color-summary-border); color: var(--theme-color-summary-text);">
-                <span class="material-symbols-outlined text-[18px]">calendar_month</span>
-                <span class="text-sm font-bold tracking-wider">${date.getMonth() + 1}月${date.getDate()}日 (${days[date.getDay()]})</span>
-            </div>
-        </div>`;
-}
-
-function calculateConsumption(record) { 
-    const usedCoupons = record.usedCoupons || {}; 
-    const values = [
-        (!usedCoupons.draw1 && record.draw1 !== '-' && record.draw1 !== 'ND') ? parseInt(record.draw1) || 0 : 0, 
-        (!usedCoupons.draw2 && record.draw2 !== '-' && record.draw2 !== 'ND') ? parseInt(record.draw2) || 0 : 0, 
-        (!usedCoupons.draw3 && record.draw3 !== '-' && record.draw3 !== 'ND') ? parseInt(record.draw3) || 0 : 0
-    ]; 
-    return values.reduce((a, b) => a + b, 0) * 3; 
-}
-
 function renderRecords() {
-    const { recordsList } = allDOMElements;
+    const { recordsList } = allDOMElements; if (!recordsList) return;
     recordsList.setAttribute('aria-busy', 'false');
     const filteredRecords = records.filter(record => {
         const matchWeek = !allDOMElements.filterWeekSelect.value || record.week.toString() === allDOMElements.filterWeekSelect.value;
@@ -382,23 +339,19 @@ function renderRecords() {
         const couponKeys = ['draw1', 'draw2', 'draw3'];
         const monetaryCoupons = couponKeys.filter(key => !isNaN(parseInt(record[key])));
         const allUsed = monetaryCoupons.length === 0 ? true : monetaryCoupons.every(key => usedCoupons[key]);
-        
-        // 計算該次抽獎的總金額
         const totalAmount = (parseInt(record.draw1) || 0) + (parseInt(record.draw2) || 0) + (parseInt(record.draw3) || 0);
-        
         return { ...record, allUsed, totalAmount };
     });
 
     processedRecords.sort((a, b) => {
         if (a.allUsed !== b.allUsed) return a.allUsed ? 1 : -1;
-        if (b.totalAmount !== a.totalAmount) return b.totalAmount - a.totalAmount; // 卡片按總抽到金額由大到小排序
+        if (b.totalAmount !== a.totalAmount) return b.totalAmount - a.totalAmount;
         if (a.week !== b.week) return a.week - b.week;
         return a.platform.localeCompare(b.platform);
     });
 
     recordsList.innerHTML = '';
     
-    // 空狀態引導按鈕
     if (processedRecords.length === 0) { 
         recordsList.innerHTML = `
             <div class="col-span-full flex flex-col items-center justify-center py-12 gap-3">
@@ -413,14 +366,18 @@ function renderRecords() {
         const emptyAdd = document.getElementById('emptyStateAddBtn');
         if (emptyAdd) {
             emptyAdd.addEventListener('click', () => {
-                if (allDOMElements.recordPanel.classList.contains('hidden')) allDOMElements.toggleRecordPanelBtn.click();
-                allDOMElements.addRecordSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (allDOMElements.recordPanel && allDOMElements.recordPanel.classList.contains('hidden')) {
+                    allDOMElements.toggleRecordPanelBtn.click();
+                }
+                if (allDOMElements.addRecordSection) {
+                    allDOMElements.addRecordSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
             });
         }
         return; 
     }
 
-    processedRecords.forEach((record, index) => {
+    processedRecords.forEach((record) => {
         const consumption = calculateConsumption(record);
         const usedCoupons = record.usedCoupons || {};
         const platformColor = PLATFORM_COLORS[record.platform] || 'var(--color-border)';
@@ -436,10 +393,9 @@ function renderRecords() {
         couponsData.sort((a, b) => {
             if (a.isInvalid !== b.isInvalid) return a.isInvalid ? 1 : -1;
             if (a.isUsed !== b.isUsed) return a.isUsed ? 1 : -1;
-            
             const valA = parseInt(a.val) || 0;
             const valB = parseInt(b.val) || 0;
-            return valB - valA; // 卡片內的個別券也按面額由大到小排序
+            return valB - valA;
         });
 
         const drawButtons = couponsData.map(item => {
@@ -472,7 +428,7 @@ function renderRecords() {
             </div>
         `;
         
-        // 滑動刪除邏輯
+        // 滑動刪除手勢邏輯
         const innerCard = cardContainer.querySelector('.record-card');
         const swipeBg = cardContainer.querySelector('.swipe-action-bg');
         let startX = 0, startY = 0; let isDragging = false; let swipeOpen = false;
@@ -506,6 +462,7 @@ function renderRecords() {
 }
 
 function updateWeeklySummary() {
+    const { summaryTotal, summaryRemaining, summarySpending, expiringAlertContainer } = allDOMElements;
     const date = new Date();
     const currentWeek = getWeekNumber(date);
     const weeklyRecords = records.filter(record => record.week === currentWeek);
@@ -517,22 +474,27 @@ function updateWeeklySummary() {
             if (val > 0) { totalCoupons += val; if (!usedCoupons[`draw${i+1}`]) remainingCoupons += val; }
         });
     });
-    allDOMElements.summaryTotal.textContent = `MOP ${formatNumber(totalCoupons)}`;
-    allDOMElements.summaryRemaining.textContent = `MOP ${formatNumber(remainingCoupons)}`;
-    allDOMElements.summarySpending.textContent = `MOP ${formatNumber(remainingCoupons * 3)}`;
+    if (summaryTotal) summaryTotal.textContent = `MOP ${formatNumber(totalCoupons)}`;
+    if (summaryRemaining) summaryRemaining.textContent = `MOP ${formatNumber(remainingCoupons)}`;
+    if (summarySpending) summarySpending.textContent = `MOP ${formatNumber(remainingCoupons * 3)}`;
     
-    if (date.getDay() === 4 && remainingCoupons > 0) allDOMElements.expiringAlertContainer.classList.remove('hidden');
-    else allDOMElements.expiringAlertContainer.classList.add('hidden');
+    if (expiringAlertContainer) {
+        if (date.getDay() === 4 && remainingCoupons > 0) expiringAlertContainer.classList.remove('hidden');
+        else expiringAlertContainer.classList.add('hidden');
+    }
 }
 
 function renderPlatformOptions() {
     const platformsToRender = JSON.parse(localStorage.getItem('platformsCache')) || PLATFORMS;
-    allDOMElements.filterPlatformSelect.innerHTML = '<md-select-option value="" selected>全部</md-select-option>';
-    for (const key in platformsToRender) { 
-        if (!hiddenPlatforms.includes(key)) allDOMElements.filterPlatformSelect.innerHTML += `<md-select-option value="${key}">${platformsToRender[key]}</md-select-option>`; 
+    if (allDOMElements.filterPlatformSelect) {
+        allDOMElements.filterPlatformSelect.innerHTML = '<md-select-option value="" selected>全部</md-select-option>';
+        for (const key in platformsToRender) { 
+            if (!hiddenPlatforms.includes(key)) allDOMElements.filterPlatformSelect.innerHTML += `<md-select-option value="${key}">${platformsToRender[key]}</md-select-option>`; 
+        }
     }
 
     const chipsContainer = allDOMElements.platformChipsContainer;
+    if (!chipsContainer) return;
     chipsContainer.innerHTML = '';
     
     for (const key in platformsToRender) {
@@ -550,8 +512,7 @@ function renderPlatformOptions() {
                 <span class="text-[11px] sm:text-xs font-bold truncate w-full text-center opacity-90" style="color: ${color};">${shortName}</span>
             `;
             
-            // 單擊選擇邏輯
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', () => {
                 document.querySelectorAll('.platform-chip').forEach(c => {
                     c.classList.remove('selected-chip'); c.style.borderColor = 'rgba(200,200,200,0.3)'; c.style.backgroundColor = '';
                 });
@@ -559,13 +520,13 @@ function renderPlatformOptions() {
                 updateCouponSlotsUI(); 
             });
 
-            // 長按一鍵填 0 邏輯 - 長按時長更新為 1000ms (1秒)
+            // 長按一鍵填 0 
             let holdTimer = null;
             const startHold = (e) => {
                 if(e.type === 'touchstart' && navigator.vibrate) navigator.vibrate(10);
                 holdTimer = setTimeout(() => {
                     holdTimer = null;
-                    if(navigator.vibrate) navigator.vibrate([30, 50, 30]); // 成功微震
+                    if(navigator.vibrate) navigator.vibrate([30, 50, 30]); 
                     currentInputPlatform = key;
                     currentInputValues = ['-', '-', '-'];
                     submitRecordLogic();
@@ -624,7 +585,7 @@ async function lazyLoadFirebase() {
         const authInstance = FB.auth.getAuth(appInstance);
         const dbInstance = FB.fs.getFirestore(appInstance);
         
-        FB.dbInstance = dbInstance; // 保存參考供其他函數調用
+        FB.dbInstance = dbInstance; 
         
         try { await FB.fs.enableIndexedDbPersistence(dbInstance); } catch(e) { console.warn("離線持久化啟動失敗", e); }
         
@@ -636,13 +597,15 @@ async function lazyLoadFirebase() {
                 const savedUserId = localStorage.getItem('savedUserId');
                 currentUserId = savedUserId || user.uid;
                 if (!savedUserId) localStorage.setItem('savedUserId', currentUserId);
-                allDOMElements.userIdInput.value = currentUserId;
+                if (allDOMElements.userIdInput) allDOMElements.userIdInput.value = currentUserId;
             
                 loadCachedData(currentUserId);
                 syncRecords(currentUserId);
             } else {
-                allDOMElements.recordsList.innerHTML = '<div class="col-span-full text-center py-8 text-red-500 font-bold">用戶驗證失敗。</div>';
-                allDOMElements.recordsList.setAttribute('aria-busy', 'false');
+                if (allDOMElements.recordsList) {
+                    allDOMElements.recordsList.innerHTML = '<div class="col-span-full text-center py-8 text-red-500 font-bold">用戶驗證失敗。</div>';
+                    allDOMElements.recordsList.setAttribute('aria-busy', 'false');
+                }
             }
         });
     } catch(error) {
@@ -685,7 +648,7 @@ async function syncRecords(uid) {
                     const usedPlatformsThisWeek = records.filter(record => record.week === currentWeek).map(record => record.platform);
                     const availablePlatforms = Object.keys(PLATFORMS).filter(p => !hiddenPlatforms.includes(p));
                     const allCompleted = availablePlatforms.length > 0 && availablePlatforms.every(p => usedPlatformsThisWeek.includes(p));
-                    if (!allCompleted && allDOMElements.recordPanel.classList.contains('hidden')) {
+                    if (!allCompleted && allDOMElements.recordPanel && allDOMElements.recordPanel.classList.contains('hidden')) {
                         allDOMElements.toggleRecordPanelBtn.click();
                     }
                 }
@@ -715,26 +678,35 @@ function scheduleWrite(docId, updatedUsedCoupons) {
     }, 1000); 
 }
 
-// --- 設定功能 ---
 function loadSettings() { 
     hiddenPlatforms = JSON.parse(localStorage.getItem('hiddenPlatforms') || '[]');
     localStorage.setItem('platformsCache', JSON.stringify(PLATFORMS));
     renderPlatformOptions(); 
 }
-allDOMElements.settingsBtn.addEventListener('click', () => {
-    allDOMElements.platformSettingsEl.innerHTML = '';
-    for (const key in PLATFORMS) {
-        const isHidden = hiddenPlatforms.includes(key);
-        allDOMElements.platformSettingsEl.innerHTML += `<label class="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"><md-checkbox value="${key}" ${!isHidden ? 'checked' : ''} class="platform-toggle"></md-checkbox><span class="font-medium">${PLATFORMS[key]}</span></label>`;
+
+// 綁定設定對話框點擊
+function bindSettingsEvents() {
+    if (allDOMElements.settingsBtn) {
+        allDOMElements.settingsBtn.addEventListener('click', () => {
+            allDOMElements.platformSettingsEl.innerHTML = '';
+            for (const key in PLATFORMS) {
+                const isHidden = hiddenPlatforms.includes(key);
+                allDOMElements.platformSettingsEl.innerHTML += `<label class="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"><md-checkbox value="${key}" ${!isHidden ? 'checked' : ''} class="platform-toggle"></md-checkbox><span class="font-medium">${PLATFORMS[key]}</span></label>`;
+            }
+            allDOMElements.settingsDialog.show();
+        });
     }
-    allDOMElements.settingsDialog.show();
-});
-allDOMElements.cancelSettingsBtn.addEventListener('click', () => allDOMElements.settingsDialog.close());
-allDOMElements.saveSettingsBtn.addEventListener('click', () => {
-    hiddenPlatforms = Array.from(document.querySelectorAll('.platform-toggle')).filter(cb => !cb.checked).map(cb => cb.value);
-    localStorage.setItem('hiddenPlatforms', JSON.stringify(hiddenPlatforms));
-    renderPlatformOptions(); refreshUI(); allDOMElements.settingsDialog.close(); announceStatus("平台顯示設定已儲存。");
-});
+    if (allDOMElements.cancelSettingsBtn) {
+        allDOMElements.cancelSettingsBtn.addEventListener('click', () => allDOMElements.settingsDialog.close());
+    }
+    if (allDOMElements.saveSettingsBtn) {
+        allDOMElements.saveSettingsBtn.addEventListener('click', () => {
+            hiddenPlatforms = Array.from(document.querySelectorAll('.platform-toggle')).filter(cb => !cb.checked).map(cb => cb.value);
+            localStorage.setItem('hiddenPlatforms', JSON.stringify(hiddenPlatforms));
+            renderPlatformOptions(); refreshUI(); allDOMElements.settingsDialog.close(); announceStatus("平台顯示設定已儲存。");
+        });
+    }
+}
 
 function getChartJsThemeOptions() {
     const isDarkMode = document.documentElement.classList.contains('dark');
@@ -764,40 +736,23 @@ function getChartJsThemeOptions() {
     };
 }
 
-const hexToRgbA = (hex, alpha) => {
-    let c;
-    if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex.trim())){
-        c = hex.trim().substring(1).split(''); if(c.length== 3){ c= [c[0], c[0], c[1], c[1], c[2], c[2]]; }
-        c = '0x'+c.join(''); return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+','+alpha+')';
-    }
-    return `rgba(25, 118, 210, ${alpha})`;
-};
-
 function initGlobalStatsDialog() {
-    const select = allDOMElements.globalStatsWeekFilter;
+    const select = allDOMElements.globalStatsWeekFilter; if (!select) return;
     select.innerHTML = '';
-    const weeks = Object.keys(GLOBAL_STATS_DATA).sort((a, b) => parseInt(b) - parseInt(a));
+    const data = getGlobalStatsData();
+    const weeks = Object.keys(data).sort((a, b) => parseInt(b) - parseInt(a));
     weeks.forEach(week => { select.innerHTML += `<md-select-option value="${week}">第 ${week} 周</md-select-option>`; });
     if(weeks.length > 0) select.value = weeks[0]; 
 }
 
-// Lazy load Chart.js and DataLabels before showing
-allDOMElements.globalStatsBtn.addEventListener('click', async () => {
-    await loadScript('https://cdn.jsdelivr.net/npm/chart.js');
-    await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js');
-    initGlobalStatsDialog(); renderGlobalStats(allDOMElements.globalStatsWeekFilter.value); allDOMElements.globalStatsDialog.show();
-});
-
-allDOMElements.closeGlobalStatsBtn.addEventListener('click', () => allDOMElements.globalStatsDialog.close());
-allDOMElements.globalStatsWeekFilter.addEventListener('change', (e) => renderGlobalStats(e.target.value));
-
 function renderGlobalStats(week) {
-    const weekData = GLOBAL_STATS_DATA[week]; if (!weekData) return;
+    const dataAll = getGlobalStatsData();
+    const weekData = dataAll[week]; if (!weekData) return;
     const data = weekData.stats; const overview = weekData.overview;
     if (allDOMElements.globalStatsCutoff) allDOMElements.globalStatsCutoff.textContent = `資料截止時間：${weekData.cutoff}`;
 
     const overviewEl = allDOMElements.globalStatsOverview;
-    if (overview) {
+    if (overview && overviewEl) {
         overviewEl.style.display = 'grid';
         overviewEl.innerHTML = `
             <div class="glass-card flex flex-col justify-center items-center py-2 sm:py-3 rounded-xl shadow-sm">
@@ -825,9 +780,10 @@ function renderGlobalStats(week) {
                 <span class="text-lg sm:text-xl font-black text-purple-600 dark:text-purple-400 tabular-nums">${overview.avgPlatformsPerUser}</span>
             </div>
         `;
-    } else { overviewEl.style.display = 'none'; }
+    } else if (overviewEl) { overviewEl.style.display = 'none'; }
 
-    const tbody = allDOMElements.globalStatsTbody; tbody.innerHTML = '';
+    const tbody = allDOMElements.globalStatsTbody; if (!tbody) return;
+    tbody.innerHTML = '';
     const availablePlatforms = Object.keys(PLATFORMS).filter(p => data[p]);
     const ranks = {}; const metrics = ['p0', 'p10', 'p20', 'p50', 'p100', 'p200', 'exp'];
     metrics.forEach(metric => {
@@ -873,31 +829,34 @@ function renderGlobalStats(week) {
     const top3HTML = top3Platforms.map((p, i) => `<div class="flex justify-between items-center"><span class="opacity-80">${i+1}. ${p}</span><span class="font-bold text-base tabular-nums">${formatNumber(data[p].draws)}</span></div>`).join('');
 
     const funFactEl = document.getElementById('globalStatsFunFact');
-    funFactEl.innerHTML = `
-        <h4 class="font-bold text-base sm:text-lg mb-4 flex items-center gap-2" style="color: var(--theme-color-summary-text);">
-            <span class="material-symbols-outlined">lightbulb</span> 第 ${week} 周全網抽獎大數據
-        </h4>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm" style="color: var(--theme-color-summary-text);">
-            <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
-                <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-green-500">trending_up</span> 最高期望值(MOP)</span>
-                <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${maxEvPlatform}</strong><span class="text-3xl font-black text-green-600 dark:text-green-400 leading-none tabular-nums">${data[maxEvPlatform].exp.toFixed(1)}</span></div>
+    if (funFactEl) {
+        funFactEl.innerHTML = `
+            <h4 class="font-bold text-base sm:text-lg mb-4 flex items-center gap-2" style="color: var(--theme-color-summary-text);">
+                <span class="material-symbols-outlined">lightbulb</span> 第 ${week} 周全網抽獎大數據
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm" style="color: var(--theme-color-summary-text);">
+                <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
+                    <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-green-500">trending_up</span> 最高期望值(MOP)</span>
+                    <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${maxEvPlatform}</strong><span class="text-3xl font-black text-green-600 dark:text-green-400 leading-none tabular-nums">${data[maxEvPlatform].exp.toFixed(1)}</span></div>
+                </div>
+                <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
+                    <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-gray-500">sentiment_dissatisfied</span> 最容易中0元</span>
+                    <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${max0Platform}</strong><span class="text-3xl font-black text-gray-600 dark:text-gray-400 leading-none tabular-nums">${(data[max0Platform].p0 * 100).toFixed(1)}%</span></div>
+                </div>
+                <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
+                    <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-yellow-500">workspace_premium</span> 最容易中200元</span>
+                    <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${max200Platform}</strong><span class="text-3xl font-black text-yellow-600 dark:text-yellow-400 leading-none tabular-nums">${(data[max200Platform].p200 * 100).toFixed(2)}%</span></div>
+                </div>
+                <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
+                    <span class="flex items-center gap-1 font-bold opacity-80 text-[13px] mb-2"><span class="material-symbols-outlined text-[18px] text-blue-500">format_list_numbered</span> 第 ${week} 周抽獎次數排名</span>
+                    <div class="flex flex-col gap-1.5 mt-auto">${top3HTML}</div>
+                </div>
             </div>
-            <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
-                <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-gray-500">sentiment_dissatisfied</span> 最容易中0元</span>
-                <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${max0Platform}</strong><span class="text-3xl font-black text-gray-600 dark:text-gray-400 leading-none tabular-nums">${(data[max0Platform].p0 * 100).toFixed(1)}%</span></div>
-            </div>
-            <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
-                <span class="flex items-center gap-1 font-bold opacity-80 text-[13px]"><span class="material-symbols-outlined text-[18px] text-yellow-500">workspace_premium</span> 最容易中200元</span>
-                <div class="flex items-baseline gap-2 mt-auto pt-2"><strong class="text-2xl">${max200Platform}</strong><span class="text-3xl font-black text-yellow-600 dark:text-yellow-400 leading-none tabular-nums">${(data[max200Platform].p200 * 100).toFixed(2)}%</span></div>
-            </div>
-            <div class="glass-card flex flex-col gap-1 p-4 rounded-xl shadow-sm">
-                <span class="flex items-center gap-1 font-bold opacity-80 text-[13px] mb-2"><span class="material-symbols-outlined text-[18px] text-blue-500">format_list_numbered</span> 第 ${week} 周抽獎次數排名</span>
-                <div class="flex flex-col gap-1.5 mt-auto">${top3HTML}</div>
-            </div>
-        </div>
-    `;
+        `;
+    }
 
     if (!window.Chart || !window.ChartDataLabels) return;
+    Chart.register(ChartDataLabels);
     const chartTheme = getChartJsThemeOptions();
 
     if (globalCouponChart) globalCouponChart.destroy();
@@ -1024,56 +983,33 @@ function renderCharts(week) {
     });
 }
 
-allDOMElements.statsBtn.addEventListener('click', async () => {
-    await loadScript('https://cdn.jsdelivr.net/npm/chart.js'); await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js');
-    const { statsWeekFilter, statsDialog } = allDOMElements;
-    statsWeekFilter.innerHTML = '<md-select-option value="all" selected>全部周數</md-select-option>';
-    const weeks = [...new Set(records.map(r => r.week))].sort((a,b) => a-b);
-    weeks.forEach(w => statsWeekFilter.innerHTML += `<md-select-option value="${w}">第 ${w} 周</md-select-option>`);
-    renderCharts('all'); statsDialog.show();
-});
-allDOMElements.closeStatsDialogBtn.addEventListener('click', () => allDOMElements.statsDialog.close());
-allDOMElements.statsWeekFilter.addEventListener('change', (e) => renderCharts(e.target.value));
-
 function applyTheme(themeName) {
     const theme = THEMES[themeName]; if (!theme) return;
     const root = document.documentElement;
     root.style.setProperty('--theme-color-primary', theme.primary); root.style.setProperty('--theme-color-title', theme.title); root.style.setProperty('--theme-color-summary-bg', theme.summaryBg); root.style.setProperty('--theme-color-summary-border', theme.summaryBorder); root.style.setProperty('--theme-color-summary-text', theme.summaryText);
-    document.getElementById('meta-theme-color').content = theme.primary;
+    const themeColorMeta = document.getElementById('meta-theme-color');
+    if (themeColorMeta) themeColorMeta.content = theme.primary;
     localStorage.setItem('selectedTheme', themeName); updateThemeSelectionUI(themeName);
-    if(allDOMElements.statsDialog.open) renderCharts(allDOMElements.statsWeekFilter.value);
-    if(allDOMElements.globalStatsDialog.open) renderGlobalStats(allDOMElements.globalStatsWeekFilter.value);
+    if(allDOMElements.statsDialog && allDOMElements.statsDialog.open) renderCharts(allDOMElements.statsWeekFilter.value);
+    if(allDOMElements.globalStatsDialog && allDOMElements.globalStatsDialog.open) renderGlobalStats(allDOMElements.globalStatsWeekFilter.value);
     renderRecords();
 }
 
 function toggleDarkMode(enable) {
     document.documentElement.classList.toggle('dark', enable);
     localStorage.setItem('darkMode', enable ? 'enabled' : 'disabled');
-    allDOMElements.darkModeSwitch.selected = enable;
-    if(allDOMElements.statsDialog.open) renderCharts(allDOMElements.statsWeekFilter.value);
-    if(allDOMElements.globalStatsDialog.open) renderGlobalStats(allDOMElements.globalStatsWeekFilter.value);
+    if (allDOMElements.darkModeSwitch) allDOMElements.darkModeSwitch.selected = enable;
+    if(allDOMElements.statsDialog && allDOMElements.statsDialog.open) renderCharts(allDOMElements.statsWeekFilter.value);
+    if(allDOMElements.globalStatsDialog && allDOMElements.globalStatsDialog.open) renderGlobalStats(allDOMElements.globalStatsWeekFilter.value);
 }
 
 function updateThemeSelectionUI(selectedTheme) { document.querySelectorAll('.theme-dot').forEach(dot => dot.classList.toggle('selected', dot.dataset.theme === selectedTheme)); }
-
-allDOMElements.themeBtn.addEventListener('click', () => {
-    allDOMElements.themeOptions.innerHTML = '';
-    Object.keys(THEMES).forEach(themeName => {
-        const dot = document.createElement('div'); dot.className = 'theme-dot shadow-sm'; dot.dataset.theme = themeName; dot.style.backgroundColor = THEMES[themeName].title;
-        dot.onclick = () => applyTheme(themeName); allDOMElements.themeOptions.appendChild(dot);
-    });
-    updateThemeSelectionUI(localStorage.getItem('selectedTheme') || 'blue');
-    allDOMElements.darkModeSwitch.selected = document.documentElement.classList.contains('dark');
-    allDOMElements.themeDialog.show();
-});
-
-allDOMElements.darkModeSwitch.addEventListener('change', (e) => toggleDarkMode(e.target.selected));
 
 function findBestCouponCombination(coupons, targetAmount, strategy = 'large') {
     const platformCouponCounts = coupons.reduce((acc, coupon) => { acc[coupon.platform] = (acc[coupon.platform] || 0) + 1; return acc; }, {});
     const didClearPlatform = (combination) => {
         if (combination.length === 0) return false;
-        const comboCounts = combination.reduce((acc, coupon) => { acc[coupon.platform] = (acc[coupon.platform] || 0) + 1; return acc; }, {});
+        const comboCounts = combination.reduce((acc, coupon) => { acc[coupon.platform] = (acc[combo.platform] || 0) + 1; return acc; }, {});
         for (const platform in comboCounts) if (comboCounts[platform] === platformCouponCounts[platform]) return true;
         return false;
     };
@@ -1129,470 +1065,6 @@ function findBestCouponCombination(coupons, targetAmount, strategy = 'large') {
     find(0, 0, []); return bestSolution.combination;
 }
 
-allDOMElements.calculatorBtn.addEventListener('click', () => {
-    bestCouponCombination = []; allDOMElements.spendingAmountInput.value = ''; allDOMElements.calculatorResult.innerHTML = '請輸入上方欲消費金額後點擊「計算」。';
-    allDOMElements.markAsUsedBtn.classList.add('hidden'); 
-    
-    const currentWeek = getWeekNumber(new Date());
-    const weeklyRecords = records.filter(record => record.week === currentWeek);
-    const availablePlatforms = new Set();
-    weeklyRecords.forEach(record => {
-        const usedCoupons = record.usedCoupons || {};
-        ['draw1', 'draw2', 'draw3'].forEach(drawKey => {
-            const value = parseInt(record[drawKey]);
-            if (value > 0 && !usedCoupons[drawKey]) availablePlatforms.add(record.platform);
-        });
-    });
-
-    const makeupSelect = document.getElementById('makeupPlatformSelect');
-    makeupSelect.innerHTML = '<md-select-option value="auto" selected>自動 (消費最多的平台)</md-select-option>';
-    if (availablePlatforms.size === 0) {
-        makeupSelect.disabled = true;
-    } else {
-        makeupSelect.disabled = false;
-        Array.from(availablePlatforms).sort().forEach((p, index) => {
-            makeupSelect.innerHTML += `<md-select-option value="${p}">${PLATFORMS[p] || p}</md-select-option>`;
-        });
-    }
-    
-    setTimeout(() => { makeupSelect.value = 'auto'; }, 10);
-    
-    allDOMElements.calculatorDialog.show();
-});
-
-allDOMElements.cancelCalculatorBtn.addEventListener('click', () => allDOMElements.calculatorDialog.close());
-
-allDOMElements.calculateBtn.addEventListener('click', (event) => {
-    event.preventDefault();
-    const targetAmount = parseFloat(allDOMElements.spendingAmountInput.value);
-    if (isNaN(targetAmount) || targetAmount <= 0) { allDOMElements.calculatorResult.innerHTML = '<div class="text-red-500 font-bold">請輸入有效的消費金額。</div>'; return; }
-
-    const currentWeek = getWeekNumber(new Date());
-    const weeklyRecords = records.filter(record => record.week === currentWeek);
-    const strategyNode = document.querySelector('input[name="calcStrategy"]:checked');
-    const strategy = strategyNode ? strategyNode.value : 'large';
-
-    const availableCoupons = [];
-    const availablePlatformsSet = new Set();
-    weeklyRecords.forEach(record => {
-        const usedCoupons = record.usedCoupons || {};
-        ['draw1', 'draw2', 'draw3'].forEach(drawKey => {
-            const value = parseInt(record[drawKey]);
-            if (value > 0 && !usedCoupons[drawKey]) {
-                availableCoupons.push({ recordId: record.id, platform: record.platform, value: value, couponKey: drawKey });
-                availablePlatformsSet.add(record.platform);
-            }
-        });
-    });
-
-    if (availableCoupons.length === 0) { allDOMElements.calculatorResult.innerHTML = '<div class="font-bold opacity-70 text-gray-500">本周已經沒有可用的消費券囉！</div>'; return; }
-    bestCouponCombination = findBestCouponCombination(availableCoupons, targetAmount, strategy);
-
-    if (bestCouponCombination.length === 0) {
-         allDOMElements.calculatorResult.innerHTML = '<div class="text-orange-500 font-bold mb-1">沒有找到合適的用券方案。</div><div class="text-xs text-gray-500">提示：請確認消費金額是否大於任何單張券所需的最低消費（即券面額的3倍）。</div>'; 
-         return;
-    }
-    
-    let resultHTML = `<div class="font-bold text-lg mb-3 pb-2 border-b" style="border-color: var(--color-border); color: var(--color-text-primary);">✅ 目標消費：MOP ${targetAmount}</div>`;
-    resultHTML += `<div class="flex flex-col gap-2 mb-3">`;
-
-    const groupedByPlatform = bestCouponCombination.reduce((acc, coupon) => { acc[coupon.platform] = acc[coupon.platform] || []; acc[coupon.platform].push(coupon.value); return acc; }, {});
-
-    let totalRequiredSpend = 0;
-    for (const platform in groupedByPlatform) { totalRequiredSpend += groupedByPlatform[platform].reduce((sum, val) => sum + val * 3, 0); }
-    const remainingAmount = targetAmount - totalRequiredSpend;
-    
-    let makeupPlatform = document.getElementById('makeupPlatformSelect').value || 'auto';
-
-    if (remainingAmount > 0 && makeupPlatform === 'auto') {
-        let maxSpend = -1;
-        let targetPlatform = null;
-        for (const p in groupedByPlatform) {
-            const spend = groupedByPlatform[p].reduce((sum, val) => sum + val * 3, 0);
-            if (spend > maxSpend) {
-                maxSpend = spend;
-                targetPlatform = p;
-            }
-        }
-        makeupPlatform = targetPlatform || Array.from(availablePlatformsSet)[0];
-    }
-
-    if (remainingAmount > 0 && makeupPlatform) { if (!groupedByPlatform[makeupPlatform]) { groupedByPlatform[makeupPlatform] = []; } }
-    let notificationTextLines = [];
-
-    for (const platform in groupedByPlatform) {
-        const coupons = groupedByPlatform[platform];
-        let platformSpend = coupons.reduce((sum, val) => sum + val * 3, 0);
-        const isMakeupPlatform = (remainingAmount > 0 && platform === makeupPlatform);
-        if (isMakeupPlatform) platformSpend += remainingAmount;
-
-        const pColor = PLATFORM_COLORS[platform] || 'var(--theme-color-primary)';
-        notificationTextLines.push(`${PLATFORMS[platform] || platform}: MOP ${platformSpend}`);
-        
-        let makeupBadge = isMakeupPlatform ? `<span class="ml-2 text-[10px] bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 px-1.5 py-0.5 rounded font-bold">含補底 ${remainingAmount.toFixed(0)}</span>` : '';
-        let couponsDisplay = coupons.length > 0 ? coupons.map(c => `<span class="inline-flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded px-1.5 py-0.5 font-mono font-bold text-gray-700 dark:text-gray-300 shadow-sm">${c}</span>`).join('') : `<span class="text-xs text-gray-400 italic">無 (純補底)</span>`;
-
-        resultHTML += `
-        <div class="p-2.5 rounded-lg border flex flex-col gap-1.5 bg-white dark:bg-[#1c2128]" style="border-color: ${pColor}; border-left-width: 4px;">
-            <div class="flex justify-between items-center w-full">
-                <div class="calc-platform-jump font-bold text-[15px] truncate flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity" data-platform="${platform}" style="color: ${pColor};" title="點擊跳轉APP">
-                    <img src="${PLATFORM_ICONS[platform]}" alt="${PLATFORMS[platform] || platform}" class="w-6 h-6 rounded-md object-contain border border-gray-100 dark:border-gray-700 bg-white flex-shrink-0 pointer-events-none" onerror="this.style.display='none'">
-                    <span class="truncate pointer-events-none">${PLATFORMS[platform] || platform}</span>
-                    <span class="material-symbols-outlined text-[14px] pointer-events-none">open_in_new</span>
-                </div>
-                <div class="text-sm flex-shrink-0" style="color: var(--color-text-primary);">需消費: <span class="font-bold text-base tabular-nums">MOP ${platformSpend}</span>${makeupBadge}</div>
-            </div>
-            <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                <span>使用券:</span>
-                <div class="flex gap-1">${couponsDisplay}</div>
-            </div>
-        </div>
-        `;
-    }
-    resultHTML += `</div>`;
-    
-    if (remainingAmount > 0) {
-        notificationTextLines.push(`已將差額 MOP ${remainingAmount.toFixed(0)} 加至 ${PLATFORMS[makeupPlatform] || makeupPlatform}`);
-        resultHTML += `<div class="p-2.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg border border-green-200 dark:border-green-800 font-bold mb-2 flex items-center gap-2"><span class="material-symbols-outlined">task_alt</span> 🎉 方案已將差額 MOP ${remainingAmount.toFixed(0)} 加至 ${PLATFORMS[makeupPlatform] || makeupPlatform}。</div>`;
-    } else {
-        notificationTextLines.push(`完美匹配，無需補差額！`);
-        resultHTML += `<div class="p-2.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg border border-green-200 dark:border-green-800 font-bold mb-2 flex items-center gap-2"><span class="material-symbols-outlined">task_alt</span> 🎉 完美匹配！不需補任何差額。</div>`;
-    }
-
-    const today = new Date();
-    if ([0, 5, 6].includes(today.getDay())) {
-        resultHTML += `<div class="p-2.5 mt-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-800 font-bold text-sm">⚠️ 周五至周日無法使用消費券，故無法標記為已使用。</div>`;
-        allDOMElements.markAsUsedBtn.classList.add('hidden');
-    } else {
-        allDOMElements.markAsUsedBtn.classList.remove('hidden');
-    }
-
-    allDOMElements.calculatorResult.innerHTML = resultHTML;
-    showToast("用券方案已計算完成", notificationTextLines);
-    if ("Notification" in window) {
-        const options = { body: notificationTextLines.join('\n'), icon: "./icon.png", badge: "./icon.png", vibrate: [200, 100, 200] };
-        const sendNativeNotification = () => { if ("serviceWorker" in navigator) { navigator.serviceWorker.ready.then(r => r.showNotification("用券方案已計算完成", options)).catch(()=>new Notification("用券方案已計算完成", options)); } else { new Notification("用券方案已計算完成", options); } };
-        if (Notification.permission === "granted") { sendNativeNotification(); } else if (Notification.permission !== "denied") { Notification.requestPermission().then(p => { if (p === "granted") sendNativeNotification(); }); }
-    }
-});
-
-allDOMElements.calculatorResult.addEventListener('click', (e) => {
-    const jumpBtn = e.target.closest('.calc-platform-jump');
-    if (jumpBtn) {
-        const platform = jumpBtn.dataset.platform;
-        if (navigator.vibrate) navigator.vibrate(10);
-        jumpToApp(platform);
-    }
-});
-
-allDOMElements.markAsUsedBtn.addEventListener('click', async () => {
-    if (bestCouponCombination.length === 0) return;
-    const confirmed = await showConfirmDialog('確定要將計算結果中的消費券標示為「已使用」嗎？\n此操作將會直接更新您的記錄。', '確認操作');
-    if (!confirmed) return;
-    try {
-        const updates = {}; bestCouponCombination.forEach(coupon => { updates[`records.${coupon.recordId}.usedCoupons.${coupon.couponKey}`] = true; });
-        await safeUpdateRecordDoc(updates, null); 
-        announceStatus("已成功標示消費券為已使用。"); allDOMElements.calculatorDialog.close();
-    } catch (error) { showAlertDialog('操作失敗，請稍後再試。'); }
-});
-
-async function submitRecordLogic() {
-    if (!currentInputPlatform) { showAlertDialog("請先點選上方平台！"); return; }
-    const platform = currentInputPlatform; const [draw1, draw2, draw3] = currentInputValues;
-    const weekNumber = getEntryWeekNumber();
-    
-    if (!weekNumber) { showAlertDialog("請選擇要記錄的周數！"); return; }
-    if (records.some(r => r.week === weekNumber && r.platform === platform)) { showAlertDialog(`第 ${weekNumber} 周已存在 ${platform} 的記錄！`); return; }
-    
-    const docId = `${weekNumber}-${platform}`;
-    const isAllDash = draw1 === '-' && draw2 === '-' && draw3 === '-';
-    const newRecord = { id: docId, week: weekNumber, platform, draw1, draw2, draw3, usedCoupons: { draw1: isAllDash, draw2: isAllDash, draw3: isAllDash }, createdAt: new Date().toISOString() };
-    
-    try {
-        const updates = { [`records.${docId}`]: newRecord }; const fallbackData = { records: { [docId]: newRecord } };
-        await safeUpdateRecordDoc(updates, fallbackData);
-        
-        currentInputIndex = 0; currentInputValues = ['-', '-', '-']; currentInputPlatform = '';
-        updateCouponSlotsUI(); renderPlatformOptions(); 
-        announceStatus(`已成功新增 ${PLATFORMS[platform]} 的紀錄。`);
-
-        if ([draw1, draw2, draw3].includes('200')) {
-            await loadScript('https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js');
-            if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, zIndex: 10000, colors: ['#F59E0B', '#F97316', '#EF4444', '#10B981', '#3B82F6'] });
-        }
-    } catch (error) { showAlertDialog("新增紀錄失敗，請檢查網絡連線。"); }
-}
-
-allDOMElements.addRecordBtn.addEventListener('click', submitRecordLogic);
-
-allDOMElements.skipBtn.addEventListener('click', async () => {
-    if (!currentInputPlatform) { showAlertDialog("請先點選上方要跳過的平台！"); return; }
-    const platform = currentInputPlatform; const weekNumber = getEntryWeekNumber();
-    if (!weekNumber) { showAlertDialog("請選擇要操作的周數！"); return; }
-    if (records.some(r => r.week === weekNumber && r.platform === platform)) { showAlertDialog(`第 ${weekNumber} 周已存在 ${platform} 的記錄！`); return; }
-    const docId = `${weekNumber}-${platform}`;
-    const newRecord = { id: docId, week: weekNumber, platform, draw1: "ND", draw2: "ND", draw3: "ND", usedCoupons: { draw1: true, draw2: true, draw3: true }, createdAt: new Date().toISOString() };
-    try {
-        await safeUpdateRecordDoc({ [`records.${docId}`]: newRecord }, { records: { [docId]: newRecord } });
-        currentInputPlatform = ''; renderPlatformOptions(); announceStatus(`已成功新增 ${PLATFORMS[platform]} 的跳過紀錄。`);
-    } catch (error) { showAlertDialog("新增 Skip 紀錄失敗，請檢查網絡連線。"); }
-});
-
-allDOMElements.filterWeekSelect.addEventListener('change', renderRecords);
-allDOMElements.filterPlatformSelect.addEventListener('change', renderRecords);
-allDOMElements.filterCurrentWeekBtn.addEventListener('click', () => {
-    const select = allDOMElements.filterWeekSelect; select.value = getWeekNumber(new Date()).toString(); select.dispatchEvent(new Event('change', { bubbles: true }));
-});
-
-let recordPressTimer = null;
-let isRecordLongPress = false;
-
-function toggleAllCouponsForElement(titleEl) {
-    const card = titleEl.closest('.record-card'); if (!card || !card.dataset.id) return;
-    const docId = card.dataset.id; const record = records.find(r => r.id === docId); if (!record) return;
-
-    const today = new Date(); const isRestricted = [0, 5, 6].includes(today.getDay()) && record.week === getWeekNumber(today);
-    if (isRestricted) { showAlertDialog('規則限制：周五至周日無法使用當周的消費券！'); return; }
-
-    const couponKeys = ['draw1', 'draw2', 'draw3']; const monetaryCoupons = couponKeys.filter(key => !isNaN(parseInt(record[key])));
-    if (monetaryCoupons.length === 0) return;
-    
-    const wasAllUsed = monetaryCoupons.every(key => (record.usedCoupons || {})[key]);
-    const isChecked = !wasAllUsed; const updatedUsedCoupons = { ...(record.usedCoupons || {}) };
-    monetaryCoupons.forEach(key => updatedUsedCoupons[key] = isChecked);
-    record.usedCoupons = updatedUsedCoupons; refreshUI(); scheduleWrite(docId, updatedUsedCoupons);
-}
-
-// 開始判定長按
-const startRecordPress = (e) => {
-    const titleEl = e.target.closest('.platform-title');
-    if (!titleEl) return;
-    isRecordLongPress = false;
-    if(e.type === 'touchstart' && navigator.vibrate) navigator.vibrate(10);
-    recordPressTimer = setTimeout(() => {
-        isRecordLongPress = true;
-        if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
-        toggleAllCouponsForElement(titleEl);
-    }, 1000);
-};
-
-const cancelRecordPress = () => { if (recordPressTimer) clearTimeout(recordPressTimer); };
-
-allDOMElements.recordsList.addEventListener('touchstart', startRecordPress, { passive: true });
-allDOMElements.recordsList.addEventListener('touchend', cancelRecordPress);
-allDOMElements.recordsList.addEventListener('touchmove', cancelRecordPress, { passive: true });
-allDOMElements.recordsList.addEventListener('mousedown', startRecordPress);
-allDOMElements.recordsList.addEventListener('mouseup', cancelRecordPress);
-allDOMElements.recordsList.addEventListener('mouseleave', cancelRecordPress);
-
-allDOMElements.recordsList.addEventListener('click', async (e) => {
-    const target = e.target;
-    const swipeDelBtn = target.closest('.delete-record-swipe, .delete-record');
-    if (swipeDelBtn) {
-        const docId = swipeDelBtn.dataset.id || swipeDelBtn.closest('.record-card, .swipe-container').dataset.id;
-        const record = records.find(r => r.id === docId);
-        if(record) {
-            const confirmed = await showConfirmDialog(`確定要刪除 ${PLATFORMS[record.platform]} 在第 ${record.week} 周的紀錄嗎？`, '刪除確認');
-            if (confirmed) {
-                try { await safeUpdateRecordDoc({ [`records.${docId}`]: FB.fs.deleteField() }, null); announceStatus("紀錄已刪除。"); } 
-                catch (error) { showAlertDialog("刪除失敗！"); }
-            }
-        }
-        return;
-    }
-
-    const titleEl = target.closest('.platform-title');
-    if (titleEl) {
-        if (isRecordLongPress) { isRecordLongPress = false; return; }
-        if (navigator.vibrate) navigator.vibrate(10);
-        
-        const card = titleEl.closest('.record-card');
-        const docId = card.dataset.id;
-        const record = records.find(r => r.id === docId);
-        if (record) {
-            jumpToApp(record.platform);
-        }
-        return;
-    }
-
-    const card = target.closest('.record-card'); if (!card || !card.dataset.id) return;
-    const docId = card.dataset.id; const record = records.find(r => r.id === docId); if (!record) return;
-
-    const couponBtn = target.closest('.coupon-value');
-    if (couponBtn && !couponBtn.classList.contains('invalid')) {
-        const today = new Date(); const isRestricted = [0, 5, 6].includes(today.getDay()) && record.week === getWeekNumber(today);
-        if (isRestricted) { showAlertDialog('規則限制：周五至周日無法使用當周的消費券！'); return; }
-
-        if (navigator.vibrate) navigator.vibrate(10);
-        const couponKey = couponBtn.dataset.coupon;
-        const updatedUsedCoupons = { ...(record.usedCoupons || {}), [couponKey]: !(record.usedCoupons || {})[couponKey] };
-        record.usedCoupons = updatedUsedCoupons; refreshUI(); scheduleWrite(docId, updatedUsedCoupons);
-    }
-});
-
-allDOMElements.copyUserIdBtn.addEventListener('click', () => {
-    const { userIdInput } = allDOMElements;
-    if (navigator.clipboard && userIdInput.value) {
-        navigator.clipboard.writeText(userIdInput.value).then(() => { showAlertDialog('用戶 ID 已成功複製！\n請妥善保存以防資料遺失。'); announceStatus('用戶 ID 已複製到剪貼簿。'); }).catch(err => { showAlertDialog('複製失敗，請手動複製。'); });
-    }
-});
-
-allDOMElements.switchUserBtn.addEventListener('click', () => {
-    const newUserId = allDOMElements.userIdInput.value.trim();
-    if (newUserId && newUserId !== currentUserId) {
-        currentUserId = newUserId; localStorage.setItem('savedUserId', currentUserId);
-        showAlertDialog(`已成功切換至帳號 ID:\n${currentUserId}`); announceStatus(`已切換至新用戶。`);
-        loadCachedData(currentUserId); syncRecords(currentUserId);
-    } else if (!newUserId) { showAlertDialog('請輸入有效的用戶 ID！'); }
-});
-
-allDOMElements.addFavoriteBtn.addEventListener('click', () => { showAlertDialog('<b>電腦:</b> 按下 `Ctrl + D` 或 `Cmd + D` 將此頁加入書籤。<br><br><b>手機:</b> 請點擊瀏覽器選單按鈕，然後選擇「新增至書籤」或類似選項。', '新增至書籤/最愛'); });
-allDOMElements.addToHomeScreenBtn.addEventListener('click', async () => {
-    if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; } 
-    else {
-        const ua = navigator.userAgent; const isIOS = /iPad|iPhone|iPod/.test(ua); const isAndroid = /Android/.test(ua); let message = '';
-        if (isIOS) message = '<b>iOS/iPadOS 裝置:</b><br>1. 點擊底部工具列的「分享」<span class="material-symbols-outlined" style="font-size: 1em; vertical-align: -0.15em;">ios_share</span>按鈕。<br>2. 在選項中向下滑動，找到並點擊「加入主畫面」。';
-        else if (isAndroid) message = '<b>Android 裝置:</b><br>1. 點擊瀏覽器右上角的「選單」<span class="material-symbols-outlined" style="font-size: 1em; vertical-align: -0.15em;">more_vert</span>按鈕。<br>2. 找到並點擊「新增至主畫面」或「安裝應用程式」。';
-        else message = '請使用您的瀏覽器選單，尋找「新增至主畫面」、「安裝應用程式」或類似選項，即可將此網站像APP一樣放在桌面。';
-        showAlertDialog(message, '安裝應用程式/新增到主畫面');
-    }
-});
-
-function exportToCsv(filename, rows) {
-    let csvFile = ''; rows.forEach(row => {
-        let finalVal = ''; row.forEach((val, j) => {
-            let innerValue = val === null || val === undefined ? '' : val.toString();
-            if (val instanceof Date) innerValue = val.toLocaleString();
-            let result = innerValue.replace(/"/g, '""'); if (result.search(/("|,|\n)/g) >= 0) result = '"' + result + '"';
-            if (j > 0) finalVal += ','; finalVal += result;
-        }); csvFile += finalVal + '\n';
-    });
-    const blob = new Blob(['\uFEFF' + csvFile], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a");
-    if (link.download !== undefined) { const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", filename); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
-}
-
-allDOMElements.exportCsvBtn.addEventListener('click', () => {
-    if (records.length === 0) { showAlertDialog('沒有可匯出的資料。'); return; }
-    const headers = ['周數', '平台', '券1', '券2', '券3', '券1已使用', '券2已使用', '券3已使用', '建立時間']; const rows = [headers];
-    const sortedRecords = [...records].sort((a, b) => (a.week !== b.week) ? a.week - b.week : a.platform.localeCompare(b.platform));
-    sortedRecords.forEach(record => {
-        const usedCoupons = record.usedCoupons || {}; const createdAt = record.createdAt ? new Date(record.createdAt).toLocaleString('zh-HK') : '';
-        rows.push([ record.week, PLATFORMS[record.platform] || record.platform, record.draw1, record.draw2, record.draw3, usedCoupons.draw1 ? '是' : '否', usedCoupons.draw2 ? '是' : '否', usedCoupons.draw3 ? '是' : '否', createdAt ]);
-    });
-    const now = new Date(); const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
-    exportToCsv(`社區消費獎賞2026_${timestamp}_${currentUserId}.csv`, rows);
-});
-
-allDOMElements.disclaimerLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存 or 處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀 or 洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即 নিকট表示您已閱讀、理解並同意以上所有條款。";
-    showAlertDialog(disclaimerText, "免責聲明");
-});
-
-// --- 手動推送未用券狀態通知 ---
-if (allDOMElements.quickNotifyBtn) {
-    allDOMElements.quickNotifyBtn.addEventListener('click', async () => {
-        if (!("Notification" in window)) {
-            showAlertDialog("您的瀏覽器不支援桌面通知系統。");
-            return;
-        }
-        
-        if (Notification.permission === "default") {
-            const permission = await Notification.requestPermission();
-            if (permission !== "granted") {
-                showAlertDialog("您已拒絕通知權限。若想接收定時到期提醒，請至瀏覽器設定開啟通知功能。");
-                return;
-            }
-        } else if (Notification.permission === "denied") {
-            showAlertDialog("通知權限已被拒絕。請點擊網址列左側的鎖頭，手動允許此網站推送通知。");
-            return;
-        }
-
-        const currentWeek = getWeekNumber(new Date());
-        const weeklyRecords = records.filter(record => record.week === currentWeek);
-        let remainingCoupons = [];
-        let totalRemaining = 0;
-
-        weeklyRecords.forEach(record => {
-            const usedCoupons = record.usedCoupons || {};
-            const unusedForThisPlatform = [];
-            [record.draw1, record.draw2, record.draw3].forEach((c, i) => {
-                const val = parseInt(c) || 0;
-                if (val > 0 && !usedCoupons[`draw${i+1}`]) {
-                    unusedForThisPlatform.push(val);
-                    totalRemaining += val;
-                }
-            });
-            if (unusedForThisPlatform.length > 0) {
-                remainingCoupons.push(`${PLATFORMS[record.platform] || record.platform}: MOP ${unusedForThisPlatform.join('、')}`);
-            }
-        });
-
-        if (totalRemaining > 0) {
-            sendLocalNotification(
-                "您的未使用消費券明細 🔔", 
-                `本周未用總額: MOP ${totalRemaining}\n${remainingCoupons.join('\n')}`
-            );
-            showToast("通知已發送", [`已將您本期未用券明細發送至您的系統通知！`]);
-        } else {
-            sendLocalNotification(
-                "本周消費券已全數使用！🎉", 
-                "太棒了！本周所有抽到的消費券已標記為已使用，無任何未用券。繼續保持！"
-            );
-            showToast("通知已發送", [`本周無任何未用券，做得好！`]);
-        }
-    });
-}
-
-// --- 定時背景檢查任務 (周四中午 12:00, 周日晚上 21:00) ---
-setInterval(() => {
-    const now = new Date();
-    const currentWeek = getWeekNumber(now);
-    const day = now.getDay();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-
-    // 周四中午 12:00 中清倉到期提醒
-    if (day === 4 && hours === 12 && minutes === 0) {
-        const key = `notified_thursday_w${currentWeek}`;
-        if (!localStorage.getItem(key)) {
-            let remainingMop = 0;
-            const weeklyRecords = records.filter(r => r.week === currentWeek);
-            weeklyRecords.forEach(record => {
-                const usedCoupons = record.usedCoupons || {};
-                [record.draw1, record.draw2, record.draw3].forEach((c, i) => {
-                    const val = parseInt(c) || 0;
-                    if (val > 0 && !usedCoupons[`draw${i+1}`]) remainingMop += val;
-                });
-            });
-            if (remainingMop > 0) {
-                sendLocalNotification(
-                    "快去清倉！周四到期提醒 ⏳", 
-                    `您本周還有 MOP ${formatNumber(remainingMop)} 的消費券未用！今晚就會過期失效啦！快點用券計數機清倉！`
-                );
-            }
-            localStorage.setItem(key, "true");
-        }
-    }
-
-    // 周日晚上 21:00 補抽券提醒
-    if (day === 0 && hours === 21 && minutes === 0) {
-        const key = `notified_sunday_w${currentWeek}`;
-        if (!localStorage.getItem(key)) {
-            const recordedPlatforms = records.filter(r => r.week === currentWeek).map(r => r.platform);
-            const availablePlatforms = Object.keys(PLATFORMS).filter(p => !hiddenPlatforms.includes(p));
-            const unrecorded = availablePlatforms.filter(p => !recordedPlatforms.includes(p));
-            if (unrecorded.length > 0) {
-                sendLocalNotification(
-                    "本周抽券記錄提醒 🎰", 
-                    `本周還有平台未記錄抽券：${unrecorded.map(p => PLATFORMS[p]).join('、')}。快去抽券記錄避免錯過啦！`
-                );
-            }
-            localStorage.setItem(key, "true");
-        }
-    }
-}, 30000); 
-
 // --- 「我的大獎賞」統計、海報生成及圖片下載邏輯 ---
 function calculateAndRenderMyRewards() {
     let totalWon = 0;
@@ -1602,14 +1074,13 @@ function calculateAndRenderMyRewards() {
     let platformMisses = {};
     let count200 = 0;
 
-    // 初始化各平台計數器
     Object.keys(PLATFORMS).forEach(p => {
         platformWonMops[p] = 0;
         platformMisses[p] = 0;
     });
 
     records.forEach(r => {
-        baseSpend += 50; // 每一筆紀錄代表完成了一次抽獎 (前置消費 MOP 50)
+        baseSpend += 50; 
         const usedCoupons = r.usedCoupons || {};
         ['draw1', 'draw2', 'draw3'].forEach(key => {
             const valStr = r[key];
@@ -1623,7 +1094,7 @@ function calculateAndRenderMyRewards() {
                 totalWon += valNum;
                 platformWonMops[r.platform] = (platformWonMops[r.platform] || 0) + valNum;
                 if (usedCoupons[key]) {
-                    couponSpend += valNum * 3; // 使用消費券帶來的乘 3 消費
+                    couponSpend += valNum * 3; 
                 }
             } else if (valStr === '-' || valStr === '0') {
                 platformMisses[r.platform] = (platformMisses[r.platform] || 0) + 1;
@@ -1633,7 +1104,6 @@ function calculateAndRenderMyRewards() {
 
     let totalSpent = baseSpend + couponSpend;
 
-    // 計算最旺平台
     let maxWonPlatform = '無';
     let maxWonAmount = 0;
     Object.entries(platformWonMops).forEach(([p, amt]) => {
@@ -1643,7 +1113,6 @@ function calculateAndRenderMyRewards() {
         }
     });
 
-    // 計算非平台 (多謝參與最多)
     let maxMissPlatform = '無';
     let maxMissCount = 0;
     Object.entries(platformMisses).forEach(([p, cnt]) => {
@@ -1653,7 +1122,6 @@ function calculateAndRenderMyRewards() {
         }
     });
 
-    // 填充海報上的數值 (高對比度、極佳易讀性)
     document.getElementById('poster-user-id').textContent = `用戶 ID: ${currentUserId || '未連接雲端'}`;
     document.getElementById('poster-total-won').textContent = `MOP ${formatNumber(totalWon)}`;
     document.getElementById('poster-total-spent').textContent = `MOP ${formatNumber(totalSpent)}`;
@@ -1661,12 +1129,14 @@ function calculateAndRenderMyRewards() {
     document.getElementById('poster-count-200').textContent = `${count200} 次呀！`;
     document.getElementById('poster-max-miss-platform').textContent = maxMissCount > 0 ? `${maxMissPlatform} (${maxMissCount} 次)` : '暫無紀錄';
 
-    // 渲染海報內置的三個圖表
+    if (!window.Chart || !window.ChartDataLabels) return;
+    Chart.register(ChartDataLabels);
+
     const posterGridColor = 'rgba(255, 255, 255, 0.15)';
     const posterChartTheme = {
         responsive: true,
         maintainAspectRatio: false,
-        animation: false, // 關閉動畫保證導出圖片時已完成繪製
+        animation: false, 
         plugins: {
             legend: { display: false },
             datalabels: {
@@ -1684,13 +1154,12 @@ function calculateAndRenderMyRewards() {
         }
     };
 
-    // 1. 各平台累計金額柱狀圖
     if (posterPlatformChart) posterPlatformChart.destroy();
     const platformEntries = Object.entries(platformWonMops).filter(([_, val]) => val > 0).sort((a,b) => b[1] - a[1]);
     posterPlatformChart = new Chart(document.getElementById('posterPlatformChart').getContext('2d'), {
         type: 'bar',
         data: {
-            labels: platformEntries.map(e => PLATFORMS[e[0]].replace('支付寶', '').replace('國際', '').replace('大豐', '').replace('極易付', '').replace('中銀', '').replace('工銀', '').replace('廣發', '')),
+            labels: platformEntries.map(e => (PLATFORMS[e[0]] || e[0]).replace('支付寶', '').replace('國際', '').replace('大豐', '').replace('極易付', '').replace('中銀', '').replace('工銀', '').replace('廣發', '')),
             datasets: [{
                 data: platformEntries.map(e => e[1]),
                 backgroundColor: platformEntries.map(e => PLATFORM_COLORS[e[0]] || '#4f46e5'),
@@ -1700,7 +1169,6 @@ function calculateAndRenderMyRewards() {
         options: posterChartTheme
     });
 
-    // 2. 各面額抽出次數柱狀圖
     if (posterCouponChart) posterCouponChart.destroy();
     const couponOrder = ['0', '10', '20', '50', '100', '200'];
     const couponCounts = { '0': 0, '10': 0, '20': 0, '50': 0, '100': 0, '200': 0 };
@@ -1724,7 +1192,6 @@ function calculateAndRenderMyRewards() {
         options: posterChartTheme
     });
 
-    // 3. 每周抽出金額趨勢圖
     if (posterWeeklyTrendChart) posterWeeklyTrendChart.destroy();
     const weeksList = Array.from({length: 10}, (_, i) => i + 1);
     const weeklyWonSums = weeksList.map(w => {
@@ -1758,66 +1225,465 @@ function calculateAndRenderMyRewards() {
     });
 }
 
-// 我的大獎賞綁定與導出邏輯
-if (allDOMElements.myRewardsBtn) {
-    allDOMElements.myRewardsBtn.addEventListener('click', async () => {
-        await loadScript('https://cdn.jsdelivr.net/npm/chart.js');
-        await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js');
-        calculateAndRenderMyRewards();
-        allDOMElements.myRewardsDialog.show();
-    });
-}
+// 統一在此綁定事件，防 Null crash 
+function bindAppEvents() {
+    const { 
+        themeBtn, darkModeSwitch, statsBtn, statsWeekFilter, globalStatsWeekFilter,
+        calculatorBtn, cancelCalculatorBtn, calculateBtn, markAsUsedBtn,
+        filterWeekSelect, filterPlatformSelect, filterCurrentWeekBtn,
+        addRecordBtn, skipBtn, copyUserIdBtn, switchUserBtn, addFavoriteBtn,
+        addToHomeScreenBtn, exportCsvBtn, disclaimerLink, quickNotifyBtn,
+        myRewardsBtn, closeMyRewardsBtn, downloadPosterBtn
+    } = allDOMElements;
 
-if (allDOMElements.closeMyRewardsBtn) {
-    allDOMElements.closeMyRewardsBtn.addEventListener('click', () => {
-        allDOMElements.myRewardsDialog.close();
-    });
-}
-
-if (allDOMElements.downloadPosterBtn) {
-    allDOMElements.downloadPosterBtn.addEventListener('click', async () => {
-        const originalText = allDOMElements.downloadPosterBtn.textContent;
-        allDOMElements.downloadPosterBtn.disabled = true;
-        allDOMElements.downloadPosterBtn.textContent = '圖片生成中...';
-        
-        try {
-            await loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
-            const posterEl = document.getElementById('myRewardsPoster');
-            
-            const canvas = await html2canvas(posterEl, {
-                useCORS: true,
-                scale: 2, // 2倍高解析度導出
-                backgroundColor: null,
-                logging: false
+    if (themeBtn) {
+        themeBtn.addEventListener('click', () => {
+            allDOMElements.themeOptions.innerHTML = '';
+            Object.keys(THEMES).forEach(themeName => {
+                const dot = document.createElement('div'); dot.className = 'theme-dot shadow-sm'; dot.dataset.theme = themeName; dot.style.backgroundColor = THEMES[themeName].title;
+                dot.onclick = () => applyTheme(themeName); allDOMElements.themeOptions.appendChild(dot);
             });
+            updateThemeSelectionUI(localStorage.getItem('selectedTheme') || 'blue');
+            if (darkModeSwitch) darkModeSwitch.selected = document.documentElement.classList.contains('dark');
+            allDOMElements.themeDialog.show();
+        });
+    }
+
+    if (darkModeSwitch) {
+        darkModeSwitch.addEventListener('change', (e) => toggleDarkMode(e.target.selected));
+    }
+
+    if (statsWeekFilter) {
+        statsWeekFilter.addEventListener('change', (e) => renderCharts(e.target.value));
+    }
+
+    if (globalStatsWeekFilter) {
+        globalStatsWeekFilter.addEventListener('change', (e) => renderGlobalStats(e.target.value));
+    }
+
+    if (calculatorBtn) {
+        calculatorBtn.addEventListener('click', () => {
+            bestCouponCombination = []; allDOMElements.spendingAmountInput.value = ''; allDOMElements.calculatorResult.innerHTML = '請輸入上方欲消費金額後點擊「計算」。';
+            allDOMElements.markAsUsedBtn.classList.add('hidden'); 
             
-            const dataUrl = canvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            link.download = `我的大獎賞戰績2026_${currentUserId ? currentUserId.substring(0, 8) : '匿名'}.png`;
-            link.href = dataUrl;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            const currentWeek = getWeekNumber(new Date());
+            const weeklyRecords = records.filter(record => record.week === currentWeek);
+            const availablePlatforms = new Set();
+            weeklyRecords.forEach(record => {
+                const usedCoupons = record.usedCoupons || {};
+                ['draw1', 'draw2', 'draw3'].forEach(drawKey => {
+                    const value = parseInt(record[drawKey]);
+                    if (value > 0 && !usedCoupons[drawKey]) availablePlatforms.add(record.platform);
+                });
+            });
+
+            const makeupSelect = document.getElementById('makeupPlatformSelect');
+            makeupSelect.innerHTML = '<md-select-option value="auto" selected>自動 (消費最多的平台)</md-select-option>';
+            if (availablePlatforms.size === 0) {
+                makeupSelect.disabled = true;
+            } else {
+                makeupSelect.disabled = false;
+                Array.from(availablePlatforms).sort().forEach((p) => {
+                    makeupSelect.innerHTML += `<md-select-option value="${p}">${PLATFORMS[p] || p}</md-select-option>`;
+                });
+            }
+            setTimeout(() => { makeupSelect.value = 'auto'; }, 10);
+            allDOMElements.calculatorDialog.show();
+        });
+    }
+
+    if (cancelCalculatorBtn) {
+        cancelCalculatorBtn.addEventListener('click', () => allDOMElements.calculatorDialog.close());
+    }
+
+    if (calculateBtn) {
+        calculateBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            const targetAmount = parseFloat(allDOMElements.spendingAmountInput.value);
+            if (isNaN(targetAmount) || targetAmount <= 0) { allDOMElements.calculatorResult.innerHTML = '<div class="text-red-500 font-bold">請輸入有效的消費金額。</div>'; return; }
+
+            const currentWeek = getWeekNumber(new Date());
+            const weeklyRecords = records.filter(record => record.week === currentWeek);
+            const strategyNode = document.querySelector('input[name="calcStrategy"]:checked');
+            const strategy = strategyNode ? strategyNode.value : 'large';
+
+            const availableCoupons = [];
+            const availablePlatformsSet = new Set();
+            weeklyRecords.forEach(record => {
+                const usedCoupons = record.usedCoupons || {};
+                ['draw1', 'draw2', 'draw3'].forEach(drawKey => {
+                    const value = parseInt(record[drawKey]);
+                    if (value > 0 && !usedCoupons[drawKey]) {
+                        availableCoupons.push({ recordId: record.id, platform: record.platform, value: value, couponKey: drawKey });
+                        availablePlatformsSet.add(record.platform);
+                    }
+                });
+            });
+
+            if (availableCoupons.length === 0) { allDOMElements.calculatorResult.innerHTML = '<div class="font-bold opacity-70 text-gray-500">本周已經沒有可用的消費券囉！</div>'; return; }
+            bestCouponCombination = findBestCouponCombination(availableCoupons, targetAmount, strategy);
+
+            if (bestCouponCombination.length === 0) {
+                 allDOMElements.calculatorResult.innerHTML = '<div class="text-orange-500 font-bold mb-1">沒有找到合適的用券方案。</div><div class="text-xs text-gray-500">提示：請確認消費金額是否大於任何單張券所需的最低消費（即券面額的3倍）。</div>'; 
+                 return;
+            }
             
-            showToast("戰績海報已下載 🏆", ["快去朋友圈或群組分享你的手氣啦！"]);
-        } catch (err) {
-            console.error('導出海報失敗:', err);
-            showAlertDialog('圖片生成失敗，請稍後再試。');
-        } finally {
-            allDOMElements.downloadPosterBtn.disabled = false;
-            allDOMElements.downloadPosterBtn.textContent = originalText;
-        }
-    });
+            let resultHTML = `<div class="font-bold text-lg mb-3 pb-2 border-b" style="border-color: var(--color-border); color: var(--color-text-primary);">✅ 目標消費：MOP ${targetAmount}</div>`;
+            resultHTML += `<div class="flex flex-col gap-2 mb-3">`;
+
+            const groupedByPlatform = bestCouponCombination.reduce((acc, coupon) => { acc[coupon.platform] = acc[coupon.platform] || []; acc[coupon.platform].push(coupon.value); return acc; }, {});
+
+            let totalRequiredSpend = 0;
+            for (const platform in groupedByPlatform) { totalRequiredSpend += groupedByPlatform[platform].reduce((sum, val) => sum + val * 3, 0); }
+            const remainingAmount = targetAmount - totalRequiredSpend;
+            
+            let makeupPlatform = document.getElementById('makeupPlatformSelect').value || 'auto';
+
+            if (remainingAmount > 0 && makeupPlatform === 'auto') {
+                let maxSpend = -1;
+                let targetPlatform = null;
+                for (const p in groupedByPlatform) {
+                    const spend = groupedByPlatform[p].reduce((sum, val) => sum + val * 3, 0);
+                    if (spend > maxSpend) {
+                        maxSpend = spend;
+                        targetPlatform = p;
+                    }
+                }
+                makeupPlatform = targetPlatform || Array.from(availablePlatformsSet)[0];
+            }
+
+            if (remainingAmount > 0 && makeupPlatform) { if (!groupedByPlatform[makeupPlatform]) { groupedByPlatform[makeupPlatform] = []; } }
+            let notificationTextLines = [];
+
+            for (const platform in groupedByPlatform) {
+                const coupons = groupedByPlatform[platform];
+                let platformSpend = coupons.reduce((sum, val) => sum + val * 3, 0);
+                const isMakeupPlatform = (remainingAmount > 0 && platform === makeupPlatform);
+                if (isMakeupPlatform) platformSpend += remainingAmount;
+
+                const pColor = PLATFORM_COLORS[platform] || 'var(--theme-color-primary)';
+                notificationTextLines.push(`${PLATFORMS[platform] || platform}: MOP ${platformSpend}`);
+                
+                let makeupBadge = isMakeupPlatform ? `<span class="ml-2 text-[10px] bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 px-1.5 py-0.5 rounded font-bold">含補底 ${remainingAmount.toFixed(0)}</span>` : '';
+                let couponsDisplay = coupons.length > 0 ? coupons.map(c => `<span class="inline-flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded px-1.5 py-0.5 font-mono font-bold text-gray-700 dark:text-gray-300 shadow-sm">${c}</span>`).join('') : `<span class="text-xs text-gray-400 italic">無 (純補底)</span>`;
+
+                resultHTML += `
+                <div class="p-2.5 rounded-lg border flex flex-col gap-1.5 bg-white dark:bg-[#1c2128]" style="border-color: ${pColor}; border-left-width: 4px;">
+                    <div class="flex justify-between items-center w-full">
+                        <div class="calc-platform-jump font-bold text-[15px] truncate flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity" data-platform="${platform}" style="color: ${pColor};" title="點擊跳轉APP">
+                            <img src="${PLATFORM_ICONS[platform]}" alt="${PLATFORMS[platform] || platform}" class="w-6 h-6 rounded-md object-contain border border-gray-100 dark:border-gray-700 bg-white flex-shrink-0 pointer-events-none" onerror="this.style.display='none'">
+                            <span class="truncate pointer-events-none">${PLATFORMS[platform] || platform}</span>
+                            <span class="material-symbols-outlined text-[14px] pointer-events-none">open_in_new</span>
+                        </div>
+                        <div class="text-sm flex-shrink-0" style="color: var(--color-text-primary);">需消費: <span class="font-bold text-base tabular-nums">MOP ${platformSpend}</span>${makeupBadge}</div>
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <span>使用券:</span>
+                        <div class="flex gap-1">${couponsDisplay}</div>
+                    </div>
+                </div>
+                `;
+            }
+            resultHTML += `</div>`;
+            
+            if (remainingAmount > 0) {
+                notificationTextLines.push(`已將差額 MOP ${remainingAmount.toFixed(0)} 加至 ${PLATFORMS[makeupPlatform] || makeupPlatform}`);
+                resultHTML += `<div class="p-2.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg border border-green-200 dark:border-green-800 font-bold mb-2 flex items-center gap-2"><span class="material-symbols-outlined">task_alt</span> 🎉 方案已將差額 MOP ${remainingAmount.toFixed(0)} 加至 ${PLATFORMS[makeupPlatform] || makeupPlatform}。</div>`;
+            } else {
+                notificationTextLines.push(`完美匹配，無需補差額！`);
+                resultHTML += `<div class="p-2.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg border border-green-200 dark:border-green-800 font-bold mb-2 flex items-center gap-2"><span class="material-symbols-outlined">task_alt</span> 🎉 完美匹配！不需補任何差額。</div>`;
+            }
+
+            const today = new Date();
+            if ([0, 5, 6].includes(today.getDay())) {
+                resultHTML += `<div class="p-2.5 mt-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-800 font-bold text-sm">⚠️ 周五至周日無法使用消費券，故無法標記為已使用。</div>`;
+                allDOMElements.markAsUsedBtn.classList.add('hidden');
+            } else {
+                allDOMElements.markAsUsedBtn.classList.remove('hidden');
+            }
+
+            allDOMElements.calculatorResult.innerHTML = resultHTML;
+            showToast("用券方案已計算完成", notificationTextLines);
+            sendLocalNotification("用券方案已計算完成 📊", notificationTextLines.join('\n'));
+        });
+    }
+
+    if (markAsUsedBtn) {
+        markAsUsedBtn.addEventListener('click', async () => {
+            if (bestCouponCombination.length === 0) return;
+            const confirmed = await showConfirmDialog('確定要將計算結果中的消費券標示為「已使用」嗎？\n此操作將會直接更新您的記錄。', '確認操作');
+            if (!confirmed) return;
+            try {
+                const updates = {}; bestCouponCombination.forEach(coupon => { updates[`records.${coupon.recordId}.usedCoupons.${coupon.couponKey}`] = true; });
+                await safeUpdateRecordDoc(updates, null); 
+                announceStatus("已成功標示消費券為已使用。"); allDOMElements.calculatorDialog.close();
+            } catch (error) { showAlertDialog('操作失敗，請稍後再試。'); }
+        });
+    }
+
+    if (filterWeekSelect) {
+        filterWeekSelect.addEventListener('change', renderRecords);
+    }
+
+    if (filterPlatformSelect) {
+        filterPlatformSelect.addEventListener('change', renderRecords);
+    }
+
+    if (filterCurrentWeekBtn) {
+        filterCurrentWeekBtn.addEventListener('click', () => {
+            const select = filterWeekSelect; select.value = getWeekNumber(new Date()).toString(); select.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+    }
+
+    if (addRecordBtn) {
+        addRecordBtn.addEventListener('click', submitRecordLogic);
+    }
+
+    if (skipBtn) {
+        skipBtn.addEventListener('click', async () => {
+            if (!currentInputPlatform) { showAlertDialog("請先點選上方要跳過的平台！"); return; }
+            const platform = currentInputPlatform; const weekNumber = getEntryWeekNumber();
+            if (!weekNumber) { showAlertDialog("請選擇要操作的周數！"); return; }
+            if (records.some(r => r.week === weekNumber && r.platform === platform)) { showAlertDialog(`第 ${weekNumber} 周已存在 ${platform} 的記錄！`); return; }
+            const docId = `${weekNumber}-${platform}`;
+            const newRecord = { id: docId, week: weekNumber, platform, draw1: "ND", draw2: "ND", draw3: "ND", usedCoupons: { draw1: true, draw2: true, draw3: true }, createdAt: new Date().toISOString() };
+            try {
+                await safeUpdateRecordDoc({ [`records.${docId}`]: newRecord }, { records: { [docId]: newRecord } });
+                currentInputPlatform = ''; renderPlatformOptions(); announceStatus(`已成功新增 ${PLATFORMS[platform]} 的跳過紀錄。`);
+            } catch (error) { showAlertDialog("新增 Skip 紀錄失敗，請檢查網絡連線。"); }
+        });
+    }
+
+    if (copyUserIdBtn) {
+        copyUserIdBtn.addEventListener('click', () => {
+            const { userIdInput } = allDOMElements;
+            if (navigator.clipboard && userIdInput.value) {
+                navigator.clipboard.writeText(userIdInput.value).then(() => { showAlertDialog('用戶 ID 已成功複製！\n請妥善保存以防資料遺失。'); announceStatus('用戶 ID 已複製到剪貼簿。'); }).catch(() => { showAlertDialog('複製失敗，請手動複製。'); });
+            }
+        });
+    }
+
+    if (switchUserBtn) {
+        switchUserBtn.addEventListener('click', () => {
+            const newUserId = allDOMElements.userIdInput.value.trim();
+            if (newUserId && newUserId !== currentUserId) {
+                currentUserId = newUserId; localStorage.setItem('savedUserId', currentUserId);
+                showAlertDialog(`已成功切換至帳號 ID:\n${currentUserId}`); announceStatus(`已切換至新用戶。`);
+                loadCachedData(currentUserId); syncRecords(currentUserId);
+            } else if (!newUserId) { showAlertDialog('請輸入有效的用戶 ID！'); }
+        });
+    }
+
+    if (addFavoriteBtn) {
+        addFavoriteBtn.addEventListener('click', () => { showAlertDialog('<b>電腦:</b> 按下 `Ctrl + D` 或 `Cmd + D` 將此頁加入書籤。<br><br><b>手機:</b> 請點擊瀏覽器選單按鈕，然後選擇「新增至書籤」或類似選項。', '新增至書籤/最愛'); });
+    }
+
+    if (addToHomeScreenBtn) {
+        addToHomeScreenBtn.addEventListener('click', async () => {
+            if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; } 
+            else {
+                const ua = navigator.userAgent; const isIOS = /iPad|iPhone|iPod/.test(ua); const isAndroid = /Android/.test(ua); let message = '';
+                if (isIOS) message = '<b>iOS/iPadOS 裝置:</b><br>1. 點擊底部工具列的「分享」<span class="material-symbols-outlined" style="font-size: 1em; vertical-align: -0.15em;">ios_share</span>按鈕。<br>2. 在選項中向下滑動，找到並點擊「加入主畫面」。';
+                else if (isAndroid) message = '<b>Android 裝置:</b><br>1. 點擊瀏覽器右上角的「選單」<span class="material-symbols-outlined" style="font-size: 1em; vertical-align: -0.15em;">more_vert</span>按鈕。<br>2. 找到並點擊「新增至主畫面」或「安裝應用程式」。';
+                else message = '請使用您的瀏覽器選單，尋找「新增至主畫面」、「安裝應用程式」或類似選項，即可將此網站像APP一樣放在桌面。';
+                showAlertDialog(message, '安裝應用程式/新增到主畫面');
+            }
+        });
+    }
+
+    if (exportCsvBtn) {
+        exportCsvBtn.addEventListener('click', () => {
+            if (records.length === 0) { showAlertDialog('沒有可匯出的資料。'); return; }
+            const headers = ['周數', '平台', '券1', '券2', '券3', '券1已使用', '券2已使用', '券3已使用', '建立時間']; const rows = [headers];
+            const sortedRecords = [...records].sort((a, b) => (a.week !== b.week) ? a.week - b.week : a.platform.localeCompare(b.platform));
+            sortedRecords.forEach(record => {
+                const usedCoupons = record.usedCoupons || {}; const createdAt = record.createdAt ? new Date(record.createdAt).toLocaleString('zh-HK') : '';
+                rows.push([ record.week, PLATFORMS[record.platform] || record.platform, record.draw1, record.draw2, record.draw3, usedCoupons.draw1 ? '是' : '否', usedCoupons.draw2 ? '是' : '否', usedCoupons.draw3 ? '是' : '否', createdAt ]);
+            });
+            const now = new Date(); const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+            exportToCsv(`社區消費獎賞2026_${timestamp}_${currentUserId}.csv`, rows);
+        });
+    }
+
+    if (disclaimerLink) {
+        disclaimerLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存 or 處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀 or 洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即 নিকট表示您已閱讀、理解並同意以上所有條款。";
+            showAlertDialog(disclaimerText, "免責聲明");
+        });
+    }
+
+    // 手動推送未用券狀態通知
+    if (quickNotifyBtn) {
+        quickNotifyBtn.addEventListener('click', async () => {
+            if (!("Notification" in window)) {
+                showAlertDialog("您的瀏覽器不支援桌面通知系統。");
+                return;
+            }
+            
+            if (Notification.permission === "default") {
+                const permission = await Notification.requestPermission();
+                if (permission !== "granted") {
+                    showAlertDialog("您已拒絕通知權限。若想接收定時到期提醒，請至瀏覽器設定開啟通知功能。");
+                    return;
+                }
+            } else if (Notification.permission === "denied") {
+                showAlertDialog("通知權限已被拒絕。請點擊網址列左側的鎖頭，手動允許此網站推送通知。");
+                return;
+            }
+
+            const currentWeek = getWeekNumber(new Date());
+            const weeklyRecords = records.filter(record => record.week === currentWeek);
+            let remainingCoupons = [];
+            let totalRemaining = 0;
+
+            weeklyRecords.forEach(record => {
+                const usedCoupons = record.usedCoupons || {};
+                const unusedForThisPlatform = [];
+                [record.draw1, record.draw2, record.draw3].forEach((c, i) => {
+                    const val = parseInt(c) || 0;
+                    if (val > 0 && !usedCoupons[`draw${i+1}`]) {
+                        unusedForThisPlatform.push(val);
+                        totalRemaining += val;
+                    }
+                });
+                if (unusedForThisPlatform.length > 0) {
+                    remainingCoupons.push(`${PLATFORMS[record.platform] || record.platform}: MOP ${unusedForThisPlatform.join('、')}`);
+                }
+            });
+
+            if (totalRemaining > 0) {
+                sendLocalNotification(
+                    "您的未使用消費券明細 🔔", 
+                    `本周未用總額: MOP ${totalRemaining}\n${remainingCoupons.join('\n')}`
+                );
+                showToast("通知已發送", [`已將您本期未用券明細發送至您的系統通知！`]);
+            } else {
+                sendLocalNotification(
+                    "本周消費券已全數使用！🎉", 
+                    "太棒了！本周所有抽到的消費券已標記為已使用，無任何未用券。繼續保持！"
+                );
+                showToast("通知已發送", [`本周無任何未用券，做得好！`]);
+            }
+        });
+    }
+
+    // 我的大獎賞回顧
+    if (myRewardsBtn) {
+        myRewardsBtn.addEventListener('click', async () => {
+            await loadScript('https://cdn.jsdelivr.net/npm/chart.js');
+            await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js');
+            calculateAndRenderMyRewards();
+            allDOMElements.myRewardsDialog.show();
+        });
+    }
+
+    if (closeMyRewardsBtn) {
+        closeMyRewardsBtn.addEventListener('click', () => {
+            allDOMElements.myRewardsDialog.close();
+        });
+    }
+
+    if (downloadPosterBtn) {
+        downloadPosterBtn.addEventListener('click', async () => {
+            const originalText = downloadPosterBtn.textContent;
+            downloadPosterBtn.disabled = true;
+            downloadPosterBtn.textContent = '圖片生成中...';
+            
+            try {
+                await loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
+                const posterEl = document.getElementById('myRewardsPoster');
+                
+                const canvas = await html2canvas(posterEl, {
+                    useCORS: true,
+                    scale: 2, 
+                    backgroundColor: null,
+                    logging: false
+                });
+                
+                const dataUrl = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = `我的大獎賞戰績2026_${currentUserId ? currentUserId.substring(0, 8) : '匿名'}.png`;
+                link.href = dataUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showToast("戰績海報已下載 🏆", ["快去朋友圈或群組分享你的手氣啦！"]);
+            } catch (err) {
+                console.error('導出海報失敗:', err);
+                showAlertDialog('圖片生成失敗，請稍後再試。');
+            } finally {
+                downloadPosterBtn.disabled = false;
+                downloadPosterBtn.textContent = originalText;
+            }
+        });
+    }
 }
+
+// --- 定時背景檢查任務 (周四中午 12:00, 周日晚上 21:00) ---
+setInterval(() => {
+    const now = new Date();
+    const currentWeek = getWeekNumber(now);
+    const day = now.getDay();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+
+    if (day === 4 && hours === 12 && minutes === 0) {
+        const key = `notified_thursday_w${currentWeek}`;
+        if (!localStorage.getItem(key)) {
+            let remainingMop = 0;
+            const weeklyRecords = records.filter(r => r.week === currentWeek);
+            weeklyRecords.forEach(record => {
+                const usedCoupons = record.usedCoupons || {};
+                [record.draw1, record.draw2, record.draw3].forEach((c, i) => {
+                    const val = parseInt(c) || 0;
+                    if (val > 0 && !usedCoupons[`draw${i+1}`]) remainingMop += val;
+                });
+            });
+            if (remainingMop > 0) {
+                sendLocalNotification(
+                    "快去清倉！周四到期提醒 ⏳", 
+                    `您本周還有 MOP ${formatNumber(remainingMop)} 的消費券未用！今晚就會過期失效啦！快點用券計數機清倉！`
+                );
+            }
+            localStorage.setItem(key, "true");
+        }
+    }
+
+    if (day === 0 && hours === 21 && minutes === 0) {
+        const key = `notified_sunday_w${currentWeek}`;
+        if (!localStorage.getItem(key)) {
+            const recordedPlatforms = records.filter(r => r.week === currentWeek).map(r => r.platform);
+            const availablePlatforms = Object.keys(PLATFORMS).filter(p => !hiddenPlatforms.includes(p));
+            const unrecorded = availablePlatforms.filter(p => !recordedPlatforms.includes(p));
+            if (unrecorded.length > 0) {
+                sendLocalNotification(
+                    "本周抽券記錄提醒 🎰", 
+                    `本周還有平台未記錄抽券：${unrecorded.map(p => PLATFORMS[p]).join('、')}。快去抽券記錄避免錯過啦！`
+                );
+            }
+            localStorage.setItem(key, "true");
+        }
+    }
+}, 30000); 
 
 async function initializeAppFlow() {
-    showLoadingSkeleton(); loadSettings();
+    initDOMElements(); // 1. 初始化 DOM 緩存
+    showLoadingSkeleton(); 
+    loadSettings(); // 2. 載入顯示設定
+    bindAppEvents(); // 3. 綁定所有點擊事件
+    bindSettingsEvents(); // 4. 綁定設定視窗點擊事件
+
     const savedTheme = localStorage.getItem('selectedTheme') || 'blue'; applyTheme(savedTheme);
     const savedMode = localStorage.getItem('darkMode');
     if (savedMode === 'enabled' || (savedMode !== 'disabled' && window.matchMedia('(prefers-color-scheme: dark)').matches)) toggleDarkMode(true);
     else toggleDarkMode(false);
 
-    updateTimeInfo(); initializeEntryWeekSelect(); initializeAdvancedToggle(); initializeAuthToggle();
+    updateTimeInfo(); 
+    initializeEntryWeekSelect(); 
+    initializeAdvancedToggle(); 
+    initializeAuthToggle();
     initRecordPanelUI(); 
     
     if (window.requestIdleCallback) {
@@ -1827,8 +1693,12 @@ async function initializeAppFlow() {
     }
     
     const currentWeek = getWeekNumber(new Date()).toString();
-    allDOMElements.filterWeekSelect.value = currentWeek;
+    if (allDOMElements.filterWeekSelect) {
+        allDOMElements.filterWeekSelect.value = currentWeek;
+    }
 }
 
-// --- App Entry Point ---
-initializeAppFlow();
+// 監聽 DOMContentLoaded 確保網頁節點完全生成後才執行 initialization，防止 timed null crash
+window.addEventListener('DOMContentLoaded', () => {
+    initializeAppFlow();
+});
