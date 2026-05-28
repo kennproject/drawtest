@@ -1,3 +1,5 @@
+import { GLOBAL_STATS_DATA } from './data.js';
+
 // --- 全局防誤觸：攔截選單與禁用長按 ---
 window.addEventListener('contextmenu', (e) => {
     if (e.target.closest('.platform-title') || e.target.closest('.platform-chip') || e.target.tagName === 'IMG') {
@@ -90,6 +92,7 @@ const setupPWA = () => {
         });
     }
 };
+setupPWA();
 
 // --- 核心動態載入工具 ---
 const loadScript = (src) => {
@@ -684,6 +687,7 @@ function loadSettings() {
     renderPlatformOptions(); 
 }
 
+// 綁定設定對話框點擊
 function bindSettingsEvents() {
     if (allDOMElements.settingsBtn) {
         allDOMElements.settingsBtn.addEventListener('click', () => {
@@ -908,7 +912,7 @@ function renderCharts(week) {
     couponCountChart = new Chart(couponCtx, {
         type: 'bar',
         data: { labels: couponOrder, datasets: [{ label: '張數', data: couponOrder.map(key => couponCounts[key]), backgroundColor: ['#F6F6F6', '#BA4040', '#6F4E9F', '#825211', '#3C72A1', '#E18C1F'], borderColor: ['#e5e7eb', 'transparent', 'transparent', 'transparent', 'transparent', 'transparent'], borderWidth: [1, 0, 0, 0, 0, 0], borderRadius: 4 }] },
-        options: { ...chartTheme, responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } }, x: {} }, plugins: { ...chartTheme.plugins, legend: { display: false }, datalabels: { ...chartTheme.plugins.datalabels, anchor: 'start', align: 'end', backgroundColor: (ctx) => document.documentElement.classList.contains('dark') ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.85)', color: (ctx) => document.documentElement.classList.contains('dark') ? '#ffffff' : '#1f2937', borderRadius: 6, padding: 4, font: { weight: 'bold', size: 10, family: "'Noto Sans TC', sans-serif" }, textAlign: 'center', formatter: (v, ctx) => { if (v === 0) return ''; const total = ctx.dataset.data.reduce((a, b) => a + b, 0); const pct = ((v / total) * 100).toFixed(1) + '%'; return v + '\n(' + pct + ')'; } } } }
+        options: { ...chartTheme, responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } }, x: {} }, plugins: { ...chartTheme.plugins, legend: { display: false }, datalabels: { ...chartTheme.plugins.datalabels, anchor: 'start', align: 'end', backgroundColor: (ctx) => document.documentElement.classList.contains('dark') ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.85)', color: (ctx) => document.documentElement.classList.contains('dark') ? '#ffffff' : '#1f2937', borderRadius: 6, padding: 4, font: { weight: 'bold', size: 10, family: "'Noto Sans TC", sans-serif" }, textAlign: 'center', formatter: (v, ctx) => { if (v === 0) return ''; const total = ctx.dataset.data.reduce((a, b) => a + b, 0); const pct = ((v / total) * 100).toFixed(1) + '%'; return v + '\n(' + pct + ')'; } } }
     });
     
     const platformTotals = Object.keys(PLATFORMS).reduce((acc, p) => ({...acc, [p]: 0}), {});
@@ -1421,4 +1425,275 @@ function bindAppEvents() {
             const confirmed = await showConfirmDialog('確定要將計算結果中的消費券標示為「已使用」嗎？\n此操作將會直接更新您的記錄。', '確認操作');
             if (!confirmed) return;
             try {
-                const updates = {}; bestCouponCombination.
+                const updates = {}; bestCouponCombination.forEach(coupon => { updates[`records.${coupon.recordId}.usedCoupons.${coupon.couponKey}`] = true; });
+                await safeUpdateRecordDoc(updates, null); 
+                announceStatus("已成功標示消費券為已使用。"); allDOMElements.calculatorDialog.close();
+            } catch (error) { showAlertDialog('操作失敗，請稍後再試。'); }
+        });
+    }
+
+    if (filterWeekSelect) {
+        filterWeekSelect.addEventListener('change', renderRecords);
+    }
+
+    if (filterPlatformSelect) {
+        filterPlatformSelect.addEventListener('change', renderRecords);
+    }
+
+    if (filterCurrentWeekBtn) {
+        filterCurrentWeekBtn.addEventListener('click', () => {
+            const select = filterWeekSelect; select.value = getWeekNumber(new Date()).toString(); select.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+    }
+
+    if (addRecordBtn) {
+        addRecordBtn.addEventListener('click', submitRecordLogic);
+    }
+
+    if (skipBtn) {
+        skipBtn.addEventListener('click', async () => {
+            if (!currentInputPlatform) { showAlertDialog("請先點選上方要跳過的平台！"); return; }
+            const platform = currentInputPlatform; const weekNumber = getEntryWeekNumber();
+            if (!weekNumber) { showAlertDialog("請選擇要操作的周數！"); return; }
+            if (records.some(r => r.week === weekNumber && r.platform === platform)) { showAlertDialog(`第 ${weekNumber} 周已存在 ${platform} 的記錄！`); return; }
+            const docId = `${weekNumber}-${platform}`;
+            const newRecord = { id: docId, week: weekNumber, platform, draw1: "ND", draw2: "ND", draw3: "ND", usedCoupons: { draw1: true, draw2: true, draw3: true }, createdAt: new Date().toISOString() };
+            try {
+                await safeUpdateRecordDoc({ [`records.${docId}`]: newRecord }, { records: { [docId]: newRecord } });
+                currentInputPlatform = ''; renderPlatformOptions(); announceStatus(`已成功新增 ${PLATFORMS[platform]} 的跳過紀錄。`);
+            } catch (error) { showAlertDialog("新增 Skip 紀錄失敗，請檢查網絡連線。"); }
+        });
+    }
+
+    if (copyUserIdBtn) {
+        copyUserIdBtn.addEventListener('click', () => {
+            const { userIdInput } = allDOMElements;
+            if (navigator.clipboard && userIdInput.value) {
+                navigator.clipboard.writeText(userIdInput.value).then(() => { showAlertDialog('用戶 ID 已成功複製！\n請妥善保存以防資料遺失。'); announceStatus('用戶 ID 已複製到剪貼簿。'); }).catch(() => { showAlertDialog('複製失敗，請手動複製。'); });
+            }
+        });
+    }
+
+    if (switchUserBtn) {
+        switchUserBtn.addEventListener('click', () => {
+            const newUserId = allDOMElements.userIdInput.value.trim();
+            if (newUserId && newUserId !== currentUserId) {
+                currentUserId = newUserId; localStorage.setItem('savedUserId', currentUserId);
+                showAlertDialog(`已成功切換至帳號 ID:\n${currentUserId}`); announceStatus(`已切換至新用戶。`);
+                loadCachedData(currentUserId); syncRecords(currentUserId);
+            } else if (!newUserId) { showAlertDialog('請輸入有效的用戶 ID！'); }
+        });
+    }
+
+    if (addFavoriteBtn) {
+        addFavoriteBtn.addEventListener('click', () => { showAlertDialog('<b>電腦:</b> 按下 `Ctrl + D` 或 `Cmd + D` 將此頁加入書籤。<br><br><b>手機:</b> 請點擊瀏覽器選單按鈕，然後選擇「新增至書籤」或類似選項。', '新增至書籤/最愛'); });
+    }
+
+    if (addToHomeScreenBtn) {
+        addToHomeScreenBtn.addEventListener('click', async () => {
+            if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; } 
+            else {
+                const ua = navigator.userAgent; const isIOS = /iPad|iPhone|iPod/.test(ua); const isAndroid = /Android/.test(ua); let message = '';
+                if (isIOS) message = '<b>iOS/iPadOS 裝置:</b><br>1. 點擊底部工具列的「分享」<span class="material-symbols-outlined" style="font-size: 1em; vertical-align: -0.15em;">ios_share</span>按鈕。<br>2. 在選項中向下滑動，找到並點擊「加入主畫面」。';
+                else if (isAndroid) message = '<b>Android 裝置:</b><br>1. 點擊瀏覽器右上角的「選單」<span class="material-symbols-outlined" style="font-size: 1em; vertical-align: -0.15em;">more_vert</span>按鈕。<br>2. 找到並點擊「新增至主畫面」或「安裝應用程式」。';
+                else message = '請使用您的瀏覽器選單，尋找「新增至主畫面」、「安裝應用程式」或類似選項，即可將此網站像APP一樣放在桌面。';
+                showAlertDialog(message, '安裝應用程式/新增到主畫面');
+            }
+        });
+    }
+
+    if (exportCsvBtn) {
+        exportCsvBtn.addEventListener('click', () => {
+            if (records.length === 0) { showAlertDialog('沒有可匯出的資料。'); return; }
+            const headers = ['周數', '平台', '券1', '券2', '券3', '券1已使用', '券2已使用', '券3已使用', '建立時間']; const rows = [headers];
+            const sortedRecords = [...records].sort((a, b) => (a.week !== b.week) ? a.week - b.week : a.platform.localeCompare(b.platform));
+            sortedRecords.forEach(record => {
+                const usedCoupons = record.usedCoupons || {}; const createdAt = record.createdAt ? new Date(record.createdAt).toLocaleString('zh-HK') : '';
+                rows.push([ record.week, PLATFORMS[record.platform] || record.platform, record.draw1, record.draw2, record.draw3, usedCoupons.draw1 ? '是' : '否', usedCoupons.draw2 ? '是' : '否', usedCoupons.draw3 ? '是' : '否', createdAt ]);
+            });
+            const now = new Date(); const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+            exportToCsv(`社區消費獎賞2026_${timestamp}_${currentUserId}.csv`, rows);
+        });
+    }
+
+    if (disclaimerLink) {
+        disclaimerLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存 or 處理任何個人可識別信息 (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀 or 洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即 নিকট表示您已閱讀、理解並同意以上所有條款。";
+            showAlertDialog(disclaimerText, "免責聲明");
+        });
+    }
+
+    if (quickNotifyBtn) {
+        quickNotifyBtn.addEventListener('click', async () => {
+            if (!("Notification" in window)) {
+                showAlertDialog("您的瀏覽器不支援桌面通知系統。");
+                return;
+            }
+            
+            if (Notification.permission === "default") {
+                const permission = await Notification.requestPermission();
+                if (permission !== "granted") {
+                    showAlertDialog("您已拒絕通知權限。若想接收定時到期提醒，請至瀏覽器設定開啟通知功能。");
+                    return;
+                }
+            } else if (Notification.permission === "denied") {
+                showAlertDialog("通知權限已被拒絕。請點擊網址列左側的鎖頭，手動允許此網站推送通知。");
+                return;
+            }
+
+            const currentWeek = getWeekNumber(new Date());
+            const weeklyRecords = records.filter(record => record.week === currentWeek);
+            let remainingCoupons = [];
+            let totalRemaining = 0;
+
+            weeklyRecords.forEach(record => {
+                const usedCoupons = record.usedCoupons || {};
+                const unusedForThisPlatform = [];
+                [record.draw1, record.draw2, record.draw3].forEach((c, i) => {
+                    const val = parseInt(c) || 0;
+                    if (val > 0 && !usedCoupons[`draw${i+1}`]) {
+                        unusedForThisPlatform.push(val);
+                        totalRemaining += val;
+                    }
+                });
+                if (unusedForThisPlatform.length > 0) {
+                    remainingCoupons.push(`${PLATFORMS[record.platform] || record.platform}: MOP ${unusedForThisPlatform.join('、')}`);
+                }
+            });
+
+            if (totalRemaining > 0) {
+                sendLocalNotification(
+                    "您的未使用消費券明細 🔔", 
+                    `本周未用總額: MOP ${totalRemaining}\n${remainingCoupons.join('\n')}`
+                );
+                showToast("通知已發送", [`已將您本期未用券明細發送至您的系統通知！`]);
+            } else {
+                sendLocalNotification(
+                    "本周消費券已全數使用！🎉", 
+                    "太棒了！本周所有抽到的消費券已標記為已使用，無任何未用券。繼續保持！"
+                );
+                showToast("通知已發送", [`本周無任何未用券，做得好！`]);
+            }
+        });
+    }
+
+    if (myRewardsBtn) {
+        myRewardsBtn.addEventListener('click', async () => {
+            await loadScript('https://cdn.jsdelivr.net/npm/chart.js');
+            await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js');
+            calculateAndRenderMyRewards();
+            allDOMElements.myRewardsDialog.show();
+        });
+    }
+
+    if (closeMyRewardsBtn) {
+        closeMyRewardsBtn.addEventListener('click', () => {
+            allDOMElements.myRewardsDialog.close();
+        });
+    }
+
+    // 我的大獎賞：全新離屏克隆渲染導出圖片邏輯 (完美解決裁切及空白Canvas問題)
+    if (downloadPosterBtn) {
+        downloadPosterBtn.addEventListener('click', async () => {
+            const originalText = downloadPosterBtn.textContent;
+            downloadPosterBtn.disabled = true;
+            downloadPosterBtn.textContent = '圖片生成中...';
+            
+            try {
+                await loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
+                const posterEl = document.getElementById('myRewardsPoster');
+                
+                // 1. 克隆節點
+                const clone = posterEl.cloneNode(true);
+                
+                // 2. 將原始 Canvas 靜態化為 <img> 貼到 Clone 的對應節點中，解決克隆後 Canvas 為空白的 PWA/Chart Bug
+                const originalCanvases = posterEl.querySelectorAll('canvas');
+                const clonedCanvases = clone.querySelectorAll('canvas');
+                originalCanvases.forEach((origCanvas, idx) => {
+                    const clonedCanvas = clonedCanvases[idx];
+                    if (clonedCanvas) {
+                        const img = document.createElement('img');
+                        img.src = origCanvas.toDataURL('image/png');
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.objectFit = 'contain';
+                        clonedCanvas.parentNode.replaceChild(img, clonedCanvas);
+                    }
+                });
+                
+                // 3. 將 Clone 物件放到 off-screen 離屏，繞過 ScrollView 限制，確保圖表、網址、頁尾 100% 完整抓取不裁切
+                clone.style.position = 'absolute';
+                clone.style.top = '0';
+                clone.style.left = '-9999px';
+                clone.style.width = '680px';
+                clone.style.maxWidth = '680px';
+                clone.style.height = 'auto';
+                clone.style.overflow = 'visible';
+                document.body.appendChild(clone);
+                
+                // 4. html2canvas 離屏渲染
+                const canvas = await html2canvas(clone, {
+                    useCORS: true,
+                    scale: 2, // 2倍視網膜級超清
+                    backgroundColor: '#090c15', 
+                    logging: false
+                });
+                
+                // 5. 貼圖完後，銷毀克隆節點
+                document.body.removeChild(clone);
+                
+                // 6. 導出
+                const dataUrl = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = `我的大獎賞戰績2026_${currentUserId ? currentUserId.substring(0, 8) : '匿名'}.png`;
+                link.href = dataUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showToast("戰績海報已下載 🏆", ["快去朋友圈或群組分享你的手氣啦！"]);
+            } catch (err) {
+                console.error('導出海報失敗:', err);
+                showAlertDialog('圖片生成失敗，請稍後再試。');
+            } finally {
+                downloadPosterBtn.disabled = false;
+                downloadPosterBtn.textContent = originalText;
+            }
+        });
+    }
+}
+
+async function initializeAppFlow() {
+    initDOMElements(); 
+    showLoadingSkeleton(); 
+    loadSettings(); 
+    bindAppEvents(); 
+    bindSettingsEvents(); 
+
+    const savedTheme = localStorage.getItem('selectedTheme') || 'blue'; applyTheme(savedTheme);
+    const savedMode = localStorage.getItem('darkMode');
+    if (savedMode === 'enabled' || (savedMode !== 'disabled' && window.matchMedia('(prefers-color-scheme: dark)').matches)) toggleDarkMode(true);
+    else toggleDarkMode(false);
+
+    updateTimeInfo(); 
+    initializeEntryWeekSelect(); 
+    initializeAdvancedToggle(); 
+    initializeAuthToggle();
+    initRecordPanelUI(); 
+    
+    if (window.requestIdleCallback) {
+        requestIdleCallback(lazyLoadFirebase);
+    } else {
+        setTimeout(lazyLoadFirebase, 100);
+    }
+    
+    const currentWeek = getWeekNumber(new Date()).toString();
+    if (allDOMElements.filterWeekSelect) {
+        allDOMElements.filterWeekSelect.value = currentWeek;
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    initializeAppFlow();
+});
