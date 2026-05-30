@@ -176,6 +176,7 @@ let currentUserId = null, records = [], hiddenPlatforms = [];
 let unsubscribeFromRecords = null, isInitialLoad = true; 
 let couponCountChart = null, platformTotalChart = null, weeklyTotalChart = null, platformWeeklyTotalChart = null;
 let globalCouponChart = null, globalShareChart = null; 
+let sharePlatformChart = null, shareCouponChart = null, shareTrendChart = null; // 新增大獎賞總結圖表變數
 let bestCouponCombination = []; let writeTimeout = null; let pendingWrites = {};
 let currentInputPlatform = ''; let currentInputValues = ['-', '-', '-']; let currentInputIndex = 0;
 
@@ -199,8 +200,13 @@ const allDOMElements = {
     confirmDialog: document.getElementById('confirmDialog'), confirmTitle: document.getElementById('confirmTitle'), confirmMessage: document.getElementById('confirmMessage'),
     addFavoriteBtn: document.getElementById('addFavoriteBtn'), addToHomeScreenBtn: document.getElementById('addToHomeScreenBtn'), exportCsvBtn: document.getElementById('exportCsvBtn'), 
     calculatorBtn: document.getElementById('calculatorBtn'), calculatorDialog: document.getElementById('calculatorDialog'), spendingAmountInput: document.getElementById('spendingAmountInput'), calculatorResult: document.getElementById('calculatorResult'), calculateBtn: document.getElementById('calculateBtn'), markAsUsedBtn: document.getElementById('markAsUsedBtn'), cancelCalculatorBtn: document.getElementById('cancelCalculator'), statusAnnouncer: document.getElementById('status-announcer'),
-    // 新增按鈕綁定
-    quickNotifyBtn: document.getElementById('quickNotifyBtn')
+    quickNotifyBtn: document.getElementById('quickNotifyBtn'),
+    // 新增大獎賞總結分享元素
+    summaryShareBtn: document.getElementById('summaryShareBtn'),
+    summaryShareDialog: document.getElementById('summaryShareDialog'),
+    closeSummaryShareBtn: document.getElementById('closeSummaryShareBtn'),
+    downloadSummaryBtn: document.getElementById('downloadSummaryBtn'),
+    summaryShareContent: document.getElementById('summaryShareContent')
 };
 
 function announceStatus(message) { allDOMElements.statusAnnouncer.textContent = message; }
@@ -302,7 +308,6 @@ function initializeAdvancedToggle() {
     });
 }
 
-// 綁定跨設備資料同步展開面板
 function initializeAuthToggle() {
     const authToggle = document.getElementById('auth-toggle'); const authOptionsContainer = document.getElementById('auth-options-container'); const authToggleIcon = document.getElementById('auth-toggle-icon');
     authToggle.addEventListener('click', () => {
@@ -373,23 +378,19 @@ function renderRecords() {
         const couponKeys = ['draw1', 'draw2', 'draw3'];
         const monetaryCoupons = couponKeys.filter(key => !isNaN(parseInt(record[key])));
         const allUsed = monetaryCoupons.length === 0 ? true : monetaryCoupons.every(key => usedCoupons[key]);
-        
-        // 計算該次抽獎的總金額
         const totalAmount = (parseInt(record.draw1) || 0) + (parseInt(record.draw2) || 0) + (parseInt(record.draw3) || 0);
-        
         return { ...record, allUsed, totalAmount };
     });
 
     processedRecords.sort((a, b) => {
         if (a.allUsed !== b.allUsed) return a.allUsed ? 1 : -1;
-        if (b.totalAmount !== a.totalAmount) return b.totalAmount - a.totalAmount; // 卡片按總抽到金額由大到小排序
+        if (b.totalAmount !== a.totalAmount) return b.totalAmount - a.totalAmount; 
         if (a.week !== b.week) return a.week - b.week;
         return a.platform.localeCompare(b.platform);
     });
 
     recordsList.innerHTML = '';
     
-    // 空狀態引導按鈕
     if (processedRecords.length === 0) { 
         recordsList.innerHTML = `
             <div class="col-span-full flex flex-col items-center justify-center py-12 gap-3">
@@ -427,10 +428,9 @@ function renderRecords() {
         couponsData.sort((a, b) => {
             if (a.isInvalid !== b.isInvalid) return a.isInvalid ? 1 : -1;
             if (a.isUsed !== b.isUsed) return a.isUsed ? 1 : -1;
-            
             const valA = parseInt(a.val) || 0;
             const valB = parseInt(b.val) || 0;
-            return valB - valA; // 卡片內的個別券也按面額由大到小排序
+            return valB - valA;
         });
 
         const drawButtons = couponsData.map(item => {
@@ -463,7 +463,6 @@ function renderRecords() {
             </div>
         `;
         
-        // 滑動刪除邏輯
         const innerCard = cardContainer.querySelector('.record-card');
         const swipeBg = cardContainer.querySelector('.swipe-action-bg');
         let startX = 0, startY = 0; let isDragging = false; let swipeOpen = false;
@@ -480,7 +479,6 @@ function renderRecords() {
                 let moveX = swipeOpen ? deltaX - 80 : deltaX;
                 if (moveX < -90) moveX = -90; if (moveX > 0) moveX = 0;
                 innerCard.style.transform = `translateX(${moveX}px)`;
-                // 滑動超過 5px 才顯示紅色底
                 swipeBg.style.opacity = moveX < -5 ? '1' : '0';
             }
         }, { passive: true });
@@ -542,7 +540,6 @@ function renderPlatformOptions() {
                 <span class="text-[11px] sm:text-xs font-bold truncate w-full text-center opacity-90" style="color: ${color};">${shortName}</span>
             `;
             
-            // 單擊選擇邏輯
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.platform-chip').forEach(c => {
                     c.classList.remove('selected-chip'); c.style.borderColor = 'rgba(200,200,200,0.3)'; c.style.backgroundColor = '';
@@ -551,13 +548,12 @@ function renderPlatformOptions() {
                 updateCouponSlotsUI(); 
             });
 
-            // 長按一鍵填 0 邏輯 - 長按時長更新為 1000ms (1秒)
             let holdTimer = null;
             const startHold = (e) => {
                 if(e.type === 'touchstart' && navigator.vibrate) navigator.vibrate(10);
                 holdTimer = setTimeout(() => {
                     holdTimer = null;
-                    if(navigator.vibrate) navigator.vibrate([30, 50, 30]); // 成功微震
+                    if(navigator.vibrate) navigator.vibrate([30, 50, 30]); 
                     currentInputPlatform = key;
                     currentInputValues = ['-', '-', '-'];
                     submitRecordLogic();
@@ -605,7 +601,6 @@ function loadCachedData(uid) {
     if (cachedRecords) { try { records = JSON.parse(cachedRecords); refreshUI(); } catch (e) { records = []; } }
 }
 
-// --- Firebase Lazy Load Core ---
 async function lazyLoadFirebase() {
     try {
         FB.app = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
@@ -616,7 +611,7 @@ async function lazyLoadFirebase() {
         const authInstance = FB.auth.getAuth(appInstance);
         const dbInstance = FB.fs.getFirestore(appInstance);
         
-        FB.dbInstance = dbInstance; // 保存參考供其他函數調用
+        FB.dbInstance = dbInstance; 
         
         try { await FB.fs.enableIndexedDbPersistence(dbInstance); } catch(e) { console.warn("離線持久化啟動失敗", e); }
         
@@ -707,7 +702,6 @@ function scheduleWrite(docId, updatedUsedCoupons) {
     }, 1000); 
 }
 
-// --- 設定功能 ---
 function loadSettings() { 
     hiddenPlatforms = JSON.parse(localStorage.getItem('hiddenPlatforms') || '[]');
     localStorage.setItem('platformsCache', JSON.stringify(PLATFORMS));
@@ -773,7 +767,6 @@ function initGlobalStatsDialog() {
     if(weeks.length > 0) select.value = weeks[0]; 
 }
 
-// Lazy load Chart.js and DataLabels before showing
 allDOMElements.globalStatsBtn.addEventListener('click', async () => {
     await loadScript('https://cdn.jsdelivr.net/npm/chart.js');
     await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js');
@@ -962,7 +955,6 @@ function renderCharts(week) {
         options: { ...chartTheme, responsive: true, maintainAspectRatio: false, cutout: '40%', layout: { padding: 10 }, scales: { x: { display: false }, y: { display: false } }, plugins: { ...chartTheme.plugins, legend: { display: false }, datalabels: { ...chartTheme.plugins.datalabels, formatter: (v, ctx) => { const total = ctx.chart.getDatasetMeta(0).total; if (total === 0) return ''; const percent = v / total; if (percent < 0.04) return ''; const fullLabel = ctx.chart.data.labels[ctx.dataIndex]; const shortLabel = fullLabel.replace(/^[a-zA-Z]+/g, '').trim() || fullLabel; return shortLabel + '\n' + (percent * 100).toFixed(0) + '%'; }, color: '#fff', font: { weight: 'bold', size: 12, family: "'Noto Sans TC', sans-serif" }, textAlign: 'center' } } }
     });
 
-    // 改為堆疊面積圖
     if (platformWeeklyTotalChart) platformWeeklyTotalChart.destroy();
     const allWeeks = [...new Set(records.map(r => r.week))].sort((a,b) => a-b);
     const platformsWithData = [...new Set(records.map(r => r.platform))];
@@ -1036,6 +1028,7 @@ function applyTheme(themeName) {
     localStorage.setItem('selectedTheme', themeName); updateThemeSelectionUI(themeName);
     if(allDOMElements.statsDialog.open) renderCharts(allDOMElements.statsWeekFilter.value);
     if(allDOMElements.globalStatsDialog.open) renderGlobalStats(allDOMElements.globalStatsWeekFilter.value);
+    if(allDOMElements.summaryShareDialog.open) calculateAndRenderSummary();
     renderRecords();
 }
 
@@ -1045,6 +1038,7 @@ function toggleDarkMode(enable) {
     allDOMElements.darkModeSwitch.selected = enable;
     if(allDOMElements.statsDialog.open) renderCharts(allDOMElements.statsWeekFilter.value);
     if(allDOMElements.globalStatsDialog.open) renderGlobalStats(allDOMElements.globalStatsWeekFilter.value);
+    if(allDOMElements.summaryShareDialog.open) calculateAndRenderSummary();
 }
 
 function updateThemeSelectionUI(selectedTheme) { document.querySelectorAll('.theme-dot').forEach(dot => dot.classList.toggle('selected', dot.dataset.theme === selectedTheme)); }
@@ -1148,9 +1142,7 @@ allDOMElements.calculatorBtn.addEventListener('click', () => {
         });
     }
     
-    // 強制設定選項，解決 md-select 嘅非同步取值問題
     setTimeout(() => { makeupSelect.value = 'auto'; }, 10);
-    
     allDOMElements.calculatorDialog.show();
 });
 
@@ -1196,10 +1188,8 @@ allDOMElements.calculateBtn.addEventListener('click', (event) => {
     for (const platform in groupedByPlatform) { totalRequiredSpend += groupedByPlatform[platform].reduce((sum, val) => sum + val * 3, 0); }
     const remainingAmount = targetAmount - totalRequiredSpend;
     
-    // 取唔到值時強制回退為自動
     let makeupPlatform = document.getElementById('makeupPlatformSelect').value || 'auto';
 
-    // 智能補底邏輯：如果選擇「自動」，找出方案中消費最多嘅平台
     if (remainingAmount > 0 && makeupPlatform === 'auto') {
         let maxSpend = -1;
         let targetPlatform = null;
@@ -1210,7 +1200,6 @@ allDOMElements.calculateBtn.addEventListener('click', (event) => {
                 targetPlatform = p;
             }
         }
-        // 如果方案剛好為空，退而求其次選任何一個可用平台
         makeupPlatform = targetPlatform || Array.from(availablePlatformsSet)[0];
     }
 
@@ -1360,7 +1349,6 @@ function toggleAllCouponsForElement(titleEl) {
     record.usedCoupons = updatedUsedCoupons; refreshUI(); scheduleWrite(docId, updatedUsedCoupons);
 }
 
-// 開始判定長按 - 時長更新為 1000ms (1秒)
 const startRecordPress = (e) => {
     const titleEl = e.target.closest('.platform-title');
     if (!titleEl) return;
@@ -1486,7 +1474,6 @@ allDOMElements.disclaimerLink.addEventListener('click', (e) => {
     showAlertDialog(disclaimerText, "免責聲明");
 });
 
-// --- 新增：手動推送未用券狀態通知 ---
 if (allDOMElements.quickNotifyBtn) {
     allDOMElements.quickNotifyBtn.addEventListener('click', async () => {
         if (!("Notification" in window)) {
@@ -1541,7 +1528,214 @@ if (allDOMElements.quickNotifyBtn) {
     });
 }
 
-// --- 新增：定時背景檢查任務 (周四中午 12:00, 周日晚上 21:00) ---
+// --- 我的大獎賞戰績總結邏輯 ---
+allDOMElements.summaryShareBtn.addEventListener('click', async () => {
+    if (records.length === 0) {
+        showAlertDialog("目前還沒有任何記錄，快去記錄幾筆再來總結吧！");
+        return;
+    }
+    
+    // 動態載入圖表與截圖庫
+    await loadScript('https://cdn.jsdelivr.net/npm/chart.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
+
+    calculateAndRenderSummary();
+    allDOMElements.summaryShareDialog.show();
+});
+
+allDOMElements.closeSummaryShareBtn.addEventListener('click', () => {
+    allDOMElements.summaryShareDialog.close();
+});
+
+function calculateAndRenderSummary() {
+    let totalDrawAmount = 0;
+    let totalUsedAmount = 0;
+    let validRecordCount = 0; 
+    let count200 = 0;
+    
+    const platformTotals = {};
+    const platformZeroCounts = {};
+    const couponCounts = { '0': 0, '10': 0, '20': 0, '50': 0, '100': 0, '200': 0 };
+    const weeklyTotals = {};
+
+    records.forEach(r => {
+        // 跳過標記為 'ND' (跳過) 的紀錄
+        if (r.draw1 === 'ND' && r.draw2 === 'ND' && r.draw3 === 'ND') return;
+        
+        validRecordCount++; 
+        const p = r.platform;
+        const usedCoupons = r.usedCoupons || {};
+        
+        if (!platformTotals[p]) platformTotals[p] = 0;
+        if (!platformZeroCounts[p]) platformZeroCounts[p] = 0;
+        if (!weeklyTotals[r.week]) weeklyTotals[r.week] = 0;
+
+        ['draw1', 'draw2', 'draw3'].forEach((key) => {
+            const valStr = r[key];
+            if (valStr === 'ND') return;
+            
+            const val = parseInt(valStr) || 0;
+            totalDrawAmount += val;
+            platformTotals[p] += val;
+            weeklyTotals[r.week] += val;
+
+            if (valStr === '200') count200++;
+            if (valStr === '-' || val === 0) platformZeroCounts[p]++;
+            
+            const strKey = valStr === '-' ? '0' : valStr;
+            if (couponCounts[strKey] !== undefined) couponCounts[strKey]++;
+
+            if (usedCoupons[key] && val > 0) {
+                totalUsedAmount += val;
+            }
+        });
+    });
+
+    // 計算估計消費金額 (已用券面額*3 + 每條有效紀錄*50)
+    const estimatedSpend = (totalUsedAmount * 3) + (validRecordCount * 50);
+
+    // 尋找最高金額平台與最多0元平台
+    let bestPlatform = '-'; let maxPlatformAmount = -1;
+    let worstPlatform = '-'; let maxZeroCount = -1;
+
+    for (const p in platformTotals) {
+        if (platformTotals[p] > maxPlatformAmount) { maxPlatformAmount = platformTotals[p]; bestPlatform = p; }
+    }
+    for (const p in platformZeroCounts) {
+        if (platformZeroCounts[p] > maxZeroCount) { maxZeroCount = platformZeroCounts[p]; worstPlatform = p; }
+    }
+
+    // 填入 DOM
+    document.getElementById('share-total-draw').textContent = `MOP ${formatNumber(totalDrawAmount)}`;
+    document.getElementById('share-total-spend').textContent = `MOP ${formatNumber(estimatedSpend)}`;
+    document.getElementById('share-best-platform').textContent = PLATFORMS[bestPlatform] ? PLATFORMS[bestPlatform].replace(/^[a-zA-Z]+/g, '').trim() : bestPlatform;
+    document.getElementById('share-best-amount').textContent = `MOP ${formatNumber(maxPlatformAmount)}`;
+    document.getElementById('share-200-count').textContent = `${count200} 次`;
+    document.getElementById('share-worst-platform').textContent = PLATFORMS[worstPlatform] ? PLATFORMS[worstPlatform].replace(/^[a-zA-Z]+/g, '').trim() : worstPlatform;
+    document.getElementById('share-worst-count').textContent = `${maxZeroCount} 次`;
+
+    // 繪製分享用圖表
+    renderShareCharts(platformTotals, couponCounts, weeklyTotals);
+}
+
+function renderShareCharts(platformTotals, couponCounts, weeklyTotals) {
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    const textColor = isDarkMode ? '#e2e8f0' : '#1f2937';
+    const gridColor = isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)';
+    
+    const baseOptions = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, datalabels: { display: false } },
+        scales: {
+            x: { ticks: { color: textColor, font: { size: 10, family: "'Noto Sans TC', sans-serif" } }, grid: { display: false } },
+            y: { ticks: { color: textColor, font: { size: 10, family: "'Noto Sans TC', sans-serif" }, maxTicksLimit: 5 }, grid: { color: gridColor } }
+        }
+    };
+
+    // 1. 各平台累計金額
+    const pKeys = Object.keys(platformTotals).filter(p => platformTotals[p] > 0).sort((a,b) => platformTotals[b] - platformTotals[a]);
+    if (sharePlatformChart) sharePlatformChart.destroy();
+    sharePlatformChart = new Chart(document.getElementById('sharePlatformChart'), {
+        type: 'bar',
+        data: {
+            labels: pKeys.map(p => (PLATFORMS[p]||p).replace(/^[a-zA-Z]+/g, '').trim()),
+            datasets: [{
+                data: pKeys.map(p => platformTotals[p]),
+                backgroundColor: pKeys.map(p => PLATFORM_COLORS[p] || '#ccc'),
+                borderRadius: 4
+            }]
+        },
+        options: baseOptions
+    });
+
+    // 2. 各面額次數
+    const cKeys = ['0', '10', '20', '50', '100', '200'];
+    const cColors = ['#9ca3af', '#BA4040', '#6F4E9F', '#825211', '#3C72A1', '#E18C1F'];
+    if (shareCouponChart) shareCouponChart.destroy();
+    shareCouponChart = new Chart(document.getElementById('shareCouponChart'), {
+        type: 'bar',
+        data: {
+            labels: cKeys.map(k => k+'元'),
+            datasets: [{
+                data: cKeys.map(k => couponCounts[k]),
+                backgroundColor: cColors,
+                borderRadius: 4
+            }]
+        },
+        options: baseOptions
+    });
+
+    // 3. 每周趨勢
+    const wKeys = Object.keys(weeklyTotals).map(Number).sort((a,b) => a-b);
+    if (shareTrendChart) shareTrendChart.destroy();
+    
+    const primaryColorHex = document.documentElement.style.getPropertyValue('--theme-color-primary') || '#1976D2';
+    
+    shareTrendChart = new Chart(document.getElementById('shareTrendChart'), {
+        type: 'line',
+        data: {
+            labels: wKeys.map(w => `W${w}`),
+            datasets: [{
+                data: wKeys.map(w => weeklyTotals[w]),
+                borderColor: primaryColorHex,
+                backgroundColor: hexToRgbA(primaryColorHex, 0.2),
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                borderWidth: 2
+            }]
+        },
+        options: baseOptions
+    });
+}
+
+allDOMElements.downloadSummaryBtn.addEventListener('click', async () => {
+    const content = allDOMElements.summaryShareContent;
+    const btn = allDOMElements.downloadSummaryBtn;
+    
+    if (!window.html2canvas) {
+        showAlertDialog("截圖模組載入失敗，請檢查網絡後重試。");
+        return;
+    }
+    
+    btn.disabled = true;
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span> 處理中...';
+
+    try {
+        const isDarkMode = document.documentElement.classList.contains('dark');
+        const canvas = await html2canvas(content, {
+            scale: 2, 
+            backgroundColor: isDarkMode ? '#1c2128' : '#ffffff', // 根據深淺色模式設定截圖底色
+            useCORS: true,
+            logging: false,
+            onclone: (doc) => {
+                const target = doc.getElementById('summaryShareContent');
+                if(target) {
+                    // 清除可能影響截圖邊緣的圓角或溢出隱藏屬性
+                    target.style.borderRadius = '0';
+                    target.style.boxShadow = 'none';
+                }
+            }
+        });
+
+        const image = canvas.toDataURL('image/png', 1.0);
+        const a = document.createElement('a');
+        a.href = image;
+        a.download = `大獎賞戰績_${currentUserId}_${new Date().getTime()}.png`;
+        a.click();
+        
+        announceStatus("戰績截圖下載成功！");
+    } catch (error) {
+        console.error("生成截圖失敗:", error);
+        showAlertDialog("生成圖片失敗，這可能是因為瀏覽器隱私設定或系統資源不足。請嘗試直接螢幕截圖保存。");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
+    }
+});
+
+
 setInterval(() => {
     const now = new Date();
     const currentWeek = getWeekNumber(now);
@@ -1549,7 +1743,6 @@ setInterval(() => {
     const hours = now.getHours();
     const minutes = now.getMinutes();
 
-    // 周四中午 12:00 中清倉到期提醒
     if (day === 4 && hours === 12 && minutes === 0) {
         const key = `notified_thursday_w${currentWeek}`;
         if (!localStorage.getItem(key)) {
@@ -1572,7 +1765,6 @@ setInterval(() => {
         }
     }
 
-    // 周日晚上 21:00 補抽券提醒
     if (day === 0 && hours === 21 && minutes === 0) {
         const key = `notified_sunday_w${currentWeek}`;
         if (!localStorage.getItem(key)) {
@@ -1588,7 +1780,7 @@ setInterval(() => {
             localStorage.setItem(key, "true");
         }
     }
-}, 30000); // 每 30 秒在背景悄悄檢查一次
+}, 30000); 
 
 async function initializeAppFlow() {
     showLoadingSkeleton(); loadSettings();
