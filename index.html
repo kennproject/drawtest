@@ -211,6 +211,11 @@
                     </div>
 
                     <div class="flex items-center gap-1 sm:border-l pl-0 sm:pl-4 w-full sm:w-auto justify-around sm:justify-end" style="border-color: var(--color-border);">
+                        <!-- 新增：大獎賞總結分享按鈕 -->
+                        <md-icon-button id="summaryShareBtn" title="我的大獎賞戰績總結" aria-label="打開大獎賞總結" class="rounded-full shadow-sm border animate-pulse" style="background-color: var(--color-surface); border-color: var(--theme-color-primary);">
+                            <span class="material-symbols-outlined text-purple-500">auto_awesome</span>
+                        </md-icon-button>
+
                         <md-icon-button id="globalStatsBtn" title="全網大數據" aria-label="打開全網大數據" class="rounded-full shadow-sm border relative overflow-visible" style="background-color: var(--color-surface); border-color: var(--theme-color-primary);">
                             <span class="absolute -top-1 -right-1 flex h-3 w-3">
                               <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style="background-color: var(--theme-color-primary);"></span>
@@ -227,8 +232,7 @@
                             <span class="material-symbols-outlined text-blue-500">bar_chart</span>
                         </md-icon-button>
 
-                        <!-- 優化：新增手動推送未用券狀態通知按鈕 -->
-                        <md-icon-button id="quickNotifyBtn" title="推送未用券通知" aria-label="推送未用券通知" class="rounded-full shadow-sm border animate-pulse" style="background-color: var(--color-surface); border-color: var(--color-border);">
+                        <md-icon-button id="quickNotifyBtn" title="推送未用券通知" aria-label="推送未用券通知" class="rounded-full shadow-sm border" style="background-color: var(--color-surface); border-color: var(--color-border);">
                             <span class="material-symbols-outlined text-orange-500">notifications_active</span>
                         </md-icon-button>
 
@@ -420,7 +424,6 @@
         </div>
     </md-dialog>
     
-    <!-- 優化：彈窗放大、移除結果區塊的內嵌捲軸 -->
     <md-dialog id="calculatorDialog" role="dialog" aria-labelledby="calculatorDialogTitle" style="--md-dialog-container-max-width: 800px; width: 95vw;">
         <div slot="headline" id="calculatorDialogTitle" class="font-bold flex items-center gap-2">
             <span class="material-symbols-outlined text-[24px]">calculate</span> 用券計數機
@@ -431,7 +434,6 @@
                 <md-filled-button id="calculateBtn" class="flex-shrink-0 whitespace-nowrap h-12 px-2">計算</md-filled-button>
             </div>
             
-            <!-- 精簡的策略區塊 -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
                     <span class="text-sm font-bold opacity-80 text-[var(--color-text-primary)]">策略</span>
@@ -450,7 +452,6 @@
                 </div>
             </div>
 
-            <!-- 取消內嵌滾動，讓結果自然延伸 -->
             <div id="calculatorResult" class="flex-1 mt-2 text-sm leading-relaxed transition-all" aria-live="polite" style="color: var(--color-text-primary);">
                 請輸入上方欲消費金額後點擊「計算」。
             </div>
@@ -458,6 +459,98 @@
         <div slot="actions">
             <md-text-button id="cancelCalculator">關閉</md-text-button>
             <md-filled-button id="markAsUsedBtn" class="hidden">套用並標記為已使用</md-filled-button>
+        </div>
+    </md-dialog>
+
+    <!-- 新增：我的大獎賞總結分享 Dialog -->
+    <md-dialog id="summaryShareDialog" class="w-full max-w-2xl" role="dialog" aria-labelledby="summaryShareDialogTitle">
+        <div slot="headline" class="flex justify-between items-center" id="summaryShareDialogTitle">
+            <span class="whitespace-nowrap font-bold flex items-center gap-2">
+                <span class="material-symbols-outlined text-[24px] text-purple-500">auto_awesome</span> 我的戰績總結
+            </span>
+        </div>
+        <!-- p-0 為了讓截圖內容佔滿對話框並保留自身圓角 -->
+        <form slot="content" id="summaryShareDialogForm" class="p-0 mt-2">
+            <!-- 這是要被 html2canvas 截圖的區域 -->
+            <div id="summaryShareContent" class="p-5 sm:p-8 relative overflow-hidden" style="background: linear-gradient(135deg, var(--theme-color-summary-bg) 0%, var(--color-surface) 100%);">
+                <!-- 背景極光裝飾效果 (截圖時看起來更華麗) -->
+                <div class="absolute top-[-15%] right-[-15%] w-64 h-64 rounded-full mix-blend-multiply filter blur-3xl opacity-30" style="background-color: var(--theme-color-primary); pointer-events: none;"></div>
+                <div class="absolute bottom-[-15%] left-[-15%] w-56 h-56 rounded-full mix-blend-multiply filter blur-3xl opacity-30" style="background-color: var(--theme-color-title); pointer-events: none;"></div>
+                
+                <div class="relative z-10 flex flex-col gap-5">
+                    <!-- 標題區 -->
+                    <div class="text-center mb-1">
+                        <h2 class="text-2xl sm:text-3xl font-black mb-1 tracking-tight" style="color: var(--theme-color-primary);">2026 社區消費大獎賞</h2>
+                        <p class="text-sm font-bold opacity-80" style="color: var(--color-text-primary);">我的專屬戰績總結</p>
+                    </div>
+
+                    <!-- 數據卡片區塊 -->
+                    <div class="grid grid-cols-1 gap-3">
+                        <div class="p-4 rounded-2xl bg-white/60 dark:bg-[#1c2128]/70 backdrop-blur-md border border-white/50 dark:border-gray-700/50 shadow-sm flex items-center justify-between transition-colors">
+                            <span class="font-bold flex items-center gap-2 text-[15px]" style="color: var(--color-text-primary);"><span class="material-symbols-outlined text-blue-500">payments</span> 今次總共抽到</span>
+                            <span class="text-2xl font-black tabular-nums text-blue-600 dark:text-blue-400" id="share-total-draw">MOP 0</span>
+                        </div>
+                        
+                        <div class="p-4 rounded-2xl bg-white/60 dark:bg-[#1c2128]/70 backdrop-blur-md border border-white/50 dark:border-gray-700/50 shadow-sm flex flex-col gap-1 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold flex items-center gap-2 text-[15px]" style="color: var(--color-text-primary);"><span class="material-symbols-outlined text-green-500">shopping_cart</span> 估計總消費至少</span>
+                                <span class="text-xl font-black tabular-nums text-green-600 dark:text-green-400" id="share-total-spend">MOP 0</span>
+                            </div>
+                            <span class="text-[11px] opacity-60 text-right" style="color: var(--color-text-secondary);">(已用券面額×3 + 抽券記錄數×MOP 50)</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="p-4 rounded-2xl bg-white/60 dark:bg-[#1c2128]/70 backdrop-blur-md border border-white/50 dark:border-gray-700/50 shadow-sm flex flex-col justify-center transition-colors">
+                                <span class="text-[13px] font-bold opacity-80 mb-1 flex items-center gap-1" style="color: var(--color-text-secondary);"><span class="material-symbols-outlined text-[16px] text-yellow-500">emoji_events</span> 抽中最多金額平台</span>
+                                <div class="flex items-end justify-between">
+                                    <span class="text-lg font-bold" id="share-best-platform" style="color: var(--color-text-primary);">-</span>
+                                    <span class="text-lg font-black text-yellow-600 dark:text-yellow-500 tabular-nums" id="share-best-amount">MOP 0</span>
+                                </div>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-white/60 dark:bg-[#1c2128]/70 backdrop-blur-md border border-white/50 dark:border-gray-700/50 shadow-sm flex flex-col justify-center transition-colors">
+                                <span class="text-[13px] font-bold opacity-80 mb-1 flex items-center gap-1" style="color: var(--color-text-secondary);"><span class="material-symbols-outlined text-[16px] text-red-500">celebration</span> 抽到 200蚊 次數</span>
+                                <span class="text-2xl font-black tabular-nums text-red-600 dark:text-red-400" id="share-200-count">0 次</span>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 rounded-2xl bg-white/60 dark:bg-[#1c2128]/70 backdrop-blur-md border border-white/50 dark:border-gray-700/50 shadow-sm flex items-center justify-between transition-colors">
+                            <span class="font-bold flex items-center gap-2 text-[15px]" style="color: var(--color-text-primary);"><span class="material-symbols-outlined text-gray-500">sentiment_dissatisfied</span> 最多「多謝參與」平台</span>
+                            <div class="text-right">
+                                <span class="text-base font-bold block" id="share-worst-platform" style="color: var(--color-text-primary);">-</span>
+                                <span class="text-sm font-black text-gray-500 tabular-nums" id="share-worst-count">0 次</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 圖表區域 -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="p-3 rounded-2xl bg-white/60 dark:bg-[#1c2128]/70 backdrop-blur-md border border-white/50 dark:border-gray-700/50 shadow-sm transition-colors">
+                            <p class="text-center text-[12px] font-bold mb-2 opacity-80" style="color: var(--color-text-primary);">各平台累計金額</p>
+                            <div style="height: 140px; position: relative;"><canvas id="sharePlatformChart"></canvas></div>
+                        </div>
+                        <div class="p-3 rounded-2xl bg-white/60 dark:bg-[#1c2128]/70 backdrop-blur-md border border-white/50 dark:border-gray-700/50 shadow-sm transition-colors">
+                            <p class="text-center text-[12px] font-bold mb-2 opacity-80" style="color: var(--color-text-primary);">各面額抽出次數</p>
+                            <div style="height: 140px; position: relative;"><canvas id="shareCouponChart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-white/60 dark:bg-[#1c2128]/70 backdrop-blur-md border border-white/50 dark:border-gray-700/50 shadow-sm transition-colors">
+                        <p class="text-center text-[12px] font-bold mb-2 opacity-80" style="color: var(--color-text-primary);">每周描出金額趨勢</p>
+                        <div style="height: 140px; position: relative;"><canvas id="shareTrendChart"></canvas></div>
+                    </div>
+
+                    <!-- Footer / 網址分享 -->
+                    <div class="text-center border-t pt-4 flex flex-col items-center justify-center gap-1" style="border-color: var(--color-border);">
+                        <p class="text-[13px] font-bold tracking-widest" style="color: var(--color-text-primary);">好運由記錄開始</p>
+                        <p class="text-[12px] font-mono font-medium opacity-80" style="color: var(--theme-color-primary);">https://2026macaudraw.netlify.app</p>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div slot="actions">
+            <md-text-button id="closeSummaryShareBtn">關閉</md-text-button>
+            <md-filled-button id="downloadSummaryBtn" class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-[18px]">download</span> 下載成圖片
+            </md-filled-button>
         </div>
     </md-dialog>
 
