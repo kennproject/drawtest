@@ -1537,6 +1537,8 @@ allDOMElements.summaryShareBtn.addEventListener('click', async () => {
     
     // 動態載入圖表與截圖庫
     await loadScript('https://cdn.jsdelivr.net/npm/chart.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js');
+    if (window.Chart && window.ChartDataLabels) Chart.register(ChartDataLabels);
     await loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
 
     calculateAndRenderSummary();
@@ -1638,7 +1640,10 @@ function renderShareCharts(platformTotals, couponCounts, weeklyTotals) {
     sharePlatformChart = new Chart(document.getElementById('sharePlatformChart'), {
         type: 'bar',
         data: {
-            labels: pKeys.map(p => (PLATFORMS[p]||p).replace(/^[a-zA-Z]+/g, '').trim()),
+            labels: pKeys.map(p => {
+                const short = (PLATFORMS[p]||p).replace(/^[a-zA-Z]+/g, '').trim();
+                return short ? short : p;
+            }),
             datasets: [{
                 data: pKeys.map(p => platformTotals[p]),
                 backgroundColor: pKeys.map(p => PLATFORM_COLORS[p] || '#ccc'),
@@ -1685,7 +1690,22 @@ function renderShareCharts(platformTotals, couponCounts, weeklyTotals) {
                 borderWidth: 2
             }]
         },
-        options: baseOptions
+        options: {
+            ...baseOptions,
+            layout: { padding: { top: 20, left: 10, right: 10 } },
+            plugins: {
+                legend: { display: false },
+                datalabels: {
+                    display: true,
+                    align: 'top',
+                    anchor: 'end',
+                    offset: 2,
+                    color: textColor,
+                    font: { size: 9, weight: 'bold', family: "'Noto Sans TC', sans-serif" },
+                    formatter: v => v > 0 ? v : ''
+                }
+            }
+        }
     });
 }
 
