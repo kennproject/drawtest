@@ -1473,7 +1473,7 @@ allDOMElements.exportCsvBtn.addEventListener('click', () => {
 
 allDOMElements.disclaimerLink.addEventListener('click', (e) => {
     e.preventDefault();
-    const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存 or 處理任何個人可識別 information (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀 or 洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即 निकट表示您已閱讀、理解並同意以上所有條款。";
+    const disclaimerText = "1. 服務性質：本網站為一非官方、個人開發的輔助工具，旨在方便用戶記錄「社區消費大獎賞2026」活動相關數據。本網站與活動主辦方無任何關聯。\n\n2. 數據儲存與隱私：所有用戶輸入的資料均以匿名方式儲存在第三方雲端數據庫 (Firebase) 中。系統僅會生成一組匿名的用戶ID用於數據同步，過程中不會收集、儲存 or 處理任何個人可識別 information (PII)，如姓名、電話或電郵地址。\n\n3. 數據準確性與風險：用戶應自行確保輸入資料的準確性。本網站提供者不對任何因數據不準確、遺失、損毀 or 洩漏所導致的任何直接或間接損失負責。請用戶理解雲端服務本質上存在的風險。\n\n4. 服務可用性：本網站不保證服務的永久可用性、穩定性或無錯誤。服務可能因維護、升級或不可抗力因素而中斷，恕不另行通知。\n\n5. 內容所有權與使用：用戶在本網站輸入的數據，其所有權仍歸用戶本人。然而，網站持有人保留對所有匿名數據進行匯總、統計與分析的權利，以用於改善服務或學術研究，分析結果將以不透露任何個別用戶數據的形式呈現。\n\n6. 責任限制：在任何情況下，本網站的開發者與提供者均不對使用或無法使用本網站所造成的任何損害承擔責任。\n\n當您開始使用本網站時，即表示您已閱讀、理解並同意以上所有條款。";
     showAlertDialog(disclaimerText, "免責聲明");
 });
 
@@ -1530,6 +1530,264 @@ if (allDOMElements.quickNotifyBtn) {
         }
     });
 }
+
+// --- 我的大獎賞戰績總結邏輯 ---
+allDOMElements.summaryShareBtn.addEventListener('click', async () => {
+    if (records.length === 0) {
+        showAlertDialog("目前還沒有任何記錄，快去記錄幾筆再來總結吧！");
+        return;
+    }
+    
+    // 動態載入圖表與截圖庫
+    await loadScript('https://cdn.jsdelivr.net/npm/chart.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js');
+    if (window.Chart && window.ChartDataLabels) Chart.register(ChartDataLabels);
+    await loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
+
+    calculateAndRenderSummary();
+    allDOMElements.summaryShareDialog.show();
+});
+
+allDOMElements.closeSummaryShareBtn.addEventListener('click', () => {
+    allDOMElements.summaryShareDialog.close();
+});
+
+function calculateAndRenderSummary() {
+    let totalDrawAmount = 0;
+    let totalUsedAmount = 0;
+    let validRecordCount = 0; 
+    let count200 = 0;
+    let remainingCouponsCount = 0;
+    let totalCouponsCount = 0;
+    let activeWeeks = new Set();
+    
+    const platformTotals = {};
+    const platformZeroCounts = {};
+    const couponCounts = { '0': 0, '10': 0, '20': 0, '50': 0, '100': 0, '200': 0 };
+    const weeklyTotals = {};
+
+    records.forEach(r => {
+        if (r.draw1 === 'ND' && r.draw2 === 'ND' && r.draw3 === 'ND') return;
+        
+        validRecordCount++; 
+        const p = r.platform;
+        const usedCoupons = r.usedCoupons || {};
+        activeWeeks.add(r.week);
+        
+        if (!platformTotals[p]) platformTotals[p] = 0;
+        if (!platformZeroCounts[p]) platformZeroCounts[p] = 0;
+        if (!weeklyTotals[r.week]) weeklyTotals[r.week] = 0;
+
+        ['draw1', 'draw2', 'draw3'].forEach((key) => {
+            const valStr = r[key];
+            if (valStr === 'ND') return;
+            
+            totalCouponsCount++;
+            const val = parseInt(valStr) || 0;
+            totalDrawAmount += val;
+            platformTotals[p] += val;
+            weeklyTotals[r.week] += val;
+
+            if (valStr === '200') count200++;
+            if (valStr === '-' || val === 0) platformZeroCounts[p]++;
+            
+            const strKey = valStr === '-' ? '0' : valStr;
+            if (couponCounts[strKey] !== undefined) couponCounts[strKey]++;
+
+            if (usedCoupons[key] && val > 0) {
+                totalUsedAmount += val;
+            } else if (!usedCoupons[key] && val > 0) {
+                remainingCouponsCount++;
+            }
+        });
+    });
+
+    const estimatedSpend = (totalUsedAmount * 3) + (validRecordCount * 50);
+    
+    // 每次平均抽出金額(總金額*3/總券數(包括0))
+    const avgPerDraw = totalCouponsCount > 0 ? ((totalDrawAmount * 3) / totalCouponsCount) : 0;
+    // 每星期平均抽出金額(總金額/周數)
+    const numWeeks = activeWeeks.size > 0 ? activeWeeks.size : 1;
+    const avgPerWeek = totalDrawAmount / numWeeks;
+
+    let bestPlatform = '-'; let maxPlatformAmount = -1;
+    let worstPlatform = '-'; let maxZeroCount = -1;
+
+    for (const p in platformTotals) {
+        if (platformTotals[p] > maxPlatformAmount) { maxPlatformAmount = platformTotals[p]; bestPlatform = p; }
+    }
+    for (const p in platformZeroCounts) {
+        if (platformZeroCounts[p] > maxZeroCount) { maxZeroCount = platformZeroCounts[p]; worstPlatform = p; }
+    }
+
+    document.getElementById('share-total-draw').textContent = `MOP ${formatNumber(totalDrawAmount)}`;
+    document.getElementById('share-total-spend').textContent = `MOP ${formatNumber(estimatedSpend)}`;
+    
+    const avgDrawEl = document.getElementById('share-avg-draw');
+    if (avgDrawEl) avgDrawEl.textContent = `MOP ${avgPerDraw.toFixed(1)}`;
+    const avgWeekEl = document.getElementById('share-avg-week');
+    if (avgWeekEl) avgWeekEl.textContent = `MOP ${avgPerWeek.toFixed(1)}`;
+
+    document.getElementById('share-best-platform').textContent = PLATFORMS[bestPlatform] ? PLATFORMS[bestPlatform].replace(/^[a-zA-Z]+/g, '').trim() : bestPlatform;
+    document.getElementById('share-best-amount').textContent = `MOP ${formatNumber(maxPlatformAmount)}`;
+    document.getElementById('share-200-count').textContent = `${count200} 次`;
+    document.getElementById('share-worst-platform').textContent = PLATFORMS[worstPlatform] ? PLATFORMS[worstPlatform].replace(/^[a-zA-Z]+/g, '').trim() : worstPlatform;
+    document.getElementById('share-worst-count').textContent = `${maxZeroCount} 次`;
+
+    let funTitle = "消費達人 🏃‍♂️";
+    let funTitleClass = "text-blue-700 bg-blue-50 border-blue-200 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400";
+
+    if (count200 >= 3) {
+        funTitle = "👑 澳門無敵歐皇 👑";
+        funTitleClass = "text-yellow-700 bg-yellow-100 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.5)] dark:bg-yellow-900/40 dark:border-yellow-600 dark:text-yellow-400";
+    } else if (count200 >= 1) {
+        funTitle = "🍀 好運氣選手 🍀";
+        funTitleClass = "text-orange-700 bg-orange-50 border-orange-200 dark:bg-orange-900/30 dark:border-orange-800 dark:text-orange-400";
+    } else if (maxZeroCount >= Math.max(8, validRecordCount * 1.5)) {
+        funTitle = "🥲 多謝參與大酋長 🥲";
+        funTitleClass = "text-gray-600 bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400";
+    } else if (totalDrawAmount > 500 && remainingCouponsCount === 0) {
+        funTitle = "🧹 終極精明管家 🧹";
+        funTitleClass = "text-green-700 bg-green-50 border-green-200 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400";
+    }
+
+    const titleEl = document.getElementById('share-fun-title');
+    titleEl.textContent = funTitle;
+    titleEl.className = `text-[15px] font-black px-4 py-1.5 rounded-full border shadow-sm transition-colors duration-300 ${funTitleClass}`;
+
+    renderShareCharts(platformTotals, couponCounts, weeklyTotals);
+}
+
+function renderShareCharts(platformTotals, couponCounts, weeklyTotals) {
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    const textColor = isDarkMode ? '#e2e8f0' : '#1f2937';
+    const gridColor = isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)';
+    
+    const baseOptions = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, datalabels: { display: false } },
+        scales: {
+            x: { ticks: { color: textColor, font: { size: 10, family: "'Noto Sans TC', sans-serif" } }, grid: { display: false } },
+            y: { ticks: { color: textColor, font: { size: 10, family: "'Noto Sans TC', sans-serif" }, maxTicksLimit: 5 }, grid: { color: gridColor } }
+        }
+    };
+
+    const pKeys = Object.keys(platformTotals).filter(p => platformTotals[p] > 0).sort((a,b) => platformTotals[b] - platformTotals[a]);
+    if (sharePlatformChart) sharePlatformChart.destroy();
+    sharePlatformChart = new Chart(document.getElementById('sharePlatformChart'), {
+        type: 'bar',
+        data: {
+            labels: pKeys.map(p => {
+                const short = (PLATFORMS[p]||p).replace(/^[a-zA-Z]+/g, '').trim();
+                return short ? short : p;
+            }),
+            datasets: [{
+                data: pKeys.map(p => platformTotals[p]),
+                backgroundColor: pKeys.map(p => PLATFORM_COLORS[p] || '#ccc'),
+                borderRadius: 4
+            }]
+        },
+        options: baseOptions
+    });
+
+    const cKeys = ['0', '10', '20', '50', '100', '200'];
+    const cColors = ['#9ca3af', '#BA4040', '#6F4E9F', '#825211', '#3C72A1', '#E18C1F'];
+    if (shareCouponChart) shareCouponChart.destroy();
+    shareCouponChart = new Chart(document.getElementById('shareCouponChart'), {
+        type: 'bar',
+        data: {
+            labels: cKeys.map(k => k+'元'),
+            datasets: [{
+                data: cKeys.map(k => couponCounts[k]),
+                backgroundColor: cColors,
+                borderRadius: 4
+            }]
+        },
+        options: baseOptions
+    });
+
+    const wKeys = Object.keys(weeklyTotals).map(Number).sort((a,b) => a-b);
+    if (shareTrendChart) shareTrendChart.destroy();
+    
+    const primaryColorHex = document.documentElement.style.getPropertyValue('--theme-color-primary') || '#1976D2';
+    
+    shareTrendChart = new Chart(document.getElementById('shareTrendChart'), {
+        type: 'line',
+        data: {
+            labels: wKeys.map(w => `W${w}`),
+            datasets: [{
+                data: wKeys.map(w => weeklyTotals[w]),
+                borderColor: primaryColorHex,
+                backgroundColor: hexToRgbA(primaryColorHex, 0.2),
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            ...baseOptions,
+            layout: { padding: { top: 20, left: 10, right: 10 } },
+            plugins: {
+                legend: { display: false },
+                datalabels: {
+                    display: true,
+                    align: 'top',
+                    anchor: 'end',
+                    offset: 2,
+                    color: textColor,
+                    font: { size: 9, weight: 'bold', family: "'Noto Sans TC', sans-serif" },
+                    formatter: v => v > 0 ? v : ''
+                }
+            }
+        }
+    });
+}
+
+allDOMElements.downloadSummaryBtn.addEventListener('click', async () => {
+    const content = allDOMElements.summaryShareContent;
+    const btn = allDOMElements.downloadSummaryBtn;
+    
+    if (!window.html2canvas) {
+        showAlertDialog("截圖模組載入失敗，請檢查網絡後重試。");
+        return;
+    }
+    
+    btn.disabled = true;
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span> 處理中...';
+
+    try {
+        const isDarkMode = document.documentElement.classList.contains('dark');
+        const canvas = await html2canvas(content, {
+            scale: 2, 
+            backgroundColor: isDarkMode ? '#1c2128' : '#ffffff',
+            useCORS: true,
+            logging: false,
+            onclone: (doc) => {
+                const target = doc.getElementById('summaryShareContent');
+                if(target) {
+                    target.style.borderRadius = '0';
+                    target.style.boxShadow = 'none';
+                }
+            }
+        });
+
+        const image = canvas.toDataURL('image/png', 1.0);
+        const a = document.createElement('a');
+        a.href = image;
+        a.download = `大獎賞戰績_${currentUserId}_${new Date().getTime()}.png`;
+        a.click();
+        
+        announceStatus("戰績截圖下載成功！");
+    } catch (error) {
+        console.error("生成截圖失敗:", error);
+        showAlertDialog("生成圖片失敗，這可能是因為瀏覽器隱私設定或系統資源不足。請嘗試直接螢幕截圖保存。");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
+    }
+});
 
 setInterval(() => {
     const now = new Date();
