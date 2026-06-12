@@ -80,6 +80,12 @@
             <div class="mt-2 sm:mt-0" id="timeInfo" style="color: var(--color-text-secondary);"></div>
         </div>
 
+        <!-- 新增：無感溫馨感謝語句 -->
+        <div class="w-full flex items-center justify-center gap-1.5 -mt-2 mb-1 opacity-80 hover:opacity-100 transition-opacity">
+            <span class="material-symbols-outlined text-red-500 text-[14px] sm:text-[16px] animate-pulse">favorite</span>
+            <span class="text-[12px] sm:text-sm font-bold" style="color: var(--color-text-secondary);">大獎賞活動進入最後一星期！感謝您的使用與支持，祝好運連連，下次活動再見。</span>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div class="lg:col-span-4 flex flex-col gap-3">
                 <div id="allCompletedMsg" class="hidden p-4 rounded-full border border-green-200 bg-green-50 text-green-700 text-center font-bold text-sm shadow-sm flex items-center justify-center gap-2 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400 transition-all">
@@ -211,7 +217,7 @@
                     </div>
 
                     <div class="flex items-center gap-1 sm:border-l pl-0 sm:pl-4 w-full sm:w-auto justify-around sm:justify-end" style="border-color: var(--color-border);">
-                        <!-- 新增：大獎賞總結分享按鈕 -->
+                        <!-- 大獎賞總結分享按鈕 -->
                         <md-icon-button id="summaryShareBtn" title="我的大獎賞戰績總結" aria-label="打開大獎賞總結" class="rounded-full shadow-sm border animate-pulse" style="background-color: var(--color-surface); border-color: var(--theme-color-primary);">
                             <span class="material-symbols-outlined text-purple-500">auto_awesome</span>
                         </md-icon-button>
