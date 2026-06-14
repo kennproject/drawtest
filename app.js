@@ -209,7 +209,11 @@ const allDOMElements = {
     summaryShareDialog: document.getElementById('summaryShareDialog'),
     closeSummaryShareBtn: document.getElementById('closeSummaryShareBtn'),
     downloadSummaryBtn: document.getElementById('downloadSummaryBtn'),
-    summaryShareContent: document.getElementById('summaryShareContent')
+    summaryShareContent: document.getElementById('summaryShareContent'),
+    // 新增：分析專區綁定
+    openAnalysisBtn: document.getElementById('openAnalysisBtn'),
+    analysisDialog: document.getElementById('analysisDialog'),
+    closeAnalysisBtn: document.getElementById('closeAnalysisBtn')
 };
 
 function announceStatus(message) { allDOMElements.statusAnnouncer.textContent = message; }
@@ -917,6 +921,174 @@ function renderGlobalStats(week) {
             datasets: [{ data: availablePlatforms.map(p => data[p].amtShare * 100), backgroundColor: availablePlatforms.map(p => PLATFORM_COLORS[p]), borderColor: document.documentElement.style.getPropertyValue('--color-surface'), borderWidth: 2, hoverOffset: 4 }]
         },
         options: { ...chartTheme, responsive: true, maintainAspectRatio: false, cutout: '50%', plugins: { ...chartTheme.plugins, legend: { display: true, position: 'right', labels: { ...chartTheme.plugins.legend.labels, boxWidth: 12 } }, datalabels: { ...chartTheme.plugins.datalabels, formatter: (v, ctx) => { const total = ctx.chart.getDatasetMeta(0).total; if (total === 0) return ''; const percent = v / total; if (percent < 0.03) return ''; const fullLabel = ctx.chart.data.labels[ctx.dataIndex]; const shortLabel = fullLabel.replace(/^[a-zA-Z]+/g, '').trim() || fullLabel; return shortLabel + '\n' + v.toFixed(1) + '%'; }, color: '#fff', font: { weight: 'bold', size: 11, family: "'Noto Sans TC', sans-serif" }, textAlign: 'center' } } }
+    });
+}
+
+// --- 新增：終極數據洞察專區圖表邏輯 ---
+let analysisEvChart = null;
+let analysisWeeklyChart = null;
+let analysisDistChart = null;
+
+allDOMElements.openAnalysisBtn.addEventListener('click', async () => {
+    await loadScript('https://cdn.jsdelivr.net/npm/chart.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js');
+    if (window.Chart && window.ChartDataLabels) Chart.register(ChartDataLabels);
+    
+    renderAnalysisZone();
+    allDOMElements.analysisDialog.show();
+});
+
+allDOMElements.closeAnalysisBtn.addEventListener('click', () => {
+    allDOMElements.analysisDialog.close();
+});
+
+function renderAnalysisZone() {
+    if (!window.Chart) return;
+    const chartTheme = getChartJsThemeOptions();
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    const labelColor = isDarkMode ? '#e2e8f0' : '#1f2937';
+
+    // 1. 各平台單次打卡期望值 (EV)
+    if (analysisEvChart) analysisEvChart.destroy();
+    const evData = [
+        { platform: 'BOC', ev: 48.79 },
+        { platform: 'MPay', ev: 48.19 },
+        { platform: 'TFB', ev: 45.33 },
+        { platform: 'GFB', ev: 42.65 },
+        { platform: 'ICBC', ev: 36.72 },
+        { platform: 'Alipay', ev: 32.64 },
+        { platform: 'UePay', ev: 29.22 },
+        { platform: 'Luso', ev: 27.52 }
+    ]; // 已經排序
+
+    analysisEvChart = new Chart(document.getElementById('analysisEvChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: evData.map(d => d.platform),
+            datasets: [{
+                data: evData.map(d => d.ev),
+                backgroundColor: evData.map(d => d.platform === 'BOC' || d.platform === 'MPay' ? hexToRgbA(PLATFORM_COLORS[d.platform], 0.85) : hexToRgbA(PLATFORM_COLORS[d.platform], 0.5)),
+                borderColor: evData.map(d => PLATFORM_COLORS[d.platform]),
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            ...chartTheme,
+            responsive: true, maintainAspectRatio: false,
+            indexAxis: 'y', // 改為橫向以清楚展示
+            plugins: {
+                ...chartTheme.plugins,
+                legend: { display: false },
+                datalabels: {
+                    color: labelColor,
+                    anchor: 'end',
+                    align: 'end',
+                    formatter: v => v.toFixed(2) + ' MOP',
+                    font: { weight: 'bold', family: "'Noto Sans TC', sans-serif" }
+                }
+            },
+            scales: {
+                x: { ...chartTheme.scales.x, max: 60 },
+                y: { ...chartTheme.scales.y, ticks: { font: { weight: 'bold' } } }
+            }
+        }
+    });
+
+    // 2. 每週平均期望值走勢
+    if (analysisWeeklyChart) analysisWeeklyChart.destroy();
+    const weeklyEVData = [48.35, 42.58, 36.17, 37.31, 38.43, 36.51, 39.42, 39.72, 46.13, 34.90];
+    analysisWeeklyChart = new Chart(document.getElementById('analysisWeeklyChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: Array.from({length: 10}, (_, i) => `W${i+1}`),
+            datasets: [{
+                label: '平均期望值',
+                data: weeklyEVData,
+                borderColor: '#10b981', // 綠色線條
+                backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                fill: true,
+                tension: 0.3,
+                pointBackgroundColor: '#10b981',
+                pointRadius: 5,
+                borderWidth: 3
+            }]
+        },
+        options: {
+            ...chartTheme,
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                ...chartTheme.plugins,
+                legend: { display: false },
+                datalabels: {
+                    color: labelColor,
+                    anchor: 'end',
+                    align: 'top',
+                    offset: 4,
+                    formatter: v => v.toFixed(1),
+                    font: { weight: 'bold', size: 10, family: "'Noto Sans TC', sans-serif" }
+                }
+            },
+            scales: {
+                y: { ...chartTheme.scales.y, min: 25, max: 55 }
+            }
+        }
+    });
+
+    // 3. 各平台抽獎面額分佈比例 (堆疊條形圖)
+    if (analysisDistChart) analysisDistChart.destroy();
+    // 依據 0元 機率由低到高排列 (體驗最好的在最上面)
+    const distOrder = ['BOC', 'MPay', 'ICBC', 'GFB', 'TFB', 'Alipay', 'UePay', 'Luso'];
+    const distRaw = {
+        'BOC':   { p0: 13.2, p10: 53.0, p20: 25.6, p50: 6.2, p100: 1.4, p200: 0.7 },
+        'MPay':  { p0: 18.3, p10: 48.0, p20: 25.0, p50: 6.5, p100: 1.5, p200: 0.8 },
+        'ICBC':  { p0: 31.7, p10: 42.2, p20: 20.0, p50: 4.6, p100: 1.1, p200: 0.3 },
+        'GFB':   { p0: 34.3, p10: 36.8, p20: 19.5, p50: 6.9, p100: 1.9, p200: 0.7 },
+        'TFB':   { p0: 34.2, p10: 34.7, p20: 21.5, p50: 6.6, p100: 1.9, p200: 1.1 },
+        'Alipay':{ p0: 42.1, p10: 34.2, p20: 18.0, p50: 4.5, p100: 0.8, p200: 0.4 },
+        'UePay': { p0: 45.9, p10: 35.1, p20: 15.2, p50: 2.3, p100: 1.0, p200: 0.5 },
+        'Luso':  { p0: 47.3, p10: 34.1, p20: 14.4, p50: 3.2, p100: 0.6, p200: 0.3 }
+    };
+
+    const cColors = { '0': '#e5e7eb', '10': '#fca5a5', '20': '#c084fc', '50': '#fcd34d', '100': '#60a5fa', '200': '#f59e0b' };
+    if(isDarkMode) {
+        cColors['0'] = '#374151'; cColors['10'] = '#991b1b'; cColors['20'] = '#6b21a8'; 
+        cColors['50'] = '#b45309'; cColors['100'] = '#1d4ed8'; cColors['200'] = '#b45309';
+    }
+
+    const datasets = ['0', '10', '20', '50', '100', '200'].map(tier => {
+        return {
+            label: `${tier}元`,
+            data: distOrder.map(p => distRaw[p][`p${tier}`]),
+            backgroundColor: cColors[tier],
+            borderWidth: 0
+        };
+    });
+
+    analysisDistChart = new Chart(document.getElementById('analysisDistChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: distOrder,
+            datasets: datasets
+        },
+        options: {
+            ...chartTheme,
+            responsive: true, maintainAspectRatio: false,
+            indexAxis: 'y', // 橫向堆疊
+            plugins: {
+                ...chartTheme.plugins,
+                legend: { position: 'top', labels: { boxWidth: 12, font: { family: "'Noto Sans TC', sans-serif" } } },
+                datalabels: {
+                    color: isDarkMode ? '#f8fafc' : '#111827',
+                    formatter: (v) => v >= 5 ? v.toFixed(1) + '%' : '', // 只顯示大於5%的標籤以防重疊
+                    font: { weight: 'bold', size: 10, family: "'Noto Sans TC', sans-serif" }
+                }
+            },
+            scales: {
+                x: { ...chartTheme.scales.x, stacked: true, max: 100 },
+                y: { ...chartTheme.scales.y, stacked: true, ticks: { font: { weight: 'bold' } } }
+            }
+        }
     });
 }
 
