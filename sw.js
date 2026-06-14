@@ -1,4 +1,4 @@
-const CACHE_NAME = 'macau-draw-v27'; // 版本更新
+const CACHE_NAME = 'macau-draw-v28'; // 版本更新
 
 const ASSETS = [
   './',
