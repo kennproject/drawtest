@@ -74,6 +74,10 @@
                             <span class="material-symbols-outlined text-[20px] sm:text-[24px]">open_in_new</span>
                         </a>
                     </h1>
+                    <!-- 新增：大獎賞分析專區按鈕 -->
+                    <button id="openAnalysisBtn" title="終極數據洞察報告" class="ml-1 sm:ml-2 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 dark:bg-blue-900/40 dark:hover:bg-blue-800/60 dark:text-blue-400 transition-all shadow-sm border border-blue-200 dark:border-blue-700 hover:scale-110">
+                        <span class="material-symbols-outlined text-[20px] sm:text-[24px]">query_stats</span>
+                    </button>
                 </div>
                 <p class="text-xs sm:text-sm font-medium opacity-80" style="color: var(--color-text-secondary);">活動期間：2026年4月10日至6月18日 (每逢星期五更新)</p>
             </div>
@@ -570,6 +574,75 @@
             <md-filled-button id="downloadSummaryBtn" class="flex items-center gap-1">
                 <span class="material-symbols-outlined text-[18px]">download</span> 下載成圖片
             </md-filled-button>
+        </div>
+    </md-dialog>
+
+    <!-- 新增：大獎賞終極分析專區 Dialog -->
+    <md-dialog id="analysisDialog" class="w-full max-w-[95vw] lg:max-w-7xl" role="dialog" aria-labelledby="analysisDialogTitle">
+        <div slot="headline" class="flex justify-between items-center w-full" id="analysisDialogTitle">
+            <span class="font-bold flex items-center gap-2">
+                <span class="material-symbols-outlined text-[28px] text-blue-600">query_stats</span> 終極數據洞察報告
+            </span>
+        </div>
+        <form slot="content" id="analysisDialogForm" class="flex flex-col gap-6 mt-2 pb-2 bg-white dark:bg-[#0d1117] rounded-xl p-2 transition-colors">
+            
+            <!-- KPI 指標 -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="p-4 rounded-xl shadow-sm border bg-gray-50 dark:bg-[#161b22] border-gray-200 dark:border-gray-800 flex flex-col justify-center items-center text-center">
+                    <span class="text-[11px] sm:text-xs font-bold opacity-70 mb-1">總分析筆數 (人次)</span>
+                    <span class="text-2xl sm:text-3xl font-black text-gray-800 dark:text-gray-100 tabular-nums">74,417</span>
+                </div>
+                <div class="p-4 rounded-xl shadow-sm border bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 flex flex-col justify-center items-center text-center">
+                    <span class="text-[11px] sm:text-xs font-bold opacity-70 mb-1 text-blue-700 dark:text-blue-300">全站平均期望值 (3抽加總)</span>
+                    <div class="flex items-baseline gap-1"><span class="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400 tabular-nums">40.07</span><span class="text-sm font-bold text-blue-600 dark:text-blue-400">MOP</span></div>
+                </div>
+                <div class="p-4 rounded-xl shadow-sm border bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 flex flex-col justify-center items-center text-center">
+                    <span class="text-[11px] sm:text-xs font-bold opacity-70 mb-1 text-green-700 dark:text-green-300">最慷慨平台 (最高EV)</span>
+                    <span class="text-2xl sm:text-3xl font-black text-green-600 dark:text-green-400">BOC</span>
+                </div>
+                <div class="p-4 rounded-xl shadow-sm border bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800 flex flex-col justify-center items-center text-center">
+                    <span class="text-[11px] sm:text-xs font-bold opacity-70 mb-1 text-purple-700 dark:text-purple-300">100/200 大獎出現率</span>
+                    <span class="text-2xl sm:text-3xl font-black text-purple-600 dark:text-purple-400 tabular-nums">1.855%</span>
+                </div>
+            </div>
+
+            <!-- 數據洞察區 -->
+            <div class="p-5 rounded-2xl bg-yellow-50/50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800/50 text-sm leading-relaxed">
+                <h4 class="font-bold text-base mb-3 flex items-center gap-2 text-yellow-700 dark:text-yellow-500">
+                    <span class="material-symbols-outlined">lightbulb</span> 數據洞察與有趣現象
+                </h4>
+                <ul class="list-disc pl-5 space-y-2 opacity-90 text-gray-800 dark:text-gray-200">
+                    <li><strong class="text-gray-900 dark:text-gray-100">平台貧富差距：</strong> 最容易中獎的平台是 <strong>BOC</strong>（平均每次3抽可得 48.8 元），而最坑的平台是 <strong>Luso</strong>（平均只有 27.5 元）。</li>
+                    <li><strong class="text-gray-900 dark:text-gray-100">時間週期現象：</strong> 整體而言，<strong>第 1 週</strong> 放水最嚴重（平均期望值最高，達 48.3 元），而 <strong>第 10 週</strong> 最難抽中大額（平均僅 34.9 元）。</li>
+                    <li><strong class="text-gray-900 dark:text-gray-100">大獎機率極低：</strong> 在總共 223,251 次單獨抽獎中，抽出 100元或200元大獎的次數僅有 4,141 次，真實機率大約是 <strong>千分之 18.55</strong>，也就是大家基本都是拿 10蚊安慰獎。</li>
+                    <li><strong class="text-gray-900 dark:text-gray-100">空包彈 (0元) 分析：</strong> 你可以在下方的排行看到，某些平台抽出「-」(0元)的機率異常高，避開選擇平台比單純增加消費次數更重要。</li>
+                </ul>
+            </div>
+
+            <!-- 圖表區 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-2">
+                <div class="p-4 border rounded-2xl shadow-sm" style="border-color: var(--color-border); background-color: var(--color-surface);">
+                    <h4 class="text-center font-bold mb-4 flex items-center justify-center gap-2" style="color: var(--color-text-secondary);">
+                        <span class="material-symbols-outlined text-[20px]">bar_chart</span> 各平台單次打卡期望值 (EV)
+                    </h4>
+                    <div class="chart-container" style="height: 320px;"><canvas id="analysisEvChart"></canvas></div>
+                </div>
+                <div class="p-4 border rounded-2xl shadow-sm" style="border-color: var(--color-border); background-color: var(--color-surface);">
+                    <h4 class="text-center font-bold mb-4 flex items-center justify-center gap-2" style="color: var(--color-text-secondary);">
+                        <span class="material-symbols-outlined text-[20px]">trending_down</span> 每週平均期望值走勢
+                    </h4>
+                    <div class="chart-container" style="height: 320px;"><canvas id="analysisWeeklyChart"></canvas></div>
+                </div>
+                <div class="lg:col-span-2 p-4 border rounded-2xl shadow-sm" style="border-color: var(--color-border); background-color: var(--color-surface);">
+                    <h4 class="text-center font-bold mb-4 flex items-center justify-center gap-2" style="color: var(--color-text-secondary);">
+                        <span class="material-symbols-outlined text-[20px]">stacked_bar_chart</span> 各平台抽獎面額分佈比例 (由高至低排列)
+                    </h4>
+                    <div class="chart-container" style="height: 400px;"><canvas id="analysisDistChart"></canvas></div>
+                </div>
+            </div>
+        </form>
+        <div slot="actions">
+            <md-text-button id="closeAnalysisBtn">關閉報告</md-text-button>
         </div>
     </md-dialog>
 
